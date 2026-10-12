@@ -2,7 +2,7 @@
    هدف: نصب‌پذیری PWA + کش محدود برای فایل‌های استاتیک
    API/Supabase عمداً Network-First است تا داده آنلاین خراب نشود.
 */
-const CACHE_VERSION = 'kafe-miad-v22.9-rc9';
+const CACHE_VERSION = 'kafe-miad-v22.9-rc10';
 const SHELL_CACHE = `shell-${CACHE_VERSION}`;
 
 /* فایل‌هایی که بعد از نصب در کش می‌مانند (در صورت وجود روی سرور) */
@@ -89,7 +89,7 @@ self.addEventListener('fetch', (event) => {
      در قطع اینترنت، نسخهٔ ذخیره‌شده فقط نقش پشتیبان دارد. */
   if (isStaticAsset(url)) {
     event.respondWith(
-      fetch(req)
+      fetch(req, { cache: 'reload' })
         .then((res) => {
           if (res && res.ok) {
             const copy = res.clone();
