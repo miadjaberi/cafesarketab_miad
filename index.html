@@ -168,7 +168,7 @@
             </div>
         </div>
         <div class="terms-footer-bar">
-            <button type="button" class="terms-agree-btn" onclick="acceptTermsAndContinue()">✓ موافقم — ورود به برنامه</button>
+            <button type="button" class="terms-agree-btn" onclick="(function(){try{if(typeof window.acceptTermsAndContinue==='function'){window.acceptTermsAndContinue();return;}var t=document.getElementById('termsScreen');if(t){t.classList.add('hidden');t.style.display='none';}var s=document.getElementById('splashScreen');if(s){s.classList.remove('hidden');s.style.display='flex';}setTimeout(function(){if(s){s.classList.add('hidden');s.style.display='none';}var r=document.getElementById('registerScreen');if(r){r.classList.remove('hidden');r.style.display='flex';}},1200);}catch(e){alert('ورود متوقف شد: '+(e&&e.message?e.message:'خطای نامشخص'));}})()">✓ موافقم — ورود به برنامه</button>
         </div>
     </div>
 
