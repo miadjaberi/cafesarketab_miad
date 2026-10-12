@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<!-- کافه سرکتاب میعاد — V22.9-RC1 -->
+<!-- کافه سرکتاب میعاد — V700.7 -->
 <html lang="fa" dir="rtl">
 <head>
     <!-- Critical safety helpers must run first (before any other script) -->
 <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=5.0, viewport-fit=cover" />
-    <title>کافه سرکتاب میعاد — V22.9-RC1</title>
+    <title>کافه سرکتاب میعاد — V700.7</title>
     <meta name="description" content="کافه سرکتاب میعاد — آموزش، محتوا و فروش محصولات علوم حروف، ابجد، رمل و مشاوره تخصصی">
     <meta name="theme-color" content="#070B14">
     <meta name="mobile-web-app-capable" content="yes">
@@ -178,7 +178,7 @@
         <div class="splash-center" style="position:relative;z-index:2;">
             <div class="splash-verse">✦ الملک القدوس ✦</div>
             <div class="splash-loader"><div class="splash-loader-bar" id="splashLoaderBar"></div></div>
-            <div class="splash-version">نسخه V22.9-RC1</div>
+            <div class="splash-version">نسخه V700.7</div>
         </div>
     </div>
 
@@ -1797,17 +1797,15 @@
         <div class="input-group"><label>🗓️ ماه تولد</label><input type="number" id="birthMonth" min="1" max="12" inputmode="numeric" placeholder="ماه"></div>
         <div class="input-group"><label>📆 سال تولد</label><input type="number" id="birthYear" min="1200" max="1450" inputmode="numeric" placeholder="مثلاً 1362"></div>
       </div>
-      </div>
-      
-      <button class="btn" onclick="calculateMarriageAge()">💍 محاسبه سن ازدواج</button>
-      <div class="marriage-three-result-v55" id="marriageThreeResult" style="display:none;">
-        <div class="marriage-three-label">نتیجه محاسبه</div>
-        <div class="marriage-three-numbers">
-          <span id="marriageOutYears">۰</span><span class="sep">•</span><span id="marriageOutMonths">۰</span><span class="sep">•</span><span id="marriageOutDays">۰</span>
+      <button class="btn" type="button" onclick="calculateMarriageAge()">💍 محاسبه سن ازدواج</button>
+      <div class="marriage-three-result-v55" id="marriageThreeResult" style="display:none;margin-top:14px;padding:16px;border-radius:14px;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.35);text-align:center;">
+        <div class="marriage-three-label" style="font-weight:800;color:#F0D878;margin-bottom:8px;">نتیجه محاسبه</div>
+        <div class="marriage-three-numbers" style="font-size:1.6rem;font-weight:800;color:#F5F0E4;letter-spacing:2px;">
+          <span id="marriageOutYears">۰</span><span class="sep"> • </span><span id="marriageOutMonths">۰</span><span class="sep"> • </span><span id="marriageOutDays">۰</span>
         </div>
-        <div class="marriage-three-caption">سال • ماه • روز</div>
+        <div class="marriage-three-caption" style="margin-top:6px;opacity:0.8;">سال • ماه • روز (شاخص تقریبی)</div>
       </div>
-      <div class="result-box" id="marriageAgeResult" style="display:none;">
+      <div class="result-box" id="marriageAgeResult" style="display:none;margin-top:12px;">
         <div class="result-value" id="marriageAgeValue"></div>
         <div class="result-description" id="marriageAgeDescription"></div>
         <div class="result-description" id="marriageAgeAdvice" style="margin-top:10px;padding:12px;background:rgba(201,168,76,0.1);border-radius:8px;"></div>
@@ -1946,7 +1944,7 @@
 
 
     <!-- fragments that originally sat between script blocks -->
-    <div id="appVersionBadge" style="position:fixed;bottom:72px;left:8px;z-index:9999;background:rgba(201,168,76,0.95);color:#0d0f1a;font-size:10px;font-weight:800;padding:4px 8px;border-radius:8px;pointer-events:none;font-family:sans-serif;">V22.9-RC1</div>
+    <div id="appVersionBadge" style="position:fixed;bottom:72px;left:8px;z-index:9999;background:rgba(201,168,76,0.95);color:#0d0f1a;font-size:10px;font-weight:800;padding:4px 8px;border-radius:8px;pointer-events:none;font-family:sans-serif;">V700.7</div>
     <div id="telegramOtpModal" role="dialog" aria-modal="true" aria-hidden="true" style="display:none;position:fixed;inset:0;z-index:2147483000;background:rgba(0,0,0,.68);align-items:center;justify-content:center;padding:16px;box-sizing:border-box;direction:rtl;overscroll-behavior:contain;touch-action:none;">
 <div id="telegramOtpCard" style="width:min(420px,96vw);max-height:calc(100dvh - 32px);overflow:auto;background:#fffaf2;border-radius:22px;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.45);font-family:Tahoma,Arial,sans-serif;box-sizing:border-box;color:#222;touch-action:auto;overscroll-behavior:contain;">
 <div style="text-align:center;font-size:24px;font-weight:800;color:#8B4513;">🔐 ورود مدیریت</div><div style="text-align:center;margin:10px 0 16px;color:#444;line-height:1.8;">کد ۶ رقمی ارسال‌شده به تلگرام مدیر را وارد کنید.</div>
