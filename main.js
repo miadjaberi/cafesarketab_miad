@@ -67,7 +67,7 @@
         // SUPABASE CONFIG (پایدار)
         // ============================================================
         var SUPABASE_URL = 'https://evxxvnlwtbaqpjbjaxdk.supabase.co';
-        var SUPABASE_KEY = 'sb_publishable_yqampnRU4wIzRn-3ENi81g_ojYSM4le';
+        var SUPABASE_KEY = 'sb_publishable_Kh2oK-mw2bo-oXmJ9ylBoQ_PMyahVDg';
         var supabaseClient = null;
         try {
             if (window.supabase && window.supabase.createClient) {
