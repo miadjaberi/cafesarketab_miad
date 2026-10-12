@@ -1,0 +1,43 @@
+{
+  "id": "/",
+  "name": "کافه سرکتاب میعاد",
+  "short_name": "کافه میعاد",
+  "description": "آموزش، محتوا و فروش محصولات کافه سرکتاب میعاد",
+  "lang": "fa",
+  "dir": "rtl",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#070B14",
+  "theme_color": "#070B14",
+  "categories": ["education", "shopping", "lifestyle"],
+  "icons": [
+    {
+      "src": "./icon192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "ورود به برنامه",
+      "short_name": "ورود",
+      "url": "./index.html",
+      "description": "باز کردن کافه سرکتاب میعاد"
+    }
+  ]
+}
