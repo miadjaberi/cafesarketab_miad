@@ -42,42 +42,6 @@
     <link rel="manifest" href="./manifest.webmanifest" />
     <link rel="stylesheet" href="./theme-lock.css">
 
-<style>
-/* KAFE MIAD FIXED HEADER AND BOTTOM NAV — 2026-10-12 */
-html { scroll-padding-top: 156px; scroll-padding-bottom: 82px; }
-body { padding-top: 156px !important; padding-bottom: 82px !important; }
-#app { transform: none !important; filter: none !important; perspective: none !important; }
-#app > header,
-header {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: auto !important;
-  z-index: 3000 !important;
-  box-sizing: border-box !important;
-  transform: none !important;
-  flex-shrink: 0 !important;
-}
-#bottomNav,
-.bottom-nav {
-  position: fixed !important;
-  left: 0 !important;
-  right: 0 !important;
-  top: auto !important;
-  bottom: 0 !important;
-  z-index: 3001 !important;
-  box-sizing: border-box !important;
-  transform: none !important;
-  flex-shrink: 0 !important;
-  padding-bottom: calc(5px + env(safe-area-inset-bottom, 0px)) !important;
-}
-@media (max-width: 480px) {
-  html { scroll-padding-top: 156px; scroll-padding-bottom: 78px; }
-  body { padding-top: 156px !important; padding-bottom: 78px !important; }
-  #app > header, header { min-height: 152px !important; }
-}
-</style>
 </head>
 <body>
 
