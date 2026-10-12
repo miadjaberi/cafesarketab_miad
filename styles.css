@@ -2977,3 +2977,57 @@ header .header-brand {
 @media (max-width: 480px) {
   :root { --header-height: 112px !important; }
 }
+
+/* KAFE MIAD MOBILE BOTTOM NAV SAFETY OVERRIDE — 2026-10-12 */
+@media (max-width: 480px) {
+  .bottom-nav#bottomNav {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    min-height: var(--bottom-nav-height, 64px) !important;
+    height: auto !important;
+    padding: 5px 4px calc(5px + env(safe-area-inset-bottom, 0px)) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-around !important;
+    gap: 2px !important;
+  }
+  .bottom-nav#bottomNav > .nav-item-bottom {
+    box-sizing: border-box !important;
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    width: auto !important;
+    height: 48px !important;
+    margin: 0 !important;
+    padding: 3px 1px !important;
+    overflow: hidden !important;
+  }
+  .bottom-nav#bottomNav > .nav-item-bottom .nav-icon-bottom {
+    display: block !important;
+    line-height: 1.15 !important;
+    font-size: 18px !important;
+  }
+  .bottom-nav#bottomNav > .nav-item-bottom .nav-label-bottom {
+    display: block !important;
+    max-width: 100% !important;
+    font-size: clamp(9px, 2.6vw, 11px) !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+  .bottom-nav#bottomNav > .nav-item-bottom.center-btn {
+    flex: 0 0 46px !important;
+    min-width: 46px !important;
+    max-width: 46px !important;
+    width: 46px !important;
+    height: 46px !important;
+    margin-top: -7px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+  }
+  .bottom-nav#bottomNav > .nav-item-bottom.center-btn .nav-label-bottom {
+    display: none !important;
+  }
+}
+
