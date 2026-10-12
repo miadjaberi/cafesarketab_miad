@@ -5508,7 +5508,48 @@ function settings(){try{return JSON.parse(localStorage.getItem('cafeSettings')||
 function put(s){try{localStorage.setItem('cafeSettings',JSON.stringify(s));return true}catch(e){console.warn(e);return false}}
 async function upload(data,key){/* V22.9-RC1: شکست Storage = null، نه Base64 */if(!data||String(data).indexOf('data:image/')!==0)return null;if(!supabaseClient){console.warn('media upload: no client');return null;}try{var a=data.split(','),mime=(a[0].match(/data:([^;]+);base64/)||[,'image/jpeg'])[1],bin=atob(a[1]),b=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)b[i]=bin.charCodeAt(i);var blob=new Blob([b],{type:mime}),ext=(mime.split('/')[1]||'jpg').replace(/[^a-z0-9]/gi,'')||'jpg',path='app-media/'+key+'-'+Date.now()+'-'+Math.random().toString(36).slice(2)+'.'+ext,r=await supabaseClient.storage.from('public-assets').upload(path,blob,{upsert:true,contentType:mime});if(r.error)throw r.error;var u=supabaseClient.storage.from('public-assets').getPublicUrl(path);var url=u.data&&u.data.publicUrl?u.data.publicUrl:null;if(!url)throw new Error('publicUrl empty');return url}catch(e){console.warn('media upload',key,e);return null}}
 function apply(s){if(!s)return;if(s.headerLogo){var h=document.getElementById('headerLogoImg');if(h)h.src=s.headerLogo}if(s.registerLogo){var r=document.getElementById('registerLogoImg')||document.querySelector('#registerScreen img');if(r)r.src=s.registerLogo}if(s.splashBg){var spImg=document.getElementById('splashBgImg');if(spImg){spImg.src=s.splashBg;spImg.style.display='block';spImg.style.opacity='1';}var sp=document.getElementById('splashScreen');if(sp){sp.style.backgroundImage='url(\"'+s.splashBg+'\")';sp.style.backgroundSize='cover';sp.style.backgroundPosition='center';}}if(s.appBg){try{document.documentElement.style.setProperty('--app-user-bg','url(\"'+s.appBg+'\")');document.body.style.setProperty('background-image','url(\"'+s.appBg+'\")','important');document.body.style.setProperty('background-size','cover','important');document.body.style.setProperty('background-attachment','fixed','important');document.body.style.setProperty('background-position','center','important');var app=document.getElementById('app');if(app){app.style.setProperty('background-image','url(\"'+s.appBg+'\")','important');app.style.setProperty('background-size','cover','important');app.style.setProperty('background-position','center','important');}}catch(e){console.warn('appBg',e)}}if(s.appIcon){try{localStorage.setItem('cafeAppIcon',s.appIcon)}catch(e){}if(typeof applyAppIcon==='function')applyAppIcon(s.appIcon);else{document.querySelectorAll('link[rel=\"icon\"],link[rel=\"apple-touch-icon\"],link[rel=\"shortcut icon\"]').forEach(function(l){l.href=s.appIcon})}}}
-window.saveAndApplyAllMediaImages=async function(){var b=document.getElementById('saveAllMediaImagesBtn');if(b){b.disabled=true;b.textContent='⏳ در حال ذخیره...'}try{var s=settings(),keys=['headerLogo','registerLogo','splashBg','appBg','appIcon'];for(var i=0;i<keys.length;i++){if(s[keys[i]]&&String(s[keys[i]]).indexOf('data:image/')===0){var upUrl=await upload(s[keys[i]],keys[i]);if(upUrl&&String(upUrl).indexOf('http')===0)s[keys[i]]=upUrl;else{/* آپلود ناموفق: تصویر انتخاب‌شده را حذف نکن؛ نسخه محلی حفظ شود */}}}put(s);if(s.appIcon)try{localStorage.setItem('cafeAppIcon',s.appIcon)}catch(e){}var cloudOk=false;try{if(typeof cloudSaveAdminSetting==='function'){cloudOk=!!(await cloudSaveAdminSetting('cafeSettings',s));}else if(supabaseClient){var ur=await supabaseClient.from('app_settings').upsert([{key:'admin:cafeSettings',value:s,updated_at:new Date().toISOString()}],{onConflict:'key'});cloudOk=!ur.error;}}catch(ce){console.warn(ce);}apply(s);if(typeof showNotification==='function'){var n=0,u=0;['headerLogo','registerLogo','splashBg','appBg','appIcon'].forEach(function(k){if(s[k]){n++;if(String(s[k]).indexOf('http')===0)u++;}});if(cloudOk&&u>0)showNotification('✅ سرور: '+u+' تصویر با لینک دائمی ذخیره شد'+(n>u?' | '+(n-u)+' هنوز فقط محلی (آپلود نشد)':''));else if(cloudOk)showNotification('⚠️ تنظیمات روی سرور ثبت شد ولی تصویرها لینک عمومی نگرفتند (باکت Storage یا دسترسی را چک کنید)');else showNotification('❌ ذخیره روی سرور ناموفق — فقط روی این مرورگر ماند','error');}}catch(e){console.warn(e);if(typeof showNotification==='function')showNotification('❌ ذخیره تصاویر کامل نشد: '+(e.message||e),'error')}finally{if(b){b.disabled=false;b.textContent='💾 ذخیره و اعمال همه تصاویر'}}}
+window.saveAndApplyAllMediaImages=async function(){
+  var b=document.getElementById('saveAllMediaImagesBtn');
+  var iconBtn=document.getElementById('applyAppIconBtn');
+  var notify=function(msg,type){if(typeof showNotification==='function'){showNotification(msg,type||'');}else{alert(msg);}};
+  if(b){b.disabled=true;b.textContent='⏳ در حال ذخیره...';}
+  if(iconBtn){iconBtn.disabled=true;iconBtn.textContent='⏳ در حال اعمال آیکون...';}
+  try{
+    var s=settings(),keys=['headerLogo','registerLogo','splashBg','appBg','appIcon'];
+    for(var i=0;i<keys.length;i++){
+      if(s[keys[i]]&&String(s[keys[i]]).indexOf('data:image/')===0){
+        var upUrl=await upload(s[keys[i]],keys[i]);
+        if(upUrl&&String(upUrl).indexOf('http')===0)s[keys[i]]=upUrl;
+      }
+    }
+    put(s);
+    if(s.appIcon)try{localStorage.setItem('cafeAppIcon',s.appIcon)}catch(e){}
+    var cloudOk=false,cloudError='';
+    try{
+      if(typeof cloudSaveAdminSetting==='function'){
+        cloudOk=!!(await cloudSaveAdminSetting('cafeSettings',s));
+      }else if(supabaseClient){
+        var ur=await supabaseClient.from('app_settings').upsert([{key:'admin:cafeSettings',value:s,updated_at:new Date().toISOString()}],{onConflict:'key'});
+        cloudOk=!ur.error;
+        if(ur.error)cloudError=ur.error.message||String(ur.error);
+      }else{cloudError='Supabase client unavailable';}
+    }catch(ce){cloudError=ce&&ce.message?ce.message:String(ce);console.warn('media cloud save',ce);}
+    apply(s);
+    var n=0,u=0;
+    keys.forEach(function(k){if(s[k]){n++;if(/^https?:\\/\\//i.test(String(s[k])))u++;}});
+    if(cloudOk&&u>0)notify('✅ تنظیمات در سرور ذخیره شد؛ '+u+' تصویر لینک دائمی دارد'+(n>u?'؛ '+(n-u)+' تصویر هنوز لینک دائمی ندارد.':''));
+    else if(cloudOk)notify('⚠️ تنظیمات ثبت شد، اما تصویر آیکون/تصاویر لینک دائمی نگرفتند. دسترسی Storage را باید بررسی کنیم.');
+    else notify('❌ ذخیره روی سرور ناموفق بود. تصویر فعلاً فقط روی همین مرورگر است.'+(cloudError?' علت: '+cloudError:''),'error');
+    return {cloudOk:cloudOk,permanentImages:u,totalImages:n,error:cloudError};
+  }catch(e){
+    console.warn('save media images',e);
+    notify('❌ ذخیره تصاویر کامل نشد: '+(e&&e.message?e.message:String(e)),'error');
+    return {cloudOk:false,error:e&&e.message?e.message:String(e)};
+  }finally{
+    if(b){b.disabled=false;b.textContent='💾 ذخیره و اعمال همه تصاویر';}
+    if(iconBtn){iconBtn.disabled=false;iconBtn.textContent='📱 اعمال و ذخیره آیکون';}
+  }
+}
 window.applyGalleryImagesToUI=function(){var s=settings();apply(s);[['headerLogo','previewHeaderLogo'],['registerLogo','previewRegisterLogo'],['splashBg','previewSplash'],['appBg','previewAppBg'],['appIcon','previewAppIcon']].forEach(function(x){var e=document.getElementById(x[1]);if(e&&s[x[0]]){e.src=s[x[0]];e.style.display='block'}})};
 window.clearGalleryImages=function(){if(!confirm('همه تصاویر گالری پاک شوند؟'))return;var s=settings();['headerLogo','registerLogo','splashBg','appBg','appIcon'].forEach(function(k){delete s[k]});put(s);document.body.style.backgroundImage='';if(typeof showNotification==='function')showNotification('تصاویر محلی پاک شد؛ برای ذخیره تغییرات جدید دکمه ذخیره و اعمال را بزنید')};
 function read(file,mb,cb){if(!file)return;if(file.size>mb*1024*1024){alert('حداکثر '+mb+' مگابایت');return}var r=new FileReader();r.onload=function(){cb(r.result)};r.readAsDataURL(file)}
