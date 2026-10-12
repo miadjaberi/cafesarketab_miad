@@ -5536,7 +5536,7 @@ window.saveAndApplyAllMediaImages=async function(){
     }catch(ce){cloudError=ce&&ce.message?ce.message:String(ce);console.warn('media cloud save',ce);}
     apply(s);
     var n=0,u=0;
-    keys.forEach(function(k){if(s[k]){n++;if(/^https?:\\/\\//i.test(String(s[k])))u++;}});
+    keys.forEach(function(k){if(s[k]){n++;if(/^https?:\/\//i.test(String(s[k])))u++;}});
     if(cloudOk&&u>0)notify('✅ تنظیمات در سرور ذخیره شد؛ '+u+' تصویر لینک دائمی دارد'+(n>u?'؛ '+(n-u)+' تصویر هنوز لینک دائمی ندارد.':''));
     else if(cloudOk)notify('⚠️ تنظیمات ثبت شد، اما تصویر آیکون/تصاویر لینک دائمی نگرفتند. دسترسی Storage را باید بررسی کنیم.');
     else notify('❌ ذخیره روی سرور ناموفق بود. تصویر فعلاً فقط روی همین مرورگر است.'+(cloudError?' علت: '+cloudError:''),'error');
