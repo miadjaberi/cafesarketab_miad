@@ -122,6 +122,9 @@
 
   /* ---------- ایجاد بنر نصب ---------- */
   function createInstallBanner() {
+    // Use the current in-app brand mark for the install banner instead of a potentially stale packaged icon.
+    var activeBrandLogo = document.getElementById('headerLogoImg');
+    var activeBrandLogoSrc = activeBrandLogo && activeBrandLogo.getAttribute('src');
     if (document.getElementById('kafe-install-banner')) return;
     var banner = document.createElement('div');
     banner.id = 'kafe-install-banner';
