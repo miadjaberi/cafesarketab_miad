@@ -3494,6 +3494,7 @@ async function submitProductOrder() {
         }
         async function saveModalDataCloud(modalId,content){
             try{
+                if(typeof verifyOnlineAdmin!=='function'||!(await verifyOnlineAdmin()))throw new Error('Verified admin session required');
                 var client=getModalDataSupabase(); if(!client)throw new Error('Supabase client unavailable');
                 var r=await client.from('modal_data').upsert({modal_id:modalId,content:content,version:1,updated_at:new Date().toISOString()},{onConflict:'modal_id'});
                 if(r.error)throw r.error;
@@ -3781,6 +3782,7 @@ async function submitProductOrder() {
         }
         async function resetModalMetaAdmin(modalId){
             if(!confirm('بازنشانی این مودال به حالت اولیه؟'))return;
+            if(typeof verifyOnlineAdmin!=='function'||!(await verifyOnlineAdmin())){showNotification('❌ برای بازنشانی، ورود امن مدیر لازم است.','error');return;}
             var client=getModalDataSupabase();var ok=false;
             try{if(client){var r=await client.from('modal_data').delete().eq('modal_id',modalId).select('modal_id');if(r.error)throw r.error;ok=Array.isArray(r.data)&&r.data.length>0;}}catch(e){console.error(e);}
             if(!ok){showNotification('❌ سرور حذف داده را تأیید نکرد؛ اطلاعات تغییری نکرد.','error');return;}
