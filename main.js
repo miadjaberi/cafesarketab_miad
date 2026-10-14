@@ -4831,6 +4831,9 @@ async function submitProductOrder() {
             var row={user_id:session.user.id,name:name,phone:phone,plan:plan,plan_id:String(days),plan_days:days,amount:null,receipt_path:path,status:'pending',receipt_note:'',created_at:new Date().toISOString(),updated_at:new Date().toISOString()};
             var r=await supabaseClient.from('subscription_requests').insert([row]).select().single();
             if(r.error)throw r.error;
+            if(!r.data||!r.data.id||String(r.data.user_id)!==String(session.user.id)||String(r.data.status)!=='pending'){
+              throw new Error('ثبت درخواست اشتراک از سرور تأیید نشد؛ لطفاً وضعیت درخواست را بررسی کنید.');
+            }
             window._subscriptionReceiptFile=null;
             window._subscriptionSelectedPlanDays=null;
             if(btn)btn.textContent='✅ درخواست با موفقیت ارسال شد';
