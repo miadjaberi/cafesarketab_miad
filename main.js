@@ -2671,7 +2671,7 @@ async function submitProductOrder() {
             showNotification('✅ ورود مدیریت موفق بود؛ پنل مدیریت باز شد.');
         }
 
-        const ADMIN_MEDIA_SETTING_KEYS = ['cafeSettings','cafeCustomCSS'];
+        const ADMIN_MEDIA_SETTING_KEYS = ['cafeSettings','cafeCustomCSS','discountSettings'];
         async function cloudSaveAdminSetting(key,value){
             if(!supabaseClient) return false;
             try{
@@ -2872,17 +2872,34 @@ async function submitProductOrder() {
             toggle.classList.toggle('active');
         }
 
-        function saveDiscountSettings() {
+        async function saveDiscountSettings() {
+            if (!supabaseClient) { showNotification('❌ اتصال سرور برقرار نیست؛ تخفیف ذخیره نشد.', 'error'); return false; }
+            if (typeof verifyOnlineAdmin !== 'function' || !(await verifyOnlineAdmin())) {
+                showNotification('❌ برای ذخیره تخفیف، ورود امن مدیر لازم است.', 'error'); return false;
+            }
+            var titleEl = document.getElementById('discountTitleInput');
+            var subEl = document.getElementById('discountSubInput');
+            var iconEl = document.getElementById('discountIconInput');
+            var toggle = document.getElementById('discountToggle');
             var discount = {
-                title: document.getElementById('discountTitleInput').value,
-                sub: document.getElementById('discountSubInput').value,
-                icon: document.getElementById('discountIconInput').value,
-                active: document.getElementById('discountToggle').classList.contains('active')
+                title: titleEl ? titleEl.value : '',
+                sub: subEl ? subEl.value : '',
+                icon: iconEl ? iconEl.value : '🔥',
+                active: !!(toggle && toggle.classList.contains('active'))
             };
-            localStorage.setItem('discountSettings', JSON.stringify(discount));
-            updateDiscountPreview();
-            applyDiscountToBanner();
-            showNotification('✅ تخفیف با موفقیت ذخیره شد');
+            try {
+                var ok = await cloudSaveAdminSetting('discountSettings', discount);
+                if (!ok) throw new Error('ذخیره تخفیف روی سرور تأیید نشد.');
+                localStorage.setItem('discountSettings', JSON.stringify(discount));
+                updateDiscountPreview();
+                applyDiscountToBanner();
+                showNotification('✅ تخفیف با تأیید سرور ذخیره شد.');
+                return true;
+            } catch (e) {
+                console.warn('saveDiscountSettings', e);
+                showNotification('❌ تخفیف ذخیره نشد؛ تغییر محلی اعمال نشد. ' + (e.message || ''), 'error');
+                return false;
+            }
         }
         window.saveDiscount = function saveDiscount() { return saveDiscountSettings(); }
 
@@ -3745,7 +3762,7 @@ async function submitProductOrder() {
             var title=((document.getElementById('modalEditTitle')||{}).value||'').trim(),icon=((document.getElementById('modalEditIcon')||{}).value||'').trim(),guide=((document.getElementById('modalEditGuide')||{}).value||'').trim(),question=((document.getElementById('modalEditQuestion')||{}).value||'').trim();
             var content={title:title,icon:icon,guide:guide,question:question};Object.assign(content,collectModalEditorData(id));
             var ok=await saveModalDataCloud(id,content);
-            if(!ok){var map=getModalMetaMap();map[id]=Object.assign({},map[id]||{},content);saveModalMetaMap(map);showNotification('⚠️ ذخیره سرور انجام نشد؛ تغییرات فقط به‌عنوان fallback آفلاین نگه داشته شد.','error');return;}
+            if(!ok){showNotification('❌ ذخیره سرور انجام نشد؛ تغییرات اعمال نشد. اتصال و دسترسی مدیر را بررسی کنید.','error');return;}
             window.__modalCloudData[id]=content;var map2=getModalMetaMap();delete map2[id];saveModalMetaMap(map2);
             
             // اعمال resultsDB برای مودال‌های عمومی
@@ -3765,9 +3782,10 @@ async function submitProductOrder() {
         async function resetModalMetaAdmin(modalId){
             if(!confirm('بازنشانی این مودال به حالت اولیه؟'))return;
             var client=getModalDataSupabase();var ok=false;
-            try{if(client){var r=await client.from('modal_data').delete().eq('modal_id',modalId);if(r.error)throw r.error;ok=true;}}catch(e){console.error(e);}
+            try{if(client){var r=await client.from('modal_data').delete().eq('modal_id',modalId).select('modal_id');if(r.error)throw r.error;ok=Array.isArray(r.data)&&r.data.length>0;}}catch(e){console.error(e);}
+            if(!ok){showNotification('❌ سرور حذف داده را تأیید نکرد؛ اطلاعات تغییری نکرد.','error');return;}
             delete window.__modalCloudData[modalId];try{var map=getModalMetaMap();delete map[modalId];saveModalMetaMap(map);}catch(e){}
-            showNotification(ok?'✅ داده سفارشی از سرور حذف شد':'⚠️ حذف سروری انجام نشد','error');setTimeout(function(){location.reload();},500);
+            showNotification('✅ داده سفارشی با تأیید سرور حذف شد');setTimeout(function(){location.reload();},500);
         }
         async function loadAllModalDataCloud(){
             try{
