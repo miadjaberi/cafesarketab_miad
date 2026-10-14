@@ -5614,36 +5614,63 @@ async function submitProductOrder() {
     catch(e){ console.warn('showCallPurchaseInfo',e); }
   };
 
-  /* ---------- receipt-aware order submit wrapper ---------- */
+  /* ---------- receipt-aware order submit wrapper (await + exact order id) ---------- */
   var originalSubmitProductOrder=window.submitProductOrder;
-  window.submitProductOrder=function(){
+  var receiptSubmitRunning=false;
+  window.submitProductOrder=async function(){
+    if(receiptSubmitRunning){
+      if(typeof showNotification==='function') showNotification('درخواست سفارش در حال ثبت است؛ لطفاً صبر کنید.','info');
+      return;
+    }
     var receipt=window._orderReceiptData;
     if(!receipt){
       if(typeof showNotification==='function') showNotification('❌ تصویر فیش واریزی الزامی است','error');
       return;
     }
-    try { originalSubmitProductOrder.apply(this,arguments); }
-    catch(e){ console.error('submitProductOrder',e); return; }
+    if(typeof originalSubmitProductOrder!=='function'){
+      if(typeof showNotification==='function') showNotification('ثبت سفارش آماده نیست؛ صفحه را دوباره باز کنید.','error');
+      return;
+    }
+    receiptSubmitRunning=true;
+    var beforeIds={};
     try{
-      var orders=JSON.parse(localStorage.getItem('cafeOrders')||'[]');
-      if(!Array.isArray(orders)||!orders.length) return;
-      var order=orders[0];
-      var receiptId='receipt-'+String(order.id);
-      saveReceipt(receiptId,receipt).then(function(){
-        var latest=[];
-        try{latest=JSON.parse(localStorage.getItem('cafeOrders')||'[]');}catch(e){}
-        if(!Array.isArray(latest)||!latest.length)return;
-        latest[0].receiptId=receiptId;
-        latest[0].receiptStoredLocally=true;
-        /* نسخه کامل فیش دیگر داخل localStorage ذخیره نمی‌شود. */
-        latest[0].receiptData='';
-        localStorage.setItem('cafeOrders',JSON.stringify(latest));
+      var before=JSON.parse(localStorage.getItem('cafeOrders')||'[]');
+      if(Array.isArray(before)) before.forEach(function(o){if(o&&o.id!=null)beforeIds[String(o.id)]=true;});
+    }catch(e){}
+    try{
+      // The original async flow uploads the receipt and requires a confirmed Supabase order insert.
+      await originalSubmitProductOrder.apply(this,arguments);
+      var latest=[];
+      try{latest=JSON.parse(localStorage.getItem('cafeOrders')||'[]');}catch(e){}
+      if(!Array.isArray(latest)) latest=[];
+      // Never assume orders[0] is the order just submitted.
+      var order=latest.find(function(o){return o&&o.id!=null&&!beforeIds[String(o.id)];});
+      if(!order) return; // No newly server-confirmed local order was created.
+      var orderId=String(order.id);
+      var receiptId='receipt-'+orderId;
+      try{
+        await saveReceipt(receiptId,receipt);
+        var refreshed=[];
+        try{refreshed=JSON.parse(localStorage.getItem('cafeOrders')||'[]');}catch(e){}
+        if(!Array.isArray(refreshed)) refreshed=[];
+        var exact=refreshed.find(function(o){return o&&String(o.id)===orderId;});
+        if(!exact) return;
+        exact.receiptId=receiptId;
+        exact.receiptStoredLocally=true;
+        /* Keep the image out of localStorage; the server already stores the receipt path. */
+        exact.receiptData='';
+        localStorage.setItem('cafeOrders',JSON.stringify(refreshed));
         if(typeof window.renderAdminOrders==='function') window.renderAdminOrders();
-      }).catch(function(e){
-        console.warn('receipt vault failed',e);
-        if(typeof showNotification==='function') showNotification('⚠️ فیش ثبت شد ولی ذخیره محلی آن ناموفق بود','error');
-      });
-    }catch(e){ console.warn('receipt wrapper',e); }
+      }catch(e){
+        console.warn('receipt vault failed for order '+orderId,e);
+        if(typeof showNotification==='function') showNotification('⚠️ سفارش در سرور ثبت شد، اما ذخیره محلی تصویر فیش انجام نشد.','error');
+      }
+    }catch(e){
+      console.error('submitProductOrder',e);
+      if(typeof showNotification==='function') showNotification('ثبت سفارش کامل نشد؛ وضعیت سرور را بررسی کنید.','error');
+    }finally{
+      receiptSubmitRunning=false;
+    }
   };
 
   window.viewLocalReceipt=function(orderId){
