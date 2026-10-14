@@ -12,7 +12,7 @@
 - Base branch: `main`
 - Base commit at comparison time: `27fca3d71e3d7a2dddc3c92c753b9579d2dd1456`
 - Working branch: `online-only-hardening`
-- Branch is 22 commits ahead of `main`, 0 behind at last comparison.
+- Branch is 27 commits ahead of `main`, 0 behind at last comparison.
 - PR: #3 — Online-only hardening: server-confirmed account, orders, products and settings.
 - Last confirmed branch file identifiers before this note:
   - `main.js`: `5738aba5fc0a4a81cde5ca1976d4ca18520c204f` (file blob)
@@ -32,13 +32,14 @@
 4. Admin OTP frontend and deployed `admin-telegram-otp` v3 use the same `request` / `verify` action contract and `challengeId` field.
 5. Supabase function-edge logs contain successful HTTP 200 OTP requests and HTTP 401 verification responses on 2026-10-14. The 401 response body in the deployed function means the supplied code was incorrect or expired; logs alone do not prove whether the user mistyped the code or the browser reused an old challenge.
 6. The frontend preserves a pending OTP challenge in `sessionStorage` after failed verification so the user can retry while the challenge remains valid. Review challenge expiry/retry UX next.
-7. A separate legacy wrapper around `submitProductOrder` invokes the original async function without awaiting it, then immediately reads `cafeOrders[0]`. This can race and may associate a receipt with the wrong order. It must be fixed on the branch only, with server-confirmed order IDs and no edits to production `main`.
+7. Fixed on this branch: the receipt wrapper now awaits the original async order flow, uses the newly inserted local order ID (which only appears after the Supabase insert succeeds), prevents double submission, and attaches the local receipt only to that exact order. It no longer assumes `cafeOrders[0]` is the order just submitted.
+8. Added `admin-entry-guard.js`, a small single-flight guard around `toggleAdmin`, to prevent rapid repeated taps from launching parallel Telegram OTP flows. It does not grant access; original server-side session/profile verification remains in place. `index.html` loads it and `sw.js` precaches it under cache version `kafe-miad-v700.7-online-2`.
 8. No real-device browser test has been performed by the assistant. Static code inspection and log inspection must not be described as a mobile end-to-end test.
 
 ## Next work order
-1. Recheck this branch checkpoint and exact changed-file list before each write.
-2. Inspect and correct the admin OTP challenge retry/expiry path with the smallest safe frontend change.
-3. Correct the asynchronous receipt/order wrapper so it waits for a confirmed order and links the receipt to that exact order; never guess using the first local order.
-4. Re-audit subscriptions and admin-user data reads against server-confirmed data.
-5. Run syntax checks on every changed JS file, verify file paths and service-worker cache version, then report remaining phone-only checks clearly.
+1. Inspect admin OTP challenge retry/expiry and ensure users get a clear retry path after 401/429 without creating competing challenges.
+2. Re-audit subscription request submission and admin/user data reads against server-confirmed data.
+3. Review the order submission wrapper and remote receipt path for edge cases; the wrapper fix has only static validation so far.
+4. Verify all local asset paths and cache invalidation across the full app shell.
+5. Run syntax checks on every changed JS file, inspect the final diff, and report remaining phone-only checks clearly.
 6. Do not merge PR #3 or publish any changes until the user has tested the branch build and explicitly approved release.
