@@ -195,3 +195,38 @@ body.miad-template-ui .miad-switcher button:focus-visible,body.miad-template-ui 
  body.miad-template-ui .miad-ad-window{overflow-x:auto;direction:rtl}
  body.miad-template-ui .miad-ad-track{width:auto}
 }
+
+/* Keep inherited legacy modal copy readable on the light template surfaces. */
+body.miad-template-ui .modal-glass-content h1,
+body.miad-template-ui .modal-glass-content h2,
+body.miad-template-ui .modal-glass-content h3,
+body.miad-template-ui .modal-glass-content h4,
+body.miad-template-ui .modal-glass-content h5,
+body.miad-template-ui .modal-glass-content p,
+body.miad-template-ui .modal-glass-content label,
+body.miad-template-ui .modal-glass-content small,
+body.miad-template-ui .modal-glass-content .modal-guide,
+body.miad-template-ui .modal-glass-content .result-text,
+body.miad-template-ui .modal-glass-content .result-number,
+body.miad-template-ui .modal-glass-content .input-group label{color:var(--ink-soft)!important}
+body.miad-template-ui .modal-glass-content h1,
+body.miad-template-ui .modal-glass-content h2,
+body.miad-template-ui .modal-glass-content h3,
+body.miad-template-ui .modal-glass-content h4,
+body.miad-template-ui .modal-glass-content .modal-glass-title{color:var(--ink)!important}
+body.miad-template-ui .modal-glass-content strong,
+body.miad-template-ui .modal-glass-content .result-number{color:var(--accent)!important}
+body.miad-template-ui .modal-glass-content .result-box,
+body.miad-template-ui .modal-glass-content .result-card,
+body.miad-template-ui .modal-glass-content .modal-guide,
+body.miad-template-ui .modal-glass-content .input-group{background:#fff!important;border-color:var(--line)!important}
+body.miad-template-ui #settingsPanel .settings-field label,
+body.miad-template-ui #settingsPanel .settings-section p,
+body.miad-template-ui #adminPanel p,
+body.miad-template-ui #adminPanel label{color:var(--ink-soft)!important}
+body.miad-template-ui #adminPanel .admin-tab{border-radius:100px!important}
+body.miad-template-ui #adminPanel .admin-tab.active{background:var(--ink)!important;color:#fff!important}
+body.miad-template-ui #settingsPanel button,
+body.miad-template-ui #adminPanel button{transition:transform .35s var(--ease),box-shadow .35s var(--ease),background .35s var(--ease)}
+body.miad-template-ui #settingsPanel button:hover,
+body.miad-template-ui #adminPanel button:hover{transform:translateY(-1px)}
