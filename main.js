@@ -5806,6 +5806,11 @@ document.addEventListener('DOMContentLoaded',function(){try{window.applyGalleryI
     if (user) { openApp(user); return; }
     showSplashThen(function(){ hideEl('splashScreen'); showEl('registerScreen', 'flex'); }, 700);
   };
+  function startupRequestTimeout(promise, ms, label){
+    return Promise.race([promise, new Promise(function(_, reject){
+      setTimeout(function(){ reject(new Error(label + ' timeout')); }, ms);
+    })]);
+  }
   async function bootGate(){
     var user = savedUser();
     var accepted = termsOk();
@@ -5829,7 +5834,7 @@ document.addEventListener('DOMContentLoaded',function(){try{window.applyGalleryI
     // to agree before treating this browser as a registered online user.
     if (navigator.onLine !== false && window.supabaseClient && window.supabaseClient.auth) {
       try {
-        var sr = await window.supabaseClient.auth.getSession();
+        var sr = await startupRequestTimeout(window.supabaseClient.auth.getSession(), 2500, 'Supabase session');
         if (sr && !sr.error) {
           var session = sr.data && sr.data.session;
           if (!session || !session.user || !session.user.id) {
@@ -5837,10 +5842,10 @@ document.addEventListener('DOMContentLoaded',function(){try{window.applyGalleryI
             showEl('registerScreen', 'flex');
             return;
           }
-          var pr = await window.supabaseClient.from('profiles')
+          var pr = await startupRequestTimeout(window.supabaseClient.from('profiles')
             .select('id,name,phone,role,registered_at')
             .eq('id', session.user.id)
-            .maybeSingle();
+            .maybeSingle(), 2500, 'Supabase profile');
           if (!pr.error && !pr.data) {
             hideEl('termsScreen');
             showEl('registerScreen', 'flex');
