@@ -2355,7 +2355,10 @@ async function submitProductOrder() {
                     if (!p || !p.createdAt || !p.challengeId) return null;
 
                     const age = Date.now() - Number(p.createdAt);
-                    if (age >= 5 * 60 * 1000) {
+                    const ttlMs = Math.max(1, Math.min(300, Number(p.expiresIn) || 300)) * 1000;
+                    // Expire the browser-side challenge slightly before the server TTL,
+                    // so clock/network delay does not keep offering a code at its edge.
+                    if (age < 0 || age >= ttlMs - 15000) {
                         sessionStorage.removeItem(STORAGE_KEY);
                         return null;
                     }
