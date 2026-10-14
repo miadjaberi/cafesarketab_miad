@@ -122,9 +122,6 @@
 
   /* ---------- ایجاد بنر نصب ---------- */
   function createInstallBanner() {
-    // Use the current in-app brand mark for the install banner instead of a potentially stale packaged icon.
-    var activeBrandLogo = document.getElementById('headerLogoImg');
-    var activeBrandLogoSrc = activeBrandLogo && activeBrandLogo.getAttribute('src');
     if (document.getElementById('kafe-install-banner')) return;
     var banner = document.createElement('div');
     banner.id = 'kafe-install-banner';
@@ -138,6 +135,22 @@
       <button class="kafe-install-btn">نصب اپ</button>
     `;
     document.body.appendChild(banner);
+
+    // Keep the install banner aligned with the active in-app logo, not the old packaged eagle icon.
+    function syncInstallBannerLogo() {
+      var brand = document.getElementById('headerLogoImg');
+      var icon = banner.querySelector('.kafe-install-icon');
+      if (brand && icon) {
+        var src = brand.currentSrc || brand.getAttribute('src');
+        if (src) icon.src = src;
+      }
+    }
+    syncInstallBannerLogo();
+    var brand = document.getElementById('headerLogoImg');
+    if (brand && window.MutationObserver) {
+      var logoObserver = new MutationObserver(syncInstallBannerLogo);
+      logoObserver.observe(brand, { attributes: true, attributeFilter: ['src'] });
+    }
 
     banner.querySelector('.kafe-install-close').addEventListener('click', function () {
       banner.style.display = 'none';
