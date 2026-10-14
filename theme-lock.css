@@ -1,1 +1,163 @@
-PLACEHOLDER_WILL_FAIL
+/* CAFE MIAD THEME LOCK — RC24
+   Final visual layer. Scope is limited to theme consistency; no application logic is changed. */
+:root {
+  --cafe-bg: #070B14;
+  --cafe-panel: #111827;
+  --cafe-panel-2: #17172A;
+  --cafe-gold: #E6C878;
+  --cafe-text: #F3E6C8;
+  --cafe-muted: #C9C2B6;
+}
+
+/* The legacy stylesheet contains a later light-green modal override.
+   Lock the actual tool modals back to the app's navy/gold theme. */
+.modal-glass:not(#productDetailModal) .modal-glass-content {
+  background: linear-gradient(155deg,#121a29,#10101b 65%,#21172a) !important;
+  color: var(--cafe-text) !important;
+  border-color: rgba(201,152,78,.55) !important;
+}
+.modal-glass:not(#productDetailModal) .modal-glass-header {
+  background: transparent !important;
+  color: var(--cafe-text) !important;
+  border-color: rgba(201,152,78,.35) !important;
+}
+.modal-glass:not(#productDetailModal) .modal-glass-title,
+.modal-glass:not(#productDetailModal) .modal-glass-content h1,
+.modal-glass:not(#productDetailModal) .modal-glass-content h2,
+.modal-glass:not(#productDetailModal) .modal-glass-content h3,
+.modal-glass:not(#productDetailModal) .modal-glass-content h4,
+.modal-glass:not(#productDetailModal) .modal-glass-content label,
+.modal-glass:not(#productDetailModal) .modal-glass-content p,
+.modal-glass:not(#productDetailModal) .modal-glass-content span,
+.modal-glass:not(#productDetailModal) .modal-glass-content strong,
+.modal-glass:not(#productDetailModal) .modal-glass-content .modal-guide,
+.modal-glass:not(#productDetailModal) .modal-glass-content .result-description {
+  color: var(--cafe-text) !important;
+  -webkit-text-fill-color: var(--cafe-text) !important;
+}
+.modal-glass:not(#productDetailModal) .modal-glass-title,
+.modal-glass:not(#productDetailModal) .input-group label {
+  color: #FFDC9A !important;
+  -webkit-text-fill-color: #FFDC9A !important;
+}
+.modal-glass:not(#productDetailModal) .modal-glass-content input,
+.modal-glass:not(#productDetailModal) .modal-glass-content select,
+.modal-glass:not(#productDetailModal) .modal-glass-content textarea,
+.modal-glass:not(#productDetailModal) .modal-glass-content option {
+  background: #0A111D !important;
+  color: var(--cafe-text) !important;
+  -webkit-text-fill-color: var(--cafe-text) !important;
+  border-color: rgba(201,152,78,.55) !important;
+}
+.modal-glass:not(#productDetailModal) .modal-glass-content .result-box,
+.modal-glass:not(#productDetailModal) .modal-glass-content .calculation-box,
+.modal-glass:not(#productDetailModal) .modal-glass-content .info-box,
+.modal-glass:not(#productDetailModal) .modal-glass-content .notice-box {
+  background: rgba(7,11,20,.92) !important;
+  color: var(--cafe-text) !important;
+  border-color: rgba(201,152,78,.4) !important;
+}
+.modal-glass:not(#productDetailModal) .modal-glass-content .result-value,
+.modal-glass:not(#productDetailModal) .modal-glass-content .result-title {
+  color: #FFDC9A !important;
+  -webkit-text-fill-color: #FFDC9A !important;
+}
+
+/* Qur'an tool — keep its selectors aligned with the real modal ID. */
+#quranModal .modal-glass-content,
+#quranModal .modal-glass-body,
+#quranModal .modal-glass-header {
+  background: linear-gradient(155deg,#121a29,#10101b 65%,#21172a) !important;
+  color: var(--cafe-text) !important;
+  border-color: rgba(201,152,78,.55) !important;
+}
+#quranModal .modal-glass-content *,
+#quranModal #quranStatus,
+#quranModal .modal-guide {
+  color: var(--cafe-text) !important;
+  -webkit-text-fill-color: var(--cafe-text) !important;
+}
+#quranModal .modal-glass-title,
+#quranModal .input-group label {
+  color: #FFDC9A !important;
+  -webkit-text-fill-color: #FFDC9A !important;
+}
+
+/* Purchase modal: remove the explicitly white receipt panel and neutralize
+   global input{background:#fff!important} rules without changing its logic. */
+#subscriptionModalBox > div {
+  background: linear-gradient(165deg,#12101c 0%,#0c1424 45%,#15102a 100%) !important;
+  color: var(--cafe-text) !important;
+  border-color: #C9A84C !important;
+}
+#subscriptionModalBox div[style*="background:#fff"],
+#subscriptionModalBox div[style*="background: #fff"],
+#subscriptionModalBox div[style*="background:white"],
+#subscriptionModalBox div[style*="background: white"] {
+  background: linear-gradient(145deg,#121a29,#191427) !important;
+  color: var(--cafe-text) !important;
+  border-color: rgba(201,152,78,.5) !important;
+}
+#subscriptionModalBox input,
+#subscriptionModalBox textarea,
+#subscriptionModalBox select,
+#subscriptionModalBox option {
+  background: #0A111D !important;
+  color: var(--cafe-text) !important;
+  -webkit-text-fill-color: var(--cafe-text) !important;
+  border-color: rgba(201,152,78,.55) !important;
+}
+#subscriptionModalBox label,
+#subscriptionModalBox strong { color: #FFDC9A !important; }
+#subscriptionModalBox #subscriptionPlanStatus,
+#subscriptionModalBox #subscriptionReceiptStatus,
+#subscriptionModalBox #subscriptionSubmitStatus,
+#subscriptionModalBox #subPaymentOwner,
+#subscriptionModalBox #subPaymentSheba {
+  color: var(--cafe-muted) !important;
+  -webkit-text-fill-color: var(--cafe-muted) !important;
+}
+
+/* The shop's real page ID is pageShop; preserve its dark/gold surface. */
+#pageShop { color: var(--cafe-text) !important; }
+#pageShop .page-header,
+#pageShop .featured-banner,
+#pageShop .dashboard-welcome {
+  background: linear-gradient(145deg,#121a29,#1a1426) !important;
+  border: 1px solid rgba(201,152,78,.4) !important;
+  border-radius: 16px !important;
+  color: var(--cafe-text) !important;
+}
+#pageShop .page-header h2,
+#pageShop .featured-banner strong { color: #FFDC9A !important; }
+#pageShop .page-header .page-subtitle,
+#pageShop .featured-banner *,
+#pageShop .dashboard-welcome * {
+  color: var(--cafe-text) !important;
+  -webkit-text-fill-color: var(--cafe-text) !important;
+}
+
+/* Keep the tool dashboard's cards consistent with the same app theme. */
+#pageTools .dashboard-welcome,
+#pageTools .stat-card,
+#pageTools .utility-tool-card,
+#pageTools .tool-chip,
+#pageTools .tool-hero,
+#pageTools .history-item {
+  background-color: #111827;
+  color: var(--cafe-text);
+  border-color: rgba(201,152,78,.32);
+}
+#pageTools .utility-tool-card *,
+#pageTools .stat-card *,
+#pageTools .dashboard-welcome *,
+#pageTools .tool-hero *,
+#pageTools .tool-chip *,
+#pageTools .history-item * {
+  color: var(--cafe-text);
+}
+#pageTools .utility-tool-card .ut-title,
+#pageTools .dashboard-welcome h1,
+#pageTools .tool-hero h2 { color: #FFDC9A !important; }
+
+/* This is a theme-only file: no global input selector and no install/PWA rules. */
