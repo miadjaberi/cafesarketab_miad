@@ -12,7 +12,7 @@
 - Base branch: `main`
 - Base commit at comparison time: `27fca3d71e3d7a2dddc3c92c753b9579d2dd1456`
 - Working branch: `online-only-hardening`
-- Branch is 31 commits ahead of `main`, 0 behind at last comparison.
+- Branch is ahead of `main`; use the live GitHub comparison for the exact count because each checkpoint update adds a commit.
 - PR: #3 — Online-only hardening: server-confirmed account, orders, products and settings.
 - Last confirmed branch file identifiers before this note:
   - `main.js`: `5738aba5fc0a4a81cde5ca1976d4ca18520c204f` (file blob)
