@@ -5665,6 +5665,7 @@ document.addEventListener('DOMContentLoaded',function(){try{window.applyGalleryI
     // Preview in admin panel.
     var prev = document.getElementById('previewAppIcon');
     if (prev) { prev.src = dataUrl; prev.style.display = 'block'; }
+    if (typeof window.syncKafeInstallIcon === 'function') window.syncKafeInstallIcon();
   };
   document.addEventListener('DOMContentLoaded', function(){
     try {
