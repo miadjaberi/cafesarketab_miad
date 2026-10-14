@@ -5894,14 +5894,25 @@ document.addEventListener('DOMContentLoaded',function(){try{window.applyGalleryI
   window.acceptTermsAndContinue = function(){
     try { localStorage.setItem(TERMS_KEY, '1'); } catch (e) {}
     hideEl('termsScreen');
-    var user = savedUser();
-    if (user) { openApp(user); return; }
+    if (savedUser()) {
+      bootGate();
+      return;
+    }
     showSplashThen(function(){ hideEl('splashScreen'); showEl('registerScreen', 'flex'); }, 700);
   };
   function startupRequestTimeout(promise, ms, label){
     return Promise.race([promise, new Promise(function(_, reject){
       setTimeout(function(){ reject(new Error(label + ' timeout')); }, ms);
     })]);
+  }
+  function blockForOnlineRegistration(message){
+    hideEl('splashScreen');
+    hideEl('termsScreen');
+    hideEl('app');
+    showEl('registerScreen', 'flex');
+    if (message && typeof showNotification === 'function') {
+      try { showNotification(message, 'error'); } catch (e) {}
+    }
   }
   async function bootGate(){
     var user = savedUser();
@@ -5914,53 +5925,56 @@ document.addEventListener('DOMContentLoaded',function(){try{window.applyGalleryI
       showEl('termsScreen', 'flex');
       return;
     }
-
     if (!user) {
       hideEl('termsScreen');
       showEl('registerScreen', 'flex');
       return;
     }
-
-    // Keep the existing local profile usable during offline/temporary network failures.
-    // When Supabase can be reached, require the current session UID and server profile
-    // to agree before treating this browser as a registered online user.
-    if (navigator.onLine !== false && window.supabaseClient && window.supabaseClient.auth) {
-      try {
-        var sr = await startupRequestTimeout(window.supabaseClient.auth.getSession(), 2500, 'Supabase session');
-        if (sr && !sr.error) {
-          var session = sr.data && sr.data.session;
-          if (!session || !session.user || !session.user.id) {
-            hideEl('termsScreen');
-            showEl('registerScreen', 'flex');
-            return;
-          }
-          var pr = await startupRequestTimeout(window.supabaseClient.from('profiles')
-            .select('id,name,phone,role,registered_at')
-            .eq('id', session.user.id)
-            .maybeSingle(), 2500, 'Supabase profile');
-          if (!pr.error && !pr.data) {
-            hideEl('termsScreen');
-            showEl('registerScreen', 'flex');
-            return;
-          }
-          if (!pr.error && pr.data) {
-            user = {
-              name: pr.data.name || user.name || '',
-              phone: pr.data.phone || user.phone || '',
-              registeredAt: pr.data.registered_at || user.registeredAt || '',
-              user_id: pr.data.id,
-              role: pr.data.role || 'user'
-            };
-            try { localStorage.setItem('cafeUser', JSON.stringify(user)); } catch (e) {}
-          }
-          // If the profile query itself fails, do not trap the user at startup;
-          // retain the last locally saved profile and let the app recover online later.
-        }
-      } catch (e) {
-        console.warn('Startup session validation skipped:', e);
-      }
+    if (navigator.onLine === false) {
+      blockForOnlineRegistration('برای ورود، اینترنت متصل به سرور لازم است. پس از اتصال دوباره تلاش کنید.');
+      return;
     }
-    openApp(user);
+    if (!window.supabaseClient || !window.supabaseClient.auth) {
+      blockForOnlineRegistration('اتصال امن به سرور آماده نیست؛ ورود انجام نشد.');
+      return;
+    }
+
+    try {
+      var sr = await startupRequestTimeout(window.supabaseClient.auth.getSession(), 8000, 'Supabase session');
+      if (!sr || sr.error) {
+        blockForOnlineRegistration('بررسی نشست آنلاین ناموفق بود؛ ورود انجام نشد.');
+        return;
+      }
+      var session = sr.data && sr.data.session;
+      if (!session || !session.user || !session.user.id) {
+        blockForOnlineRegistration('نشست آنلاین معتبر پیدا نشد؛ برای ادامه دوباره ثبت‌نام کنید.');
+        return;
+      }
+      var pr = await startupRequestTimeout(window.supabaseClient.from('profiles')
+        .select('id,name,phone,role,registered_at')
+        .eq('id', session.user.id)
+        .maybeSingle(), 8000, 'Supabase profile');
+      if (!pr || pr.error) {
+        blockForOnlineRegistration('تأیید حساب از سرور انجام نشد؛ اتصال را بررسی و دوباره تلاش کنید.');
+        return;
+      }
+      if (!pr.data) {
+        blockForOnlineRegistration('حساب این نشست در سرور ثبت نشده است؛ ثبت‌نام آنلاین لازم است.');
+        return;
+      }
+      user = {
+        name: pr.data.name || '',
+        phone: pr.data.phone || '',
+        registeredAt: pr.data.registered_at || '',
+        user_id: pr.data.id,
+        role: pr.data.role || 'user'
+      };
+      try { localStorage.setItem('cafeUser', JSON.stringify(user)); } catch (e) {}
+      openApp(user);
+    } catch (e) {
+      console.warn('Online-only startup gate blocked access:', e);
+      blockForOnlineRegistration('ارتباط با سرور برقرار نشد؛ تا زمان اتصال، برنامه وارد محیط اصلی نمی‌شود.');
+    }
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootGate, true);
   else bootGate();
