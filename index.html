@@ -163,18 +163,18 @@
                     با فشردن دکمه «موافقم»، تأیید می‌کنید که:
                     مطالب فوق را خوانده‌اید، به محدودیت نتایج آگاهید،
                     و هرگونه بهره‌برداری را با <strong>توکل به خداوند</strong> و رعایت شرع انجام می‌دهید.
-                    این تأیید در <strong>هر بار ورود</strong> به برنامه لازم است.
+                    این تأیید <strong>فقط یک بار</strong>، در اولین ورود، لازم است.
                 </p>
             </div>
         </div>
         <div class="terms-footer-bar">
-            <button type="button" class="terms-agree-btn" onclick="(function(){try{var ran=false;try{if(typeof window.acceptTermsAndContinue==='function'){window.acceptTermsAndContinue();ran=true;}}catch(e){}setTimeout(function(){var t=document.getElementById('termsScreen');if(t&&getComputedStyle(t).display!=='none'){t.classList.add('hidden');t.style.display='none';var s=document.getElementById('splashScreen');if(s){s.classList.remove('hidden');s.style.display='flex';}setTimeout(function(){if(s){s.classList.add('hidden');s.style.display='none';}var r=document.getElementById('registerScreen');if(r){r.classList.remove('hidden');r.style.display='flex';}},1200);}},1500);}catch(e){alert('ورود متوقف شد: '+(e&&e.message?e.message:'خطای نامشخص'));}})()">✓ موافقم — ورود به برنامه</button>
+            <button type="button" class="terms-agree-btn" onclick="if(window.acceptTermsAndContinue)window.acceptTermsAndContinue()">✓ موافقم — ورود به برنامه</button>
         </div>
     </div>
 
     <!-- ===== SPLASH ===== -->
     <div id="splashScreen" class="waiting" style="display:none;">
-        <img class="splash-bg-img" id="splashBgImg" alt="" src="./assets/splash.jpg" onerror="this.onerror=null;this.src='./icon512.png'" />
+        <img class="splash-bg-img" id="splashBgImg" alt="" data-src="./assets/splash.jpg" onerror="this.onerror=null;this.src='./icon512.png'" />
         <div class="splash-dim"></div>
         <div class="splash-bg-glow"></div>
         <div class="splash-center" style="position:relative;z-index:2;">
@@ -1955,6 +1955,18 @@
 <div id="telegramOtpCountdown" style="text-align:center;margin:10px 0;color:#777;font-size:13px;min-height:20px;"></div><div style="display:flex;gap:8px;"><button type="button" id="telegramOtpVerifyBtn" style="flex:1;padding:13px;border:0;border-radius:12px;background:#8B4513;color:#FFFFFF;font-weight:800;">تأیید کد</button><button type="button" id="telegramOtpCancelBtn" style="flex:1;padding:13px;border:1px solid #ccc;border-radius:12px;background:#fff;color:#1A1A1A;font-weight:700;">انصراف</button></div>
 </div></div>
     <div id="v8NetworkState" style="position:fixed;bottom:8px;left:8px;z-index:99999;font:700 10px sans-serif;padding:5px 8px;border-radius:12px;background:rgba(20,20,40,.88);color:#f5d76e;pointer-events:none">● آماده</div>
+
+    <script>
+    (function(){
+      function saved(){try{var u=JSON.parse(localStorage.getItem('cafeUser')||'null');return u&&(u.name||u.phone)?u:null;}catch(e){return null;}}
+      function terms(){try{if(localStorage.getItem('kafeTermsAccepted')==='1')return true;}catch(e){}return !!saved();}
+      function hide(id){var el=document.getElementById(id);if(!el)return;el.style.display='none';el.classList.add('hidden');}
+      function show(id,d){var el=document.getElementById(id);if(!el)return;el.classList.remove('hidden','waiting');el.style.display=d||'flex';}
+      var user=saved();
+      if(terms()&&user){hide('termsScreen');hide('splashScreen');hide('registerScreen');show('app','block');var n=document.getElementById('userName');if(n&&user.name)n.textContent=user.name;}
+    })();
+    </script>
+
     <script src="./data.js"></script>
     <script src="./main.js"></script>
     <script src="./tools-extra.js"></script>

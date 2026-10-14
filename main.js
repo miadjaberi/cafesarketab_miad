@@ -5661,8 +5661,9 @@ document.addEventListener('DOMContentLoaded',function(){try{window.applyGalleryI
 
 
 /* ===== 08-feature-g.js ===== */
-/* TERMS_GATE — هر بار ورود باید موافقم زده شود */
+/* TERMS_GATE — تأیید شرایط و ثبت‌نام فقط بار اول */
 (function(){
+  var TERMS_KEY = 'kafeTermsAccepted';
   function hideEl(id){
     var el = document.getElementById(id);
     if (!el) return;
@@ -5676,53 +5677,59 @@ document.addEventListener('DOMContentLoaded',function(){try{window.applyGalleryI
     el.classList.remove('waiting');
     el.style.display = display || 'flex';
   }
-
-  window.acceptTermsAndContinue = function(){
+  function savedUser(){
+    try {
+      var u = JSON.parse(localStorage.getItem('cafeUser') || 'null');
+      if (u && (u.name || u.phone)) return u;
+    } catch (e) {}
+    return null;
+  }
+  function termsOk(){
+    try { if (localStorage.getItem(TERMS_KEY) === '1') return true; } catch (e) {}
+    return !!savedUser();
+  }
+  function openApp(user){
     hideEl('termsScreen');
-    var splash=document.getElementById('splashScreen');
-    var started=Date.now(), minSplash=5000, maxSplash=5000;
-    if(splash){
-      splash.classList.remove('waiting','hidden'); splash.style.display='flex';
-      var bar=document.getElementById('splashLoaderBar')||splash.querySelector('.splash-loader-bar');
-      if(bar){bar.style.animation='none';void bar.offsetWidth;bar.style.animation='loadBar 5s linear forwards';}
+    hideEl('splashScreen');
+    hideEl('registerScreen');
+    showEl('app', 'block');
+    if (user && typeof updateUserDisplay === 'function') {
+      try { updateUserDisplay(user); } catch (e) {}
     }
-    var sessionPromise=(async function(){
-      try{if(window.supabaseClient){var ar=await window.supabaseClient.auth.getSession();return ar&&ar.data&&ar.data.session||null;}}catch(e){}
-      return null;
-    })();
-    (async function(){
-      var session=await Promise.race([sessionPromise,new Promise(function(resolve){setTimeout(function(){resolve(null);},maxSplash);})]);
-      var elapsed=Date.now()-started,wait=Math.max(0,minSplash-elapsed);
-      setTimeout(async function(){
-        if(splash){splash.classList.add('hidden');setTimeout(function(){splash.style.display='none';},180);}
-        if(session&&session.user){
-          var pr=null;try{pr=await window.supabaseClient.from('profiles').select('id,name,phone,role').eq('id',session.user.id).maybeSingle();}catch(e){}
-          if(pr&&!pr.error&&pr.data){var app=document.getElementById('app');if(app)app.style.display='block';var reg=document.getElementById('registerScreen');if(reg)reg.style.display='none';if(typeof updateUserDisplay==='function')await updateUserDisplay(pr.data);}
-          else{try{localStorage.removeItem('cafeUser');}catch(e){}var reg0=document.getElementById('registerScreen');if(reg0)reg0.style.display='flex';}
-        }else{var reg4=document.getElementById('registerScreen');if(reg4)reg4.style.display='flex';}
-      },wait);
-    })();
-  };
-
-  // جلوگیری از اسپلش خودکار قبلی
-  document.addEventListener('DOMContentLoaded', function(){
-    // مخفی کردن اسپلش تا قبول شرایط
+  }
+  function showSplashThen(next, ms){
     var splash = document.getElementById('splashScreen');
+    var img = document.getElementById('splashBgImg');
+    if (img && img.getAttribute('data-src') && !img.getAttribute('src')) img.src = img.getAttribute('data-src');
     if (splash) {
-      splash.classList.add('waiting');
-      splash.style.display = 'none';
+      splash.classList.remove('waiting', 'hidden');
+      splash.style.display = 'flex';
+      var bar = document.getElementById('splashLoaderBar') || splash.querySelector('.splash-loader-bar');
+      if (bar) { bar.style.animation = 'none'; void bar.offsetWidth; bar.style.animation = 'loadBar ' + (ms/1000) + 's linear forwards'; }
     }
-    var terms = document.getElementById('termsScreen');
-    if (terms) {
-      terms.classList.remove('hidden');
-      terms.style.display = 'flex';
-    }
-    // ثبت‌نام و اپ مخفی تا بعد از شرایط
-    var reg = document.getElementById('registerScreen');
-    if (reg) reg.style.display = 'none';
-    var app = document.getElementById('app');
-    if (app) app.style.display = 'none';
-  }, true);
+    setTimeout(function(){
+      if (splash) { splash.classList.add('hidden'); splash.style.display = 'none'; }
+      next();
+    }, ms);
+  }
+  window.acceptTermsAndContinue = function(){
+    try { localStorage.setItem(TERMS_KEY, '1'); } catch (e) {}
+    hideEl('termsScreen');
+    var user = savedUser();
+    if (user) { openApp(user); return; }
+    showSplashThen(function(){ hideEl('splashScreen'); showEl('registerScreen', 'flex'); }, 700);
+  };
+  function bootGate(){
+    var user = savedUser();
+    if (termsOk() && user) { openApp(user); return; }
+    hideEl('splashScreen');
+    hideEl('app');
+    if (termsOk()) { hideEl('termsScreen'); showEl('registerScreen', 'flex'); return; }
+    hideEl('registerScreen');
+    showEl('termsScreen', 'flex');
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootGate, true);
+  else bootGate();
 })();
 
 
