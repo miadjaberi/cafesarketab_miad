@@ -11,6 +11,14 @@
     document.head.appendChild(link);
   }
 
+  /* ---------- بارگذاری بازخورد لمس دکمه‌ها ---------- */
+  if (!document.querySelector('link[href*="button-feedback"]')) {
+    var fb = document.createElement('link');
+    fb.rel = 'stylesheet';
+    fb.href = './button-feedback.css';
+    document.head.appendChild(fb);
+  }
+
   /* ---------- استایل دکمه نصب (هماهنگ با تم طلایی) ---------- */
   var style = document.createElement('style');
   style.textContent = `
