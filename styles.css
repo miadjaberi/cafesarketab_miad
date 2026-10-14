@@ -3045,3 +3045,22 @@ header .header-brand {
 #subscriptionModalBox input[type="file"] { background:#0a111d !important; color:#f3e6c8 !important; -webkit-text-fill-color:#f3e6c8 !important; }
 #kafeNotificationsModal { color:#f3e6c8 !important; }
 #kafeNotificationsModal button { cursor:pointer; }
+
+
+/* RC23 — bell status is tied to the actual unread count from Supabase */
+header .header-notifications .header-btn.kafe-notif-unread {
+  background:linear-gradient(135deg,#8e2028,#d83a45) !important;
+  border:1px solid rgba(255,125,125,.85) !important;
+  color:#fff !important;
+  box-shadow:0 0 0 2px rgba(216,58,69,.14),0 4px 14px rgba(216,58,69,.22) !important;
+}
+header .header-notifications .header-btn.kafe-notif-clear {
+  background:linear-gradient(135deg,#146b46,#238a5b) !important;
+  border:1px solid rgba(113,230,162,.75) !important;
+  color:#fff !important;
+  box-shadow:0 0 0 2px rgba(35,138,91,.12) !important;
+}
+header .header-notifications .header-btn.kafe-notif-unread .header-label,
+header .header-notifications .header-btn.kafe-notif-unread i,
+header .header-notifications .header-btn.kafe-notif-clear .header-label,
+header .header-notifications .header-btn.kafe-notif-clear i { color:#fff !important; }
