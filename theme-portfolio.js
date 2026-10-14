@@ -15,6 +15,31 @@
     });
   }
   function products(){
+    // Prefer the actual rendered product cards: this works even if the store logic is scoped inside main.js.
+    try {
+      var rendered = Array.prototype.slice.call(document.querySelectorAll('#productsGrid .product-card')).map(function(card){
+        var titleNode = card.querySelector('.product-name');
+        var priceNode = card.querySelector('.product-price');
+        var imageNode = card.querySelector('.product-img');
+        var iconNode = card.querySelector('.product-icon');
+        var badgeNode = card.querySelector('.product-badge');
+        var click = card.getAttribute('onclick') || '';
+        var idMatch = click.match(/openProductDetail\\s*\\(\\s*['"]([^'"]+)['"]/);
+        var rawPrice = priceNode ? priceNode.textContent.trim() : '';
+        var digits = rawPrice.replace(/[^0-9۰-۹٠-٩]/g,'').replace(/[۰-۹]/g,function(c){return String('۰۱۲۳۴۵۶۷۸۹'.indexOf(c));}).replace(/[٠-٩]/g,function(c){return String('٠١٢٣٤٥٦٧٨٩'.indexOf(c));});
+        return {
+          id: idMatch ? idMatch[1] : '',
+          title: titleNode ? titleNode.textContent.trim() : 'محصول',
+          price: digits ? Number(digits) : 0,
+          _displayPrice: rawPrice,
+          imageUrl: imageNode ? imageNode.getAttribute('src') : '',
+          image: iconNode ? iconNode.textContent.trim() : '📦',
+          badge: badgeNode ? badgeNode.textContent.trim() : '',
+          desc: ''
+        };
+      }).filter(function(p){ return p.id || p.title; });
+      if (rendered.length) return rendered;
+    } catch(e) {}
     try {
       if (typeof window.getProductsSafe === 'function') return window.getProductsSafe() || [];
       if (typeof window.getProducts === 'function') return window.getProducts() || [];
@@ -28,6 +53,7 @@
   function productTitle(p){ return p && (p.title || p.name) || 'محصول'; }
   function productImage(p){ return p && (p.imageUrl || p.image_url) || ''; }
   function productPrice(p){
+    if (p && p._displayPrice) return p._displayPrice;
     var n = Number(p && p.price);
     return Number.isFinite(n) && n > 0 ? n.toLocaleString('fa-IR') + ' تومان' : 'جزئیات قیمت';
   }
