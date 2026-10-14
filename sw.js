@@ -121,6 +121,28 @@ async function cacheFirst(req, fallbacks) {
   ]).then((res) => res || update);
 }
 
+// Navigation must prefer the live deployment. Cache-first HTML can keep an
+// old loader/app visible after a release while the background update silently
+// downloads a different version. Fall back to cached HTML only when offline.
+async function networkFirstNavigation(req) {
+  const cache = await caches.open(SHELL_CACHE);
+  try {
+    const res = await fetch(req, { cache: 'no-store' });
+    if (res && res.ok) {
+      await cache.put(req, res.clone()).catch(() => {});
+      await cache.put(new URL('./index.html', self.registration.scope).toString(), res.clone()).catch(() => {});
+      return res;
+    }
+    throw new Error('navigation_http_' + (res ? res.status : 'empty'));
+  } catch (e) {
+    const cached = await cache.match(req, { ignoreSearch: true })
+      || await cache.match(new URL('./index.html', self.registration.scope).toString())
+      || await cache.match(new URL('./', self.registration.scope).toString());
+    if (cached) return cached;
+    throw e;
+  }
+}
+
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
@@ -128,7 +150,7 @@ self.addEventListener('fetch', (event) => {
   if (isSupabaseOrApi(url)) return;
 
   if (req.mode === 'navigate' || ((req.headers.get('accept') || '').includes('text/html') && !isAppHost(url))) {
-    event.respondWith(cacheFirst(req, ['./index.html', './']));
+    event.respondWith(networkFirstNavigation(req));
     return;
   }
   if (isStaticAsset(url) || isAppHost(url)) {
