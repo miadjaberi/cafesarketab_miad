@@ -4318,6 +4318,7 @@ async function submitProductOrder() {
             var badge = document.getElementById('notifBadge');
             var unread = rows.filter(function (n) { return !n.read; }).length;
             if (badge) badge.textContent = String(unread);
+            if (typeof window.kafeSetNotificationState === 'function') window.kafeSetNotificationState(unread);
             var prior = document.getElementById('kafeNotificationsModal');
             if (prior) prior.remove();
             var esc = function (v) { return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
@@ -5966,6 +5967,9 @@ window.calculateMarriageAge = function calculateMarriageAge(){
       localStorage.setItem('cafeUserNotifications',JSON.stringify(rows));
       var unread=rows.filter(function(n){return !n.read}).length;
       var badge=document.getElementById('notifBadge');if(badge)badge.textContent=String(unread);
+      var bell=badge&&badge.closest('button');
+      if(bell){bell.classList.toggle('kafe-notif-unread',unread>0);bell.classList.toggle('kafe-notif-clear',unread===0);bell.setAttribute('aria-label',unread>0?'اعلان‌ها — '+unread+' اعلان خوانده‌نشده':'اعلان‌ها — همه خوانده شده');}
+      if(typeof window.kafeSetNotificationState==='function')window.kafeSetNotificationState(unread);
       var shown={};try{shown=JSON.parse(localStorage.getItem('v7ShownOperationalNotifications')||'{}')}catch(e){shown={};}
       var candidate=rows.find(function(n){return !n.read && (n.type==='order_status'||n.type==='subscription_status'||n.type==='message') && !shown[String(n.id)];});
       if(candidate){shown[String(candidate.id)]=Date.now();localStorage.setItem('v7ShownOperationalNotifications',JSON.stringify(shown));showOperationalModal(candidate);}
