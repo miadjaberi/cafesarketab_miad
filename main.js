@@ -5947,7 +5947,7 @@ document.addEventListener('DOMContentLoaded',function(){try{window.applyGalleryI
       bootGate();
       return;
     }
-    showSplashThen(function(){ hideEl('splashScreen'); showEl('registerScreen', 'flex'); }, 700);
+    showSplashThen(function(){ hideEl('splashScreen'); bootGate(); }, 700);
   };
   function startupRequestTimeout(promise, ms, label){
     return Promise.race([promise, new Promise(function(_, reject){
@@ -5974,13 +5974,8 @@ document.addEventListener('DOMContentLoaded',function(){try{window.applyGalleryI
       showEl('termsScreen', 'flex');
       return;
     }
-    if (!user) {
-      hideEl('termsScreen');
-      showEl('registerScreen', 'flex');
-      return;
-    }
     if (navigator.onLine === false) {
-      blockForOnlineRegistration('برای ورود، اینترنت متصل به سرور لازم است. پس از اتصال دوباره تلاش کنید.');
+      blockForOnlineRegistration('برای ورود و استفاده، اتصال به سرور لازم است. پس از اتصال دوباره تلاش کنید.');
       return;
     }
     if (!window.supabaseClient || !window.supabaseClient.auth) {
@@ -5991,12 +5986,12 @@ document.addEventListener('DOMContentLoaded',function(){try{window.applyGalleryI
     try {
       var sr = await startupRequestTimeout(window.supabaseClient.auth.getSession(), 8000, 'Supabase session');
       if (!sr || sr.error) {
-        blockForOnlineRegistration('بررسی نشست آنلاین ناموفق بود؛ ورود انجام نشد.');
+        blockForOnlineRegistration(user ? 'بررسی نشست آنلاین ناموفق بود؛ ورود انجام نشد.' : '');
         return;
       }
       var session = sr.data && sr.data.session;
       if (!session || !session.user || !session.user.id) {
-        blockForOnlineRegistration('نشست آنلاین معتبر پیدا نشد؛ برای ادامه دوباره ثبت‌نام کنید.');
+        blockForOnlineRegistration(user ? 'نشست آنلاین معتبر پیدا نشد؛ برای ادامه دوباره ثبت‌نام کنید.' : '');
         return;
       }
       var pr = await startupRequestTimeout(window.supabaseClient.from('profiles')
@@ -6008,7 +6003,7 @@ document.addEventListener('DOMContentLoaded',function(){try{window.applyGalleryI
         return;
       }
       if (!pr.data) {
-        blockForOnlineRegistration('حساب این نشست در سرور ثبت نشده است؛ ثبت‌نام آنلاین لازم است.');
+        blockForOnlineRegistration(user ? 'حساب این نشست در سرور ثبت نشده است؛ ثبت‌نام آنلاین لازم است.' : '');
         return;
       }
       user = {
