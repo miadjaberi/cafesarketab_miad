@@ -907,19 +907,51 @@
             syncProductsToCloud(products);
         }
 
+        async function loadProductsFromServerStrict() {
+            if (!supabaseClient) return { ok:false, reason:'no-client' };
+            try {
+                var result = await supabaseClient.from('products').select('*').order('local_id', {ascending:true});
+                if (result.error) throw result.error;
+                var rows = Array.isArray(result.data) ? result.data : [];
+                var mapped = rows.map(function(r) {
+                    return {
+                        id: r.local_id != null ? Number(r.local_id) : r.id,
+                        cloudId: r.id,
+                        title: r.title || r.name || '',
+                        price: Number(r.price) || 0,
+                        image: r.image || '📦',
+                        imageUrl: r.image_url || '',
+                        badge: r.badge || '',
+                        desc: r.desc || r.description || ''
+                    };
+                });
+                return { ok:true, products:mapped, rows:rows };
+            } catch (e) {
+                console.warn('strict products read', e);
+                return { ok:false, reason:String(e && e.message || e) };
+            }
+        }
+
         async function syncProductsToCloud(products) {
             if (!supabaseClient) return { ok:false, reason:'no-client' };
             if (!Array.isArray(products)) return { ok:false, reason:'invalid-products' };
             try {
-                // Never delete remote rows merely because a local cache is incomplete.
-                // Explicit product deletion is handled only by deleteProduct after server confirmation.
+                // Read current server rows first, and preserve every column not edited by this UI.
+                var current = await supabaseClient.from('products').select('*');
+                if (current.error) throw current.error;
+                var remoteRows = Array.isArray(current.data) ? current.data : [];
+                var remoteByLocalId = {};
+                remoteRows.forEach(function(r) {
+                    if (r.local_id != null) remoteByLocalId[String(Number(r.local_id))] = r;
+                });
                 for (var j = 0; j < products.length; j++) {
                     var p = products[j];
                     var localId = Number(p.id);
                     if (!Number.isFinite(localId) || localId <= 0) {
                         return { ok:false, reason:'invalid-local-id', index:j };
                     }
-                    var row = {
+                    var existing = remoteByLocalId[String(localId)] || null;
+                    var row = Object.assign({}, existing || {}, {
                         local_id: localId,
                         title: String(p.title || ''),
                         price: Number(p.price) || 0,
@@ -927,8 +959,9 @@
                         image_url: p.imageUrl || '',
                         badge: p.badge || '',
                         desc: p.desc || '',
-                        is_active: true
-                    };
+                        is_active: existing && typeof existing.is_active === 'boolean' ? existing.is_active : true,
+                        updated_at: new Date().toISOString()
+                    });
                     var saved = await sbUpsert('products', row, 'local_id');
                     if (!saved || !saved.length) {
                         return { ok:false, reason:'server-write-failed', index:j, product:row.title };
@@ -3006,7 +3039,12 @@ async function submitProductOrder() {
                     else alert('قیمت معتبر وارد کنید');
                     return;
                 }
-                var products = getProductsSafe();
+                var serverProducts = await loadProductsFromServerStrict();
+                if (!serverProducts.ok) {
+                    if (typeof showNotification === 'function') showNotification('❌ دریافت فهرست محصولات از سرور ناموفق بود؛ تغییری اعمال نشد.', 'error');
+                    return;
+                }
+                var products = serverProducts.products;
                 if (editId) {
                     var idx = products.findIndex(function(p){ return String(p.id) === String(editId); });
                     if (idx < 0) {
@@ -3100,7 +3138,12 @@ async function submitProductOrder() {
                     if (typeof showNotification === 'function') showNotification('❌ اتصال سرور برقرار نیست؛ محصول حذف نشد.', 'error');
                     return;
                 }
-                var all = getProductsSafe();
+                var serverProducts = await loadProductsFromServerStrict();
+                if (!serverProducts.ok) {
+                    if (typeof showNotification === 'function') showNotification('❌ دریافت محصول از سرور ناموفق بود؛ حذف انجام نشد.', 'error');
+                    return;
+                }
+                var all = serverProducts.products;
                 var victim = null;
                 for (var i = 0; i < all.length; i++) {
                     if (String(all[i].id) === String(id) || String(all[i].cloudId || '') === String(id)) { victim = all[i]; break; }
