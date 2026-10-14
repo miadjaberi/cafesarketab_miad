@@ -3782,49 +3782,53 @@ async function submitProductOrder() {
         // تنظیمات مدیریت
         // ============================================================
         window.saveAdminSettings = async function saveAdminSettings() {
-            if (typeof verifyOnlineAdmin === 'function') {
-                var okA = await verifyOnlineAdmin();
-                if (!okA) { showNotification('فقط مدیر واردشده می‌تواند تنظیمات پرداخت را ذخیره کند', 'error'); return; }
+            if (typeof verifyOnlineAdmin !== 'function' || !(await verifyOnlineAdmin())) {
+                showNotification('فقط مدیر واردشده می‌تواند تنظیمات پرداخت را ذخیره کند', 'error');
+                return;
             }
-            var s = {};
-            try { s = JSON.parse(localStorage.getItem('cafeSettings') || '{}'); } catch (e) { s = {}; }
+            if (!supabaseClient) {
+                showNotification('❌ اتصال سرور برقرار نیست؛ تنظیمات پرداخت ذخیره نشد.', 'error');
+                return;
+            }
+            var local = {};
+            try { local = JSON.parse(localStorage.getItem('cafeSettings') || '{}'); } catch (e) {}
             var cardEl = document.getElementById('paymentCardNumber');
             var shebaEl = document.getElementById('paymentSheba');
             var ownerEl = document.getElementById('paymentCardOwner');
             var guideEl = document.getElementById('paymentGuide');
             var card = cardEl ? (cardEl.value || '').trim() : '';
             var sheba = shebaEl ? (shebaEl.value || '').trim() : '';
-            var owner = ownerEl ? (ownerEl.value || '').trim() : (s.paymentOwner || '');
-            var guide = guideEl ? (guideEl.value || '').trim() : (s.paymentGuide || '');
+            var owner = ownerEl ? (ownerEl.value || '').trim() : (local.paymentOwner || '');
+            var guide = guideEl ? (guideEl.value || '').trim() : (local.paymentGuide || '');
 
-            // نسخه کامل برای سرور
-            var full = Object.assign({}, s, {
-                paymentCard: card,
-                paymentSheba: sheba,
-                paymentOwner: owner,
-                paymentGuide: guide
-            });
-
-            // حافظه نشست برای نمایش به کاربر در همین مرورگر
-            setSensitivePayCache({ paymentCard: card, paymentSheba: sheba, paymentOwner: owner });
-
-            // localStorage بدون کارت و شبا
-            delete s.paymentCard;
-            delete s.paymentSheba;
-            s.paymentOwner = owner;
-            s.paymentGuide = guide;
-            localStorage.setItem('cafeSettings', JSON.stringify(s));
-            try { localStorage.removeItem('adminPassword'); } catch (e) {}
-
-            var cloudOk = false;
-            if (typeof cloudSaveAdminSetting === 'function') {
-                try { cloudOk = !!(await cloudSaveAdminSetting('cafeSettings', full)); } catch (e) { console.warn(e); }
-            }
-            if (typeof fillPaymentInfoUI === 'function') fillPaymentInfoUI();
-            if (typeof showNotification === 'function') {
-                showNotification(cloudOk
-                    ? '✅ تنظیمات پرداخت روی سرور ذخیره شد (کارت روی گوشی دائمی ذخیره نمی‌شود)'
-                    : '⚠️ محلی/نشست ذخیره شد؛ ذخیره سرور ناموفق بود', cloudOk ? undefined : 'error');
+            try {
+                var remote = await supabaseClient.from('app_settings').select('value').eq('key', 'admin:cafeSettings').maybeSingle();
+                if (remote.error) throw remote.error;
+                var serverSettings = remote.data && remote.data.value ? remote.data.value : {};
+                if (typeof serverSettings === 'string') {
+                    try { serverSettings = JSON.parse(serverSettings); } catch(e) { serverSettings = {}; }
+                }
+                if (!serverSettings || typeof serverSettings !== 'object' || Array.isArray(serverSettings)) serverSettings = {};
+                // Preserve all current server settings; only payment fields are changed here.
+                var full = Object.assign({}, serverSettings, {
+                    paymentCard: card,
+                    paymentSheba: sheba,
+                    paymentOwner: owner,
+                    paymentGuide: guide
+                });
+                var cloudOk = typeof cloudSaveAdminSetting === 'function' && await cloudSaveAdminSetting('cafeSettings', full);
+                if (!cloudOk) throw new Error('ذخیره تنظیمات پرداخت روی سرور تأیید نشد.');
+                var localSafe = Object.assign({}, serverSettings, { paymentOwner: owner, paymentGuide: guide });
+                delete localSafe.paymentCard;
+                delete localSafe.paymentSheba;
+                localStorage.setItem('cafeSettings', JSON.stringify(localSafe));
+                setSensitivePayCache({ paymentCard: card, paymentSheba: sheba, paymentOwner: owner });
+                try { localStorage.removeItem('adminPassword'); } catch (e) {}
+                if (typeof fillPaymentInfoUI === 'function') fillPaymentInfoUI();
+                showNotification('✅ تنظیمات پرداخت با تأیید سرور ذخیره شد؛ اطلاعات حساس دائمی روی گوشی ذخیره نشد.');
+            } catch (e) {
+                console.warn('saveAdminSettings server-first', e);
+                showNotification('❌ تنظیمات پرداخت ذخیره نشد؛ نسخه محلی تغییر نکرد. ' + (e.message || ''), 'error');
             }
         }
         async function loadAdminPaymentForm() {
