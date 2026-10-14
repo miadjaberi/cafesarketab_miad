@@ -2977,3 +2977,71 @@ header .header-brand {
 @media (max-width: 480px) {
   :root { --header-height: 112px !important; }
 }
+
+
+/* ===== RC22: scoped contrast repair — tools, Quran, store and subscription receipt ===== */
+#pageTools .utility-tools-grid { gap: 12px !important; }
+#pageTools .utility-tool-card {
+  display:flex !important; flex-direction:column !important; align-items:center !important;
+  justify-content:center !important; gap:7px !important; min-height:112px !important;
+  padding:14px 10px !important; border:1px solid rgba(201,152,78,.48) !important;
+  border-radius:16px !important; background:linear-gradient(145deg,rgba(20,31,48,.98),rgba(19,15,31,.98)) !important;
+  color:#f3e6c8 !important; box-shadow:0 8px 20px rgba(0,0,0,.2) !important;
+  white-space:normal !important; line-height:1.65 !important;
+}
+#pageTools .utility-tool-card .ut-icon { font-size:1.55rem !important; line-height:1.2 !important; }
+#pageTools .utility-tool-card .ut-title { color:#ffdc9a !important; -webkit-text-fill-color:#ffdc9a !important; font-weight:800 !important; font-size:.9rem !important; }
+#pageTools .utility-tool-card .ut-desc { color:#d4c4a0 !important; -webkit-text-fill-color:#d4c4a0 !important; font-size:.74rem !important; }
+#pageTools .dashboard-welcome, #pageTools .tool-hero, #pageTools .result-card {
+  color:#f3e6c8 !important; background:linear-gradient(145deg,#151c2b,#21182d) !important;
+  border:1px solid rgba(201,152,78,.35) !important;
+}
+#pageTools .dashboard-welcome p, #pageTools .tool-hero p, #pageTools .result-card .result-text {
+  color:#e0d5c1 !important; -webkit-text-fill-color:#e0d5c1 !important;
+}
+#quranModal .modal-glass-content,
+#quranModal .modal-glass-body,
+#quranModal .modal-glass-header {
+  background:linear-gradient(155deg,#121a29,#10101b 65%,#21172a) !important;
+  color:#f3e6c8 !important; border-color:rgba(201,152,78,.55) !important;
+}
+#quranModal .modal-glass-content *,
+#quranModal .modal-glass-body p,
+#quranModal #quranStatus,
+#quranModal .modal-guide {
+  color:#f3e6c8 !important; -webkit-text-fill-color:#f3e6c8 !important;
+}
+#quranModal .modal-glass-title, #quranModal .input-group label { color:#ffdc9a !important; -webkit-text-fill-color:#ffdc9a !important; }
+#quranModal select, #quranModal option {
+  background:#0a111d !important; color:#f3e6c8 !important; -webkit-text-fill-color:#f3e6c8 !important;
+  border:1px solid rgba(201,152,78,.6) !important; border-radius:10px !important;
+}
+#quranModal .result-box { background:rgba(7,11,20,.94) !important; border:1px solid rgba(201,152,78,.45) !important; color:#f3e6c8 !important; }
+#pageStore { color:#f3e6c8 !important; }
+#pageStore .page-header, #pageStore .featured-banner, #pageStore .dashboard-welcome {
+  background:linear-gradient(145deg,#121a29,#1a1426) !important;
+  border:1px solid rgba(201,152,78,.4) !important; border-radius:16px !important;
+  color:#f3e6c8 !important;
+}
+#pageStore .page-header h2, #pageStore .page-header .page-subtitle,
+#pageStore .featured-banner *, #pageStore .dashboard-welcome * {
+  color:#f3e6c8 !important; -webkit-text-fill-color:#f3e6c8 !important;
+}
+#pageStore .page-header h2, #pageStore .featured-banner strong { color:#ffdc9a !important; -webkit-text-fill-color:#ffdc9a !important; }
+#subscriptionModalBox [style*="background:#fff"],
+#subscriptionModalBox [style*="background: #fff"],
+#subscriptionModalBox [style*="background: white"] {
+  background:linear-gradient(145deg,#121a29,#191427) !important;
+  color:#f3e6c8 !important; border-color:rgba(201,152,78,.5) !important;
+}
+#subscriptionModalBox [style*="background:#fff"] *,
+#subscriptionModalBox [style*="background: #fff"] *,
+#subscriptionModalBox [style*="background: white"] * {
+  color:#f3e6c8 !important; -webkit-text-fill-color:#f3e6c8 !important;
+}
+#subscriptionModalBox #subscriptionReceiptStatus,
+#subscriptionModalBox #subscriptionPlanStatus,
+#subscriptionModalBox #subscriptionSubmitStatus { color:#d4c4a0 !important; -webkit-text-fill-color:#d4c4a0 !important; }
+#subscriptionModalBox input[type="file"] { background:#0a111d !important; color:#f3e6c8 !important; -webkit-text-fill-color:#f3e6c8 !important; }
+#kafeNotificationsModal { color:#f3e6c8 !important; }
+#kafeNotificationsModal button { cursor:pointer; }
