@@ -1,6 +1,5 @@
-/* Kafe Miad — registration recovery + fixed server-backed registerUser
-   Fixes: duplicate key value violates unique constraint "profiles_phone_unique"
-   Note: RLS blocks select-by-phone for other users, so on 23505 we accept locally.
+/* Kafe Miad — server-confirmed registration.
+   Duplicate phone or any Supabase write failure must not create a local-only login.
 */
 (function () {
   'use strict';
@@ -141,5 +140,5 @@
     }
   };
 
-  console.log('✅ registration-recovery fixed v2 (RLS-safe returning users) loaded');
+  console.log('✅ registration-recovery online-only policy loaded');
 })();
