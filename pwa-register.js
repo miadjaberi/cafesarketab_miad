@@ -136,21 +136,26 @@
     `;
     document.body.appendChild(banner);
 
-    // Keep the install banner aligned with the active in-app logo, not the old packaged eagle icon.
-    function syncInstallBannerLogo() {
-      var brand = document.getElementById('headerLogoImg');
+    // App identity icon is independent from the header logo.
+    function syncInstallBannerIcon() {
       var icon = banner.querySelector('.kafe-install-icon');
-      if (brand && icon) {
-        var src = brand.currentSrc || brand.getAttribute('src');
-        if (src) icon.src = src;
-      }
+      if (!icon) return;
+      var src = '';
+      try {
+        var settings = JSON.parse(localStorage.getItem('cafeSettings') || '{}');
+        src = settings.appIcon || localStorage.getItem('cafeAppIcon') || '';
+      } catch (e) {}
+      if (!src) src = './icon-miad.svg?v=20261014-rc19';
+      if (icon.getAttribute('src') !== src) icon.src = src;
     }
-    syncInstallBannerLogo();
-    var brand = document.getElementById('headerLogoImg');
-    if (brand && window.MutationObserver) {
-      var logoObserver = new MutationObserver(syncInstallBannerLogo);
-      logoObserver.observe(brand, { attributes: true, attributeFilter: ['src'] });
-    }
+    window.syncKafeInstallIcon = syncInstallBannerIcon;
+    syncInstallBannerIcon();
+    // Cloud settings can arrive after the banner is created; re-check briefly.
+    var iconSyncCount = 0;
+    var iconSyncTimer = setInterval(function () {
+      syncInstallBannerIcon();
+      if (++iconSyncCount >= 20) clearInterval(iconSyncTimer);
+    }, 1500);
 
     banner.querySelector('.kafe-install-close').addEventListener('click', function () {
       banner.style.display = 'none';
