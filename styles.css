@@ -3064,3 +3064,18 @@ header .header-notifications .header-btn.kafe-notif-unread .header-label,
 header .header-notifications .header-btn.kafe-notif-unread i,
 header .header-notifications .header-btn.kafe-notif-clear .header-label,
 header .header-notifications .header-btn.kafe-notif-clear i { color:#fff !important; }
+
+/* RC23 follow-up: the real shop page id is pageShop, not pageStore */
+#pageShop { color:#f3e6c8 !important; }
+#pageShop .page-header, #pageShop .featured-banner, #pageShop .dashboard-welcome {
+  background:linear-gradient(145deg,#121a29,#1a1426) !important;
+  border:1px solid rgba(201,152,78,.4) !important; border-radius:16px !important;
+  color:#f3e6c8 !important;
+}
+#pageShop .page-header h2, #pageShop .page-header .page-subtitle,
+#pageShop .featured-banner *, #pageShop .dashboard-welcome * {
+  color:#f3e6c8 !important; -webkit-text-fill-color:#f3e6c8 !important;
+}
+#pageShop .page-header h2, #pageShop .featured-banner strong {
+  color:#ffdc9a !important; -webkit-text-fill-color:#ffdc9a !important;
+}
