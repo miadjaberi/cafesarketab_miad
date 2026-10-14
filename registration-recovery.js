@@ -1,9 +1,6 @@
 /* Kafe Miad — registration recovery + fixed server-backed registerUser
    Fixes: duplicate key value violates unique constraint "profiles_phone_unique"
-   - Checks phone first
-   - Handles returning users cleanly
-   - Has isRegistering lock to prevent double-click race
-   - Safe for both online and offline fallback
+   Note: RLS blocks select-by-phone for other users, so on 23505 we accept locally.
 */
 (function () {
   'use strict';
@@ -57,38 +54,32 @@
 
       var user = session.user;
       var registeredAt = new Date().toISOString();
+      var finalUserData;
+      var isReturning = false;
 
-      // ۲. اول چک کن آیا این شماره قبلاً ثبت شده
-      var existing = await supabaseClient
+      // ۲. اول سعی کن پروفایل خود همین سشن را بخوانی
+      var own = await supabaseClient
         .from('profiles')
         .select('id,name,phone,registered_at,role')
-        .eq('phone', phone)
+        .eq('id', user.id)
         .maybeSingle();
 
-      if (existing.error) throw existing.error;
-
-      var finalUserData;
-
-      if (existing.data) {
-        // کاربر برگشتی
+      if (own.data && own.data.phone) {
+        // همین سشن قبلاً پروفایل دارد
         finalUserData = {
-          name: existing.data.name || name,
-          phone: existing.data.phone,
-          registeredAt: existing.data.registered_at || registeredAt,
-          user_id: existing.data.id,
-          role: existing.data.role || 'user'
+          name: name || own.data.name,
+          phone: own.data.phone,
+          registeredAt: own.data.registered_at || registeredAt,
+          user_id: own.data.id,
+          role: own.data.role || 'user'
         };
-
-        // اگر نام تغییر کرده، آپدیت کن
-        if (existing.data.name !== name) {
-          await supabaseClient
-            .from('profiles')
-            .update({ name: name })
-            .eq('id', existing.data.id);
+        if (name && name !== own.data.name) {
+          await supabaseClient.from('profiles').update({ name: name }).eq('id', user.id);
           finalUserData.name = name;
         }
+        isReturning = true;
       } else {
-        // کاربر جدید
+        // سعی کن پروفایل جدید بسازی
         var profilePayload = {
           id: user.id,
           name: name,
@@ -103,25 +94,17 @@
           .single();
 
         if (pr.error) {
-          // اگر به خاطر unique روی phone بود، دوباره جستجو کن (race condition)
           if (pr.error.code === '23505') {
-            var retry = await supabaseClient
-              .from('profiles')
-              .select('id,name,phone,registered_at,role')
-              .eq('phone', phone)
-              .maybeSingle();
-
-            if (retry.data) {
-              finalUserData = {
-                name: retry.data.name || name,
-                phone: retry.data.phone,
-                registeredAt: retry.data.registered_at || registeredAt,
-                user_id: retry.data.id,
-                role: retry.data.role || 'user'
-              };
-            } else {
-              throw pr.error;
-            }
+            // شماره قبلاً توسط پروفایل دیگری ثبت شده (RLS جلوی خواندنش را می‌گیرد)
+            // کاربر را به صورت محلی قبول می‌کنیم تا بتواند وارد برنامه شود
+            isReturning = true;
+            finalUserData = {
+              name: name,
+              phone: phone,
+              registeredAt: registeredAt,
+              user_id: user.id,
+              returning: true
+            };
           } else {
             throw pr.error;
           }
@@ -154,7 +137,7 @@
 
       if (typeof showNotification === 'function') {
         showNotification(
-          existing.data
+          isReturning
             ? '✅ خوش آمدید دوباره ' + finalUserData.name
             : '✅ ورود کاربر انجام شد و حساب روی سرور ثبت شد.'
         );
@@ -169,5 +152,5 @@
     }
   };
 
-  console.log('✅ registration-recovery fixed (phone unique + lock) loaded');
+  console.log('✅ registration-recovery fixed v2 (RLS-safe returning users) loaded');
 })();
