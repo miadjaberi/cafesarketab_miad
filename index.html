@@ -1957,17 +1957,7 @@
 </div></div>
     <div id="v8NetworkState" style="position:fixed;bottom:8px;left:8px;z-index:99999;font:700 10px sans-serif;padding:5px 8px;border-radius:12px;background:rgba(20,20,40,.88);color:#f5d76e;pointer-events:none">● آماده</div>
 
-    <script>
-    (function(){
-      function saved(){try{var u=JSON.parse(localStorage.getItem('cafeUser')||'null');return u&&(u.name||u.phone)?u:null;}catch(e){return null;}}
-      function terms(){try{if(localStorage.getItem('kafeTermsAccepted')==='1')return true;}catch(e){}return !!saved();}
-      function hide(id){var el=document.getElementById(id);if(!el)return;el.style.display='none';el.classList.add('hidden');}
-      function show(id,d){var el=document.getElementById(id);if(!el)return;el.classList.remove('hidden','waiting');el.style.display=d||'flex';}
-      var user=saved();
-      if(terms()&&user){hide('termsScreen');hide('splashScreen');hide('registerScreen');show('app','block');var n=document.getElementById('userName');if(n&&user.name)n.textContent=user.name;}
-    })();
-    </script>
-
+    <!-- Startup visibility is controlled by main.js bootGate; duplicate inline gate removed to prevent screen races. -->
     <script src="./data.js"></script>
     <script src="./main.js"></script>
     <script src="./tools-extra.js"></script>
