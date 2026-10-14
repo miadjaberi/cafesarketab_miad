@@ -1,0 +1,184 @@
+/* Kafe Miad — Portfolio-template adaptation
+   Keeps the supplied template palette, easing, reveal/hover motion and responsive card language.
+   Scoped to the app body; core business logic remains in main.js. */
+body.miad-template-ui{
+  --bg:#f4f2ee;--bg-2:#fff;--ink:#14110f;--ink-soft:#4b453f;--muted:#8b8378;
+  --accent:#ff4d2e;--line:#e2ddd4;--radius:18px;
+  --shadow-sm:0 4px 14px rgba(20,17,15,.06);
+  --shadow-md:0 18px 40px -18px rgba(20,17,15,.28);
+  --shadow-lg:0 30px 70px -28px rgba(20,17,15,.25);
+  --ease:cubic-bezier(.22,1,.36,1);
+  background:var(--bg)!important;color:var(--ink)!important;
+  font-family:'Vazirmatn',system-ui,sans-serif!important;
+}
+body.miad-template-ui *{scrollbar-color:#cdc6ba var(--bg)}
+body.miad-template-ui ::selection{background:var(--accent);color:#fff}
+body.miad-template-ui header{
+  background:rgba(244,242,238,.78)!important;backdrop-filter:blur(14px) saturate(160%);
+  -webkit-backdrop-filter:blur(14px) saturate(160%);box-shadow:0 1px 0 var(--line),var(--shadow-sm);
+  transition:background .4s var(--ease),box-shadow .4s var(--ease),backdrop-filter .4s;
+}
+body.miad-template-ui .header-top{padding:8px 10px!important;gap:10px!important}
+body.miad-template-ui .header-btn{
+  background:rgba(255,255,255,.9)!important;color:var(--ink)!important;border:1px solid var(--line)!important;
+  border-radius:12px!important;box-shadow:var(--shadow-sm);transition:transform .35s var(--ease),background .35s var(--ease),border-color .35s var(--ease);
+}
+body.miad-template-ui .header-btn:hover{transform:translateY(-2px);border-color:#d6cfc2!important;background:#fff!important}
+body.miad-template-ui .header-btn i{color:var(--accent)!important}
+body.miad-template-ui .header-label{color:var(--ink-soft)!important;font-size:.65rem!important}
+body.miad-template-ui .badge{background:var(--accent)!important;color:#fff!important}
+body.miad-template-ui .brand-background{
+  position:relative!important;isolation:isolate;overflow:hidden;border:1px solid var(--line)!important;
+  border-radius:20px!important;background:rgba(255,255,255,.94)!important;box-shadow:var(--shadow-md)!important;
+  min-height:88px;transition:transform .5s var(--ease),box-shadow .5s var(--ease),background .4s var(--ease);
+}
+body.miad-template-ui .brand-background:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)!important}
+body.miad-template-ui .brand-pattern{opacity:.05!important}
+body.miad-template-ui .brand-content{position:relative;z-index:2;transition:opacity .6s var(--ease),transform .6s var(--ease)}
+body.miad-template-ui .brand-text{color:var(--ink)!important;text-shadow:none!important;font-weight:800}
+body.miad-template-ui .brand-sub{color:var(--accent)!important;text-shadow:none!important}
+body.miad-template-ui .brand-logo-img{filter:none!important}
+body.miad-template-ui .header-ad-rail{
+  position:absolute;inset:0;display:flex;align-items:center;overflow:hidden;opacity:0;visibility:hidden;
+  transition:opacity .55s var(--ease),visibility .55s;z-index:3;pointer-events:none;
+}
+body.miad-template-ui .brand-background.ad-mode .brand-content{opacity:0;transform:translateY(-8px);pointer-events:none}
+body.miad-template-ui .brand-background.ad-mode .header-ad-rail{opacity:1;visibility:visible}
+body.miad-template-ui .header-ad-track{display:flex;align-items:center;gap:8px;width:max-content;animation:miadHeaderTravel 10s linear infinite;will-change:transform}
+body.miad-template-ui .brand-background.ad-mode .header-ad-track{animation-play-state:running}
+body.miad-template-ui .header-ad-item{
+  flex:0 0 150px;display:flex;align-items:center;gap:8px;min-width:150px;max-width:150px;padding:7px 9px;
+  background:#fff;border:1px solid var(--line);border-radius:12px;color:var(--ink);box-shadow:var(--shadow-sm);
+}
+body.miad-template-ui .header-ad-thumb{width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;overflow:hidden;border-radius:9px;background:var(--bg);color:var(--accent);font-size:1rem}
+body.miad-template-ui .header-ad-thumb img{width:100%;height:100%;object-fit:cover}
+body.miad-template-ui .header-ad-copy{min-width:0;text-align:right;line-height:1.35}
+body.miad-template-ui .header-ad-copy b{display:block;font-size:.65rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.miad-template-ui .header-ad-copy small{display:block;font-size:.58rem;color:var(--accent);margin-top:3px;white-space:nowrap}
+@keyframes miadHeaderTravel{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+body.miad-template-ui .pages-container{background:var(--bg)!important}
+body.miad-template-ui .page-swipe{background:var(--bg)!important;color:var(--ink)!important;padding:18px 5% 90px!important}
+body.miad-template-ui .page-header{margin:0 0 24px!important;text-align:right!important}
+body.miad-template-ui .page-header h2,
+body.miad-template-ui .modals-home-hero h2,
+body.miad-template-ui .dashboard-welcome h1,
+body.miad-template-ui .section-title h2{color:var(--ink)!important;font-weight:800!important;letter-spacing:-.02em}
+body.miad-template-ui .page-subtitle,
+body.miad-template-ui .modals-home-hero p,
+body.miad-template-ui .dashboard-welcome p{color:var(--ink-soft)!important}
+body.miad-template-ui .miad-showcase{position:relative;isolation:isolate;overflow:hidden;padding:26px 0 20px;margin:0 0 22px}
+body.miad-template-ui .miad-showcase:before{content:"";position:absolute;z-index:-1;top:-110px;left:-90px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(255,77,46,.16),transparent 68%);filter:blur(18px);pointer-events:none}
+body.miad-template-ui .miad-eyebrow{display:inline-flex;align-items:center;gap:9px;font-size:.76rem;font-weight:700;letter-spacing:.06em;color:var(--accent);margin-bottom:10px}
+body.miad-template-ui .miad-eyebrow:before{content:"";width:24px;height:2px;border-radius:2px;background:var(--accent)}
+body.miad-template-ui .miad-showcase h1{font-size:clamp(2rem,5vw,3.5rem);line-height:1.35;font-weight:800;letter-spacing:-.035em;color:var(--ink);margin:0 0 12px}
+body.miad-template-ui .miad-showcase h1 em{font-style:normal;color:var(--accent);position:relative;white-space:normal}
+body.miad-template-ui .miad-showcase h1 em:after{content:"";position:absolute;bottom:3px;left:0;right:0;height:9px;border-radius:4px;background:rgba(255,77,46,.15);z-index:-1;transform:rotate(-1deg)}
+body.miad-template-ui .miad-showcase .miad-lead{max-width:680px;font-size:.98rem;line-height:2;color:var(--ink-soft);margin:0 0 20px}
+body.miad-template-ui .miad-switcher{display:flex;gap:9px;flex-wrap:wrap;margin:20px 0 26px}
+body.miad-template-ui .miad-switcher .chip{font-family:inherit;cursor:pointer;padding:9px 17px;border-radius:100px;font-size:.84rem;font-weight:600;background:transparent;border:1.5px solid var(--line);color:var(--ink-soft);transition:transform .35s var(--ease),background .35s var(--ease),color .35s var(--ease),border-color .35s var(--ease)}
+body.miad-template-ui .miad-switcher .chip:hover{border-color:var(--ink);color:var(--ink);transform:translateY(-2px)}
+body.miad-template-ui .miad-switcher .chip.active{background:var(--ink);border-color:var(--ink);color:#fff;box-shadow:var(--shadow-sm)}
+body.miad-template-ui .miad-ad-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:10px 0 13px}
+body.miad-template-ui .miad-ad-heading h2{font-size:1.05rem;font-weight:800;color:var(--ink)}
+body.miad-template-ui .miad-ad-heading p{font-size:.78rem;color:var(--muted)}
+body.miad-template-ui .miad-ad-window{width:100%;overflow:hidden;border-radius:18px;padding:3px 0 14px;direction:ltr}
+body.miad-template-ui .miad-ad-track{display:flex;gap:16px;width:max-content;animation:miadAdTravel 34s linear infinite;will-change:transform}
+body.miad-template-ui .miad-ad-window:hover .miad-ad-track{animation-play-state:paused}
+body.miad-template-ui .miad-ad-card{direction:rtl;display:flex;align-items:center;gap:13px;flex:0 0 270px;width:270px;min-height:104px;padding:13px;background:var(--bg-2);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow-sm);color:var(--ink);text-align:right;cursor:pointer;transition:transform .5s var(--ease),box-shadow .5s var(--ease),border-color .5s var(--ease);font:inherit}
+body.miad-template-ui .miad-ad-card:hover{transform:translateY(-5px);box-shadow:var(--shadow-md);border-color:transparent}
+body.miad-template-ui .miad-ad-thumb{width:76px;height:76px;flex:0 0 76px;display:grid;place-items:center;overflow:hidden;border-radius:13px;background:linear-gradient(140deg,#ff4d2e,#ff9c4d);color:#fff;font-size:1.7rem}
+body.miad-template-ui .miad-ad-thumb img{width:100%;height:100%;object-fit:cover}
+body.miad-template-ui .miad-ad-copy{min-width:0;flex:1}
+body.miad-template-ui .miad-ad-copy b{display:block;font-size:.87rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.miad-template-ui .miad-ad-copy small{display:block;color:var(--muted);font-size:.72rem;margin-top:4px;line-height:1.7}
+body.miad-template-ui .miad-ad-price{display:block;color:var(--accent);font-size:.78rem;font-weight:800;margin-top:5px}
+@keyframes miadAdTravel{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+body.miad-template-ui .featured-banner{border:1px solid var(--line)!important;background:var(--bg-2)!important;color:var(--ink)!important;border-radius:18px!important;box-shadow:var(--shadow-sm)!important;transition:transform .4s var(--ease),box-shadow .4s var(--ease)!important}
+body.miad-template-ui .featured-banner:hover{transform:translateY(-4px);box-shadow:var(--shadow-md)!important}
+body.miad-template-ui .featured-banner-text,#discountTitle{color:var(--ink)!important}
+body.miad-template-ui #discountSub{color:var(--muted)!important}
+body.miad-template-ui .products-grid{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr))!important;gap:20px!important;margin-top:22px}
+body.miad-template-ui .product-card{position:relative;display:flex;flex-direction:column;min-width:0;overflow:hidden;padding:0 0 18px!important;background:var(--bg-2)!important;color:var(--ink)!important;border:1px solid var(--line)!important;border-radius:var(--radius)!important;box-shadow:none!important;cursor:pointer;transition:transform .5s var(--ease),box-shadow .5s var(--ease),border-color .5s var(--ease)!important}
+body.miad-template-ui .product-card:hover{transform:translateY(-7px)!important;box-shadow:var(--shadow-lg)!important;border-color:transparent!important}
+body.miad-template-ui .product-img-wrap{height:180px!important;display:grid;place-items:center;background:linear-gradient(140deg,#ff4d2e,#ff9c4d)!important;overflow:hidden}
+body.miad-template-ui .product-img{width:100%!important;height:100%!important;object-fit:cover!important}
+body.miad-template-ui .product-icon{display:grid;place-items:center;width:100%;height:100%;font-size:2.5rem;color:#fff}
+body.miad-template-ui .product-badge{position:absolute;top:12px;right:12px;z-index:2;background:var(--accent)!important;color:#fff!important;border-radius:100px;padding:5px 11px;font-size:.72rem;font-weight:700}
+body.miad-template-ui .product-name{padding:16px 18px 0!important;color:var(--ink)!important;font-weight:800!important;font-size:1rem!important;line-height:1.8}
+body.miad-template-ui .product-price{padding:5px 18px 0!important;color:var(--accent)!important;font-weight:800!important;font-size:.9rem!important}
+body.miad-template-ui .modals-home-hero{background:var(--bg-2)!important;border:1px solid var(--line)!important;border-radius:22px!important;padding:26px!important;box-shadow:var(--shadow-sm)!important;margin-bottom:22px}
+body.miad-template-ui .modals-home-grid{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr))!important;gap:16px!important}
+body.miad-template-ui .modals-home-grid>*,
+body.miad-template-ui .utility-tool-card,
+body.miad-template-ui .stat-card,
+body.miad-template-ui .tools-scroll>*{background:var(--bg-2)!important;color:var(--ink)!important;border:1px solid var(--line)!important;border-radius:var(--radius)!important;box-shadow:var(--shadow-sm)!important;transition:transform .4s var(--ease),box-shadow .4s var(--ease),border-color .4s var(--ease)!important}
+body.miad-template-ui .modals-home-grid>*:hover,
+body.miad-template-ui .utility-tool-card:hover,
+body.miad-template-ui .stat-card:hover,
+body.miad-template-ui .tools-scroll>*:hover{transform:translateY(-5px)!important;box-shadow:var(--shadow-md)!important;border-color:#d6cfc2!important}
+body.miad-template-ui .dashboard-welcome{background:var(--bg-2)!important;border:1px solid var(--line)!important;border-radius:22px!important;padding:24px!important;box-shadow:var(--shadow-sm)!important}
+body.miad-template-ui .quick-stats{gap:12px!important}
+body.miad-template-ui .stat-label,body.miad-template-ui .ut-desc,body.miad-template-ui .dashboard-welcome p{color:var(--muted)!important}
+body.miad-template-ui .ut-title,body.miad-template-ui .stat-value{color:var(--ink)!important}
+body.miad-template-ui .ut-icon,body.miad-template-ui .stat-icon{color:var(--accent)!important}
+body.miad-template-ui .section-title{border-color:var(--line)!important}
+body.miad-template-ui .history-container,
+body.miad-template-ui #toolPageContent,
+body.miad-template-ui .tool-hero,
+body.miad-template-ui .result-card{background:var(--bg-2)!important;color:var(--ink)!important;border:1px solid var(--line)!important;border-radius:18px!important;box-shadow:var(--shadow-sm)!important}
+body.miad-template-ui .modal-glass-content{background:var(--bg-2)!important;color:var(--ink)!important;border:1px solid var(--line)!important;border-radius:22px!important;box-shadow:var(--shadow-lg)!important}
+body.miad-template-ui .modal-glass-header{background:var(--bg-2)!important;border-bottom:1px solid var(--line)!important}
+body.miad-template-ui .modal-glass-title,
+body.miad-template-ui .modal-glass-body,
+body.miad-template-ui .modal-guide,
+body.miad-template-ui .modal-glass-content label{color:var(--ink)!important}
+body.miad-template-ui .modal-glass-close{background:var(--bg)!important;color:var(--ink)!important;border:1px solid var(--line)!important}
+body.miad-template-ui .modal-glass-content input,
+body.miad-template-ui .modal-glass-content textarea,
+body.miad-template-ui .modal-glass-content select,
+body.miad-template-ui #settingsPanel input,
+body.miad-template-ui #adminPanel input,
+body.miad-template-ui #adminPanel textarea,
+body.miad-template-ui #adminPanel select{background:#fff!important;color:var(--ink)!important;border:1px solid var(--line)!important;border-radius:12px!important}
+body.miad-template-ui #settingsPanel,
+body.miad-template-ui #adminPanel,
+body.miad-template-ui .menu-drawer{background:var(--bg)!important;color:var(--ink)!important}
+body.miad-template-ui .settings-header,
+body.miad-template-ui .admin-panel-header,
+body.miad-template-ui .drawer-title{background:var(--bg-2)!important;color:var(--ink)!important;border-bottom:1px solid var(--line)!important}
+body.miad-template-ui .settings-section,
+body.miad-template-ui .admin-card,
+body.miad-template-ui .admin-section,
+body.miad-template-ui .admin-box,
+body.miad-template-ui .drawer-item{background:var(--bg-2)!important;color:var(--ink)!important;border:1px solid var(--line)!important;border-radius:14px!important}
+body.miad-template-ui .bottom-nav{background:rgba(255,255,255,.92)!important;border-top:1px solid var(--line)!important;box-shadow:0 -8px 28px rgba(20,17,15,.06)!important;backdrop-filter:blur(14px)}
+body.miad-template-ui .nav-item-bottom{color:var(--ink-soft)!important}
+body.miad-template-ui .nav-item-bottom.active{color:var(--accent)!important}
+body.miad-template-ui .nav-item-bottom.center-btn{background:var(--ink)!important;color:#fff!important;box-shadow:var(--shadow-md)!important}
+body.miad-template-ui .notification{box-shadow:var(--shadow-md)}
+body.miad-template-ui .miad-intro-card{margin-top:24px;padding:24px;border:1px solid var(--line);border-radius:22px;background:var(--bg-2);box-shadow:var(--shadow-sm);color:var(--ink)}
+body.miad-template-ui .miad-intro-card h3{color:var(--ink);font-size:1.15rem;font-weight:800;margin-bottom:10px}
+body.miad-template-ui .miad-intro-card p{color:var(--ink-soft);line-height:2;font-size:.9rem}
+body.miad-template-ui .miad-intro-card strong{color:var(--accent)}
+body.miad-template-ui .reveal{opacity:0;transform:translateY(22px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+body.miad-template-ui .reveal.in{opacity:1;transform:none}
+@media(max-width:760px){
+ body.miad-template-ui .page-swipe{padding:14px 4% 86px!important}
+ body.miad-template-ui .miad-showcase{padding-top:14px}
+ body.miad-template-ui .miad-showcase h1{font-size:2.1rem}
+ body.miad-template-ui .miad-ad-card{flex-basis:245px;width:245px}
+ body.miad-template-ui .products-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
+ body.miad-template-ui .product-img-wrap{height:140px!important}
+ body.miad-template-ui .product-name{font-size:.88rem!important;padding:12px 12px 0!important}
+ body.miad-template-ui .product-price{font-size:.8rem!important;padding-inline:12px!important}
+ body.miad-template-ui .header-ad-item{flex-basis:130px;min-width:130px;max-width:130px}
+}
+@media(max-width:380px){
+ body.miad-template-ui .products-grid{grid-template-columns:1fr!important}
+ body.miad-template-ui .miad-showcase h1{font-size:1.85rem}
+ body.miad-template-ui .miad-switcher .chip{padding:8px 12px;font-size:.78rem}
+}
+@media(prefers-reduced-motion:reduce){
+ body.miad-template-ui .header-ad-track,body.miad-template-ui .miad-ad-track{animation-duration:90s}
+ body.miad-template-ui .brand-content,body.miad-template-ui .header-ad-rail{transition-duration:.01ms}
+}
