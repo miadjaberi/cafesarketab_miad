@@ -4286,20 +4286,91 @@ async function submitProductOrder() {
         }
 
         // ============================================================
-        // اعلان‌ها
+        // اعلان‌های واقعی سرور — فهرست خوانا + وضعیت سبز/قرمز
         // ============================================================
         var notifications = [];
-
-        window.showNotifications = function showNotifications() {
-            var count = notifications.length;
-            if (count === 0) {
-                showNotification('📭 هیچ اعلانی وجود ندارد');
-            } else {
-                showNotification('🔔 ' + count + ' اعلان جدید دارید');
-                var badge = document.getElementById('notifBadge');
-                if (badge) badge.textContent = '0';
-                notifications = [];
+        window.showNotifications = async function showNotifications() {
+            var user = null, rows = [], live = false;
+            try {
+                if (window.supabaseClient && window.supabaseClient.auth) {
+                    var sessionResult = await window.supabaseClient.auth.getSession();
+                    user = sessionResult && sessionResult.data && sessionResult.data.session && sessionResult.data.session.user;
+                    if (user) {
+                        var result = await window.supabaseClient.from('notifications')
+                            .select('id,user_id,message,type,read,created_at,created_at_ts,related_id,action_url')
+                            .eq('user_id', user.id)
+                            .order('created_at_ts', { ascending: false, nullsFirst: false })
+                            .limit(100);
+                        if (!result.error) {
+                            rows = result.data || [];
+                            live = true;
+                            try { localStorage.setItem('cafeUserNotifications', JSON.stringify(rows)); } catch (e) {}
+                        } else console.warn('Could not load server notifications', result.error);
+                    }
+                }
+            } catch (e) { console.warn('Notification list fetch failed', e); }
+            if (!live) {
+                try {
+                    var cached = JSON.parse(localStorage.getItem('cafeUserNotifications') || '[]');
+                    if (Array.isArray(cached)) rows = cached;
+                } catch (e) {}
             }
+            var badge = document.getElementById('notifBadge');
+            var unread = rows.filter(function (n) { return !n.read; }).length;
+            if (badge) badge.textContent = String(unread);
+            var prior = document.getElementById('kafeNotificationsModal');
+            if (prior) prior.remove();
+            var esc = function (v) { return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
+            var stateOf = function (n) {
+                var msg = String(n.message || '');
+                if (/رد شد|رد گردید|تأیید نشد|تایید نشد|رد درخواست|رد شده/i.test(msg)) return { label: 'رد شده', color: '#ff7272', bg: 'rgba(160,35,45,.2)' };
+                if (/تأیید شد|تایید شد|تأیید و فعال|تایید و فعال|فعال شد|با موفقیت تأیید/i.test(msg)) return { label: 'تأیید شد', color: '#71e6a2', bg: 'rgba(25,135,84,.2)' };
+                if (n.type === 'order_status' || n.type === 'subscription_status') return { label: 'وضعیت درخواست', color: '#ffd479', bg: 'rgba(201,168,76,.14)' };
+                return { label: 'اعلان', color: '#a9d9ff', bg: 'rgba(45,115,170,.18)' };
+            };
+            var modal = document.createElement('div');
+            modal.id = 'kafeNotificationsModal';
+            modal.setAttribute('role', 'dialog');
+            modal.setAttribute('aria-modal', 'true');
+            modal.style.cssText = 'position:fixed;inset:0;z-index:2147483001;background:rgba(0,0,0,.72);display:flex;align-items:flex-end;justify-content:center;padding:0;direction:rtl;';
+            var cards = rows.length ? rows.map(function (n) {
+                var st = stateOf(n), date = n.created_at_ts || n.created_at || '', dt = '';
+                try { if (date) dt = new Date(date).toLocaleString('fa-IR', { dateStyle: 'short', timeStyle: 'short' }); } catch (e) {}
+                return '<article style="padding:13px;border:1px solid '+st.color+'55;border-radius:14px;background:'+st.bg+';margin:9px 0;text-align:right;">' +
+                    '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px;">' +
+                    '<strong style="color:'+st.color+'">'+st.label+'</strong><span style="font-size:.72rem;color:#c9c2b6">'+esc(dt)+'</span></div>' +
+                    '<div style="color:#f3e6c8;line-height:1.9;white-space:pre-wrap;overflow-wrap:anywhere">'+esc(n.message || 'اعلان جدید')+'</div>' +
+                    (!n.read ? '<button type="button" data-read-notification="'+esc(n.id)+'" style="margin-top:10px;padding:7px 12px;border:1px solid #c7984e;border-radius:9px;background:#c7984e;color:#10131b;font-weight:800;">خواندم ✓</button>' : '<span style="display:inline-block;margin-top:8px;font-size:.72rem;color:#a9b5a7;">خوانده شده</span>') +
+                    '</article>';
+            }).join('') : '<div style="padding:28px 12px;text-align:center;color:#d4c4a0;line-height:2;">'+(user ? 'فعلاً اعلانی برای این حساب ثبت نشده است.' : 'برای دیدن اعلان‌های سرور، ابتدا وارد حساب کاربری شوید.')+'</div>';
+            modal.innerHTML = '<section style="width:min(520px,100%);max-height:88dvh;overflow:auto;background:linear-gradient(160deg,#12101c,#0b1424 65%,#171126);color:#f3e6c8;border:1px solid #c7984e;border-radius:22px 22px 0 0;padding:16px;box-sizing:border-box;box-shadow:0 -12px 50px #0008;">' +
+                '<header style="position:static;height:auto;padding:0;background:none;border:0;box-shadow:none;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;">' +
+                '<div><strong style="font-size:1.1rem;color:#ffdc9a;">🔔 اعلان‌های کافه میعاد</strong><div style="font-size:.75rem;color:#c9c2b6;margin-top:4px;">'+(live ? 'به‌روزرسانی مستقیم از سرور' : 'نمایش اطلاعات ذخیره‌شده در این گوشی')+' · '+unread+' خوانده‌نشده</div></div>' +
+                '<button type="button" id="kafeNotificationsClose" aria-label="بستن اعلان‌ها" style="flex:0 0 auto;padding:8px 12px;border-radius:10px;border:1px solid #c7984e;background:#211b2a;color:#ffdc9a;font-size:1rem;">✕</button></header>' +
+                '<div style="max-height:70dvh;overflow:auto;">'+cards+'</div></section>';
+            document.body.appendChild(modal);
+            function close() { var el = document.getElementById('kafeNotificationsModal'); if (el) el.remove(); }
+            document.getElementById('kafeNotificationsClose').addEventListener('click', close);
+            modal.addEventListener('click', function (ev) { if (ev.target === modal) close(); });
+            modal.querySelectorAll('[data-read-notification]').forEach(function (btn) {
+                btn.addEventListener('click', async function () {
+                    var id = btn.getAttribute('data-read-notification');
+                    btn.disabled = true; btn.textContent = 'در حال ثبت…';
+                    try {
+                        if (!window.supabaseClient || !live || !user) throw new Error('اتصال سرور در دسترس نیست');
+                        var update = await window.supabaseClient.from('notifications').update({ read: true }).eq('id', id).eq('user_id', user.id);
+                        if (update.error) throw update.error;
+                        var item = rows.find(function (n) { return String(n.id) === String(id); });
+                        if (item) item.read = true;
+                        try { localStorage.setItem('cafeUserNotifications', JSON.stringify(rows)); } catch (e) {}
+                        if (badge) badge.textContent = String(rows.filter(function (n) { return !n.read; }).length);
+                        btn.outerHTML = '<span style="display:inline-block;margin-top:8px;font-size:.72rem;color:#a9b5a7;">خوانده شده ✓</span>';
+                    } catch (e) {
+                        btn.disabled = false; btn.textContent = 'دوباره تلاش کن';
+                        if (typeof showNotification === 'function') showNotification('وضعیت خوانده‌شدن روی سرور ذخیره نشد: ' + (e.message || e), 'error');
+                    }
+                });
+            });
         }
 
         // ============================================================
