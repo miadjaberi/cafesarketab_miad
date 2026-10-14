@@ -901,10 +901,15 @@
             return getProducts();
         }
 
-        function saveProducts(products) {
-            localStorage.setItem('cafeProducts', JSON.stringify(products));
-            // sync to cloud (fire and forget)
-            syncProductsToCloud(products);
+        async function saveProducts(products) {
+            if (typeof saveProductsSafe !== 'function') {
+                throw new Error('ذخیرهٔ امن محصولات آماده نیست.');
+            }
+            var result = await saveProductsSafe(products);
+            if (!result || !result.ok) {
+                throw new Error((result && result.reason) || 'تأیید ذخیرهٔ محصولات از سرور دریافت نشد.');
+            }
+            return result;
         }
 
         async function loadProductsFromServerStrict() {
@@ -975,15 +980,21 @@
         }
         window.syncProductsToCloud = syncProductsToCloud;
         window.saveProductsToServer = async function() {
-            var products = (typeof getProductsSafe === 'function') ? getProductsSafe() : [];
-            if (typeof showNotification === 'function') showNotification('⏳ در حال ثبت محصولات روی سرور...');
-            var res = await syncProductsToCloud(products);
-            if (res && res.ok) {
-                if (typeof showNotification === 'function') showNotification('✅ محصولات روی سرور ثبت شد (' + (res.count||0) + ' مورد)');
-            } else {
-                if (typeof showNotification === 'function') showNotification('❌ ثبت روی سرور ناموفق: ' + ((res && res.reason) || 'خطا'), 'error');
+            if (!supabaseClient) {
+                if (typeof showNotification === 'function') showNotification('❌ اتصال سرور برقرار نیست.', 'error');
+                return { ok:false, reason:'no-client' };
             }
-            return res;
+            if (typeof showNotification === 'function') showNotification('⏳ در حال تازه‌سازی محصولات از سرور...');
+            var result = await loadProductsFromServerStrict();
+            if (!result || !result.ok) {
+                if (typeof showNotification === 'function') showNotification('❌ خواندن محصولات از سرور ناموفق بود؛ دادهٔ محلی تغییر نکرد.', 'error');
+                return result || { ok:false, reason:'server-read-failed' };
+            }
+            try { localStorage.setItem('cafeProducts', JSON.stringify(result.products)); } catch(e) {}
+            if (typeof renderProducts === 'function') renderProducts();
+            if (typeof renderAdminProducts === 'function') renderAdminProducts();
+            if (typeof showNotification === 'function') showNotification('✅ فهرست محصولات از سرور تازه شد (' + result.products.length + ' مورد).');
+            return { ok:true, count:result.products.length };
         };
 
         function renderProducts() {
@@ -3880,10 +3891,10 @@ async function submitProductOrder() {
             var file = event.target.files[0];
             if (!file) return;
             var reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = async function(e) {
                 try {
                     var data = JSON.parse(e.target.result);
-                    if (data.products) { saveProducts(data.products); }
+                    if (data.products) { await saveProducts(data.products); }
                     if (data.subscriptions) { localStorage.setItem('adminSubscriptions', JSON.stringify(data.subscriptions)); }
                     if (data.users) { localStorage.setItem('cafeUsers', JSON.stringify(data.users)); }
                     if (data.discount) { localStorage.setItem('discountSettings', JSON.stringify(data.discount)); }
