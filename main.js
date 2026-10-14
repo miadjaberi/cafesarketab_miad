@@ -5734,14 +5734,64 @@ document.addEventListener('DOMContentLoaded',function(){try{window.applyGalleryI
     if (user) { openApp(user); return; }
     showSplashThen(function(){ hideEl('splashScreen'); showEl('registerScreen', 'flex'); }, 700);
   };
-  function bootGate(){
+  async function bootGate(){
     var user = savedUser();
-    if (termsOk() && user) { openApp(user); return; }
+    var accepted = termsOk();
     hideEl('splashScreen');
     hideEl('app');
-    if (termsOk()) { hideEl('termsScreen'); showEl('registerScreen', 'flex'); return; }
-    hideEl('registerScreen');
-    showEl('termsScreen', 'flex');
+
+    if (!accepted) {
+      hideEl('registerScreen');
+      showEl('termsScreen', 'flex');
+      return;
+    }
+
+    if (!user) {
+      hideEl('termsScreen');
+      showEl('registerScreen', 'flex');
+      return;
+    }
+
+    // Keep the existing local profile usable during offline/temporary network failures.
+    // When Supabase can be reached, require the current session UID and server profile
+    // to agree before treating this browser as a registered online user.
+    if (navigator.onLine !== false && window.supabaseClient && window.supabaseClient.auth) {
+      try {
+        var sr = await window.supabaseClient.auth.getSession();
+        if (sr && !sr.error) {
+          var session = sr.data && sr.data.session;
+          if (!session || !session.user || !session.user.id) {
+            hideEl('termsScreen');
+            showEl('registerScreen', 'flex');
+            return;
+          }
+          var pr = await window.supabaseClient.from('profiles')
+            .select('id,name,phone,role,registered_at')
+            .eq('id', session.user.id)
+            .maybeSingle();
+          if (!pr.error && !pr.data) {
+            hideEl('termsScreen');
+            showEl('registerScreen', 'flex');
+            return;
+          }
+          if (!pr.error && pr.data) {
+            user = {
+              name: pr.data.name || user.name || '',
+              phone: pr.data.phone || user.phone || '',
+              registeredAt: pr.data.registered_at || user.registeredAt || '',
+              user_id: pr.data.id,
+              role: pr.data.role || 'user'
+            };
+            try { localStorage.setItem('cafeUser', JSON.stringify(user)); } catch (e) {}
+          }
+          // If the profile query itself fails, do not trap the user at startup;
+          // retain the last locally saved profile and let the app recover online later.
+        }
+      } catch (e) {
+        console.warn('Startup session validation skipped:', e);
+      }
+    }
+    openApp(user);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootGate, true);
   else bootGate();
