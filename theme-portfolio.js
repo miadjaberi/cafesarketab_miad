@@ -24,7 +24,7 @@
         var iconNode = card.querySelector('.product-icon');
         var badgeNode = card.querySelector('.product-badge');
         var click = card.getAttribute('onclick') || '';
-        var idMatch = click.match(/openProductDetail\\s*\\(\\s*['"]([^'"]+)['"]/);
+        var idMatch = click.match(/openProductDetail\s*\(\s*['"]([^'"]+)['"]/);
         var rawPrice = priceNode ? priceNode.textContent.trim() : '';
         var digits = rawPrice.replace(/[^0-9۰-۹٠-٩]/g,'').replace(/[۰-۹]/g,function(c){return String('۰۱۲۳۴۵۶۷۸۹'.indexOf(c));}).replace(/[٠-٩]/g,function(c){return String('٠١٢٣٤٥٦٧٨٩'.indexOf(c));});
         return {
