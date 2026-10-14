@@ -1349,14 +1349,20 @@ async function submitProductOrder() {
                 status: 'در انتظار تایید فیش',
                 date: new Date().toLocaleString('fa-IR')
             };
-            var authState = await supabaseClient.auth.getSession();
-            var session = authState && authState.data && authState.data.session;
-            if (!session || !session.user) {
-                showNotification('❌ ابتدا وارد حساب کاربری شوید؛ سفارش ثبت نشد', 'error');
+            if (!supabaseClient || !supabaseClient.auth) {
+                showNotification('❌ اتصال آنلاین در دسترس نیست؛ سفارش ثبت نشد', 'error');
                 return;
             }
-            if (!supabaseClient) {
-                showNotification('❌ اتصال آنلاین در دسترس نیست؛ سفارش ثبت نشد', 'error');
+            var authState;
+            try {
+                authState = await supabaseClient.auth.getSession();
+            } catch (authError) {
+                showNotification('❌ بررسی نشست آنلاین ناموفق بود؛ سفارش ثبت نشد', 'error');
+                return;
+            }
+            var session = authState && authState.data && authState.data.session;
+            if (!authState || authState.error || !session || !session.user) {
+                showNotification('❌ ابتدا وارد حساب کاربری شوید؛ سفارش ثبت نشد', 'error');
                 return;
             }
             var receiptPath = await sbUploadReceipt(window._orderReceiptData, order.id);
