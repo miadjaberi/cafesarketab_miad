@@ -53,7 +53,8 @@ async function refresh(force){
  }catch(e){console.warn('Kafe operational center',e)}finally{busy=false}
 }
 async function userUpdates(){
- var x=c(),u=await user();if(!x||!u||u.is_anonymous)return;
+ var x=c(),u=await user();if(!x||!u)return;
+ try{var profile=await x.from('profiles').select('id').eq('id',u.id).maybeSingle();if(profile.error||!profile.data)return}catch(e){return}
  var rr=await Promise.all([x.from('orders').select('id,status,payment_status,productName').eq('user_id',u.id).order('created_at',{ascending:false}).limit(40),x.from('subscription_requests').select('id,status,plan').eq('user_id',u.id).order('created_at',{ascending:false}).limit(40)]);
  var rows=[];if(!rr[0].error)(rr[0].data||[]).forEach(function(r){rows.push({id:'o:'+r.id,kind:'خرید',title:r.productName||'محصول',status:r.status||r.payment_status})});if(!rr[1].error)(rr[1].data||[]).forEach(function(r){rows.push({id:'s:'+r.id,kind:'اشتراک',title:r.plan||'اشتراک',status:r.status})});
  var seen=map(USER_SEEN);if(!localStorage.getItem(USER_SEEN+'_ready')){rows.forEach(function(r){var d=decision(r.status);if(d)seen[r.id+':'+d]=1});save(USER_SEEN,seen);try{localStorage.setItem(USER_SEEN+'_ready','1')}catch(e){}return}
