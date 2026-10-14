@@ -909,46 +909,36 @@
 
         async function syncProductsToCloud(products) {
             if (!supabaseClient) return { ok:false, reason:'no-client' };
-            if (!Array.isArray(products)) products = [];
+            if (!Array.isArray(products)) return { ok:false, reason:'invalid-products' };
             try {
-                var localIds = {};
-                for (var i = 0; i < products.length; i++) {
-                    localIds[String(Number(products[i].id))] = true;
-                }
-                // حذف از سرور هر محصولی که در لیست محلی نیست
-                try {
-                    var remote = await sbGet('products');
-                    if (remote && remote.length) {
-                        for (var r = 0; r < remote.length; r++) {
-                            var rid = remote[r].local_id != null ? String(Number(remote[r].local_id)) : '';
-                            if (rid && !localIds[rid]) {
-                                try {
-                                    await supabaseClient.from('products').delete().eq('id', remote[r].id);
-                                } catch (de) { console.warn('delete orphan product', de); }
-                                try {
-                                    await supabaseClient.from('products').delete().eq('local_id', Number(rid));
-                                } catch (de2) {}
-                            }
-                        }
-                    }
-                } catch (eDel) { console.warn('orphan cleanup', eDel); }
-                // upsert باقی‌مانده
+                // Never delete remote rows merely because a local cache is incomplete.
+                // Explicit product deletion is handled only by deleteProduct after server confirmation.
                 for (var j = 0; j < products.length; j++) {
                     var p = products[j];
+                    var localId = Number(p.id);
+                    if (!Number.isFinite(localId) || localId <= 0) {
+                        return { ok:false, reason:'invalid-local-id', index:j };
+                    }
                     var row = {
-                        local_id: Number(p.id),
-                        title: p.title,
-                        price: p.price,
+                        local_id: localId,
+                        title: String(p.title || ''),
+                        price: Number(p.price) || 0,
                         image: p.image || '',
                         image_url: p.imageUrl || '',
                         badge: p.badge || '',
                         desc: p.desc || '',
                         is_active: true
                     };
-                    await sbUpsert('products', row, 'local_id');
+                    var saved = await sbUpsert('products', row, 'local_id');
+                    if (!saved || !saved.length) {
+                        return { ok:false, reason:'server-write-failed', index:j, product:row.title };
+                    }
                 }
                 return { ok:true, count: products.length };
-            } catch (e) { console.warn('syncProductsToCloud', e); return { ok:false, reason: String(e && e.message || e) }; }
+            } catch (e) {
+                console.warn('syncProductsToCloud', e);
+                return { ok:false, reason: String(e && e.message || e) };
+            }
         }
         window.syncProductsToCloud = syncProductsToCloud;
         window.saveProductsToServer = async function() {
@@ -2911,15 +2901,29 @@ async function submitProductOrder() {
             return [];
         }
         async function saveProductsSafe(products) {
-            if (!Array.isArray(products)) products = [];
+            if (!Array.isArray(products)) return { ok:false, reason:'invalid-products' };
+            // Server is authoritative: update the local display cache only after every upsert succeeds.
+            var result;
             try {
-                var cache = products.map(function(p){ var q=Object.assign({},p); if(q.imageUrl && String(q.imageUrl).indexOf('data:image/')===0 && String(q.imageUrl).length>200000) q.imageUrl=''; return q; });
+                if (typeof syncProductsToCloud !== 'function') return { ok:false, reason:'sync-unavailable' };
+                result = await syncProductsToCloud(products);
+            } catch (e) {
+                console.warn('product server save', e);
+                return { ok:false, reason: String(e && e.message || e) };
+            }
+            if (!result || !result.ok) return result || { ok:false, reason:'server-write-failed' };
+            try {
+                var cache = products.map(function(p){
+                    var q = Object.assign({}, p);
+                    if (q.imageUrl && String(q.imageUrl).indexOf('data:image/') === 0 && String(q.imageUrl).length > 200000) q.imageUrl = '';
+                    return q;
+                });
                 localStorage.setItem('cafeProducts', JSON.stringify(cache));
             } catch (e) {
                 console.warn('saveProductsSafe local cache', e);
-                if (typeof showNotification === 'function') showNotification('⚠️ حافظه محلی پر است؛ نسخه ابری استفاده می‌شود.', 'warning');
+                if (typeof showNotification === 'function') showNotification('⚠️ سرور ذخیره شد، اما حافظهٔ نمایشی گوشی به‌روز نشد.', 'warning');
             }
-            try { if (typeof syncProductsToCloud === 'function') await syncProductsToCloud(products); } catch (e2) { console.warn('product cloud save',e2); }
+            return result;
         }
         // override getProducts/saveProducts to use safe versions
         window.getProducts = function() { return getProductsSafe(); };
@@ -3018,7 +3022,7 @@ async function submitProductOrder() {
                         imageUrl: imageUrl,
                         desc: desc
                     };
-                    if (typeof showNotification === 'function') showNotification('✅ محصول ویرایش شد');
+
                 } else {
                     var maxId = 0;
                     products.forEach(function(p){ var n = parseInt(p.id, 10); if (!isNaN(n) && n > maxId) maxId = n; });
@@ -3031,9 +3035,14 @@ async function submitProductOrder() {
                         imageUrl: imageUrl,
                         desc: desc
                     });
-                    if (typeof showNotification === 'function') showNotification('✅ محصول اضافه شد (' + products.length + ')');
+
                 }
-                saveProductsSafe(products);
+                var savedResult = await saveProductsSafe(products);
+                if (!savedResult || !savedResult.ok) {
+                    if (typeof showNotification === 'function') showNotification('❌ سرور ذخیرهٔ محصول را تأیید نکرد؛ تغییر اعمال نشد.', 'error');
+                    return;
+                }
+                if (typeof showNotification === 'function') showNotification(editId ? '✅ ویرایش محصول در سرور ثبت شد.' : '✅ محصول در سرور ثبت شد (' + products.length + ')');
                 if (typeof renderProducts === 'function') renderProducts();
                 renderAdminProducts();
                 resetProductForm();
@@ -3086,44 +3095,58 @@ async function submitProductOrder() {
 
         async function deleteProduct(id) {
             try {
-                if (!confirm('این محصول حذف شود؟\n\nحذف از لیست محلی و سرور انجام می‌شود.')) return;
+                if (!confirm('این محصول حذف شود؟\n\nحذف فقط پس از تأیید سرور انجام می‌شود.')) return;
+                if (!supabaseClient) {
+                    if (typeof showNotification === 'function') showNotification('❌ اتصال سرور برقرار نیست؛ محصول حذف نشد.', 'error');
+                    return;
+                }
                 var all = getProductsSafe();
                 var victim = null;
                 for (var i = 0; i < all.length; i++) {
-                    if (String(all[i].id) === String(id) || String(all[i].cloudId) === String(id)) { victim = all[i]; break; }
+                    if (String(all[i].id) === String(id) || String(all[i].cloudId || '') === String(id)) { victim = all[i]; break; }
                 }
-                var products = all.filter(function(p){ return String(p.id) !== String(id) && String(p.cloudId||'') !== String(id); });
+                if (!victim) {
+                    if (typeof showNotification === 'function') showNotification('محصول پیدا نشد؛ فهرست را از سرور تازه‌سازی کنید.', 'error');
+                    return;
+                }
+                var deleted = false;
                 try {
-                    var cache = products.map(function(p){ var q=Object.assign({},p); if(q.imageUrl && String(q.imageUrl).indexOf('data:image/')===0 && String(q.imageUrl).length>200000) q.imageUrl=''; return q; });
+                    if (victim.cloudId) {
+                        var byCloudId = await supabaseClient.from('products').delete().eq('id', victim.cloudId).select('id');
+                        if (byCloudId.error) throw byCloudId.error;
+                        deleted = Array.isArray(byCloudId.data) && byCloudId.data.length > 0;
+                    }
+                    if (!deleted && victim.id != null) {
+                        var byLocalId = await supabaseClient.from('products').delete().eq('local_id', Number(victim.id)).select('id');
+                        if (byLocalId.error) throw byLocalId.error;
+                        deleted = Array.isArray(byLocalId.data) && byLocalId.data.length > 0;
+                    }
+                } catch (serverError) {
+                    console.warn('delete product server confirmation', serverError);
+                    if (typeof showNotification === 'function') showNotification('❌ سرور حذف محصول را تأیید نکرد؛ محصول باقی ماند.', 'error');
+                    return;
+                }
+                if (!deleted) {
+                    if (typeof showNotification === 'function') showNotification('❌ محصول در سرور پیدا یا حذف نشد؛ فهرست محلی تغییر نکرد.', 'error');
+                    return;
+                }
+                var products = all.filter(function(p) {
+                    return String(p.id) !== String(victim.id) && String(p.cloudId || '') !== String(victim.cloudId || '');
+                });
+                try {
+                    var cache = products.map(function(p) {
+                        var q = Object.assign({}, p);
+                        if (q.imageUrl && String(q.imageUrl).indexOf('data:image/') === 0 && String(q.imageUrl).length > 200000) q.imageUrl = '';
+                        return q;
+                    });
                     localStorage.setItem('cafeProducts', JSON.stringify(cache));
-                } catch (eLoc) {}
+                } catch (cacheError) { console.warn('product cache update', cacheError); }
                 if (typeof renderProducts === 'function') renderProducts();
                 renderAdminProducts();
-                // حذف از سرور
-                var serverOk = false;
-                try {
-                    if (supabaseClient) {
-                        if (victim && victim.cloudId) {
-                            var r1 = await supabaseClient.from('products').delete().eq('id', victim.cloudId);
-                            if (!r1.error) serverOk = true;
-                        }
-                        var r2 = await supabaseClient.from('products').delete().eq('local_id', Number(id));
-                        if (!r2.error) serverOk = true;
-                        // sync full list to clean orphans
-                        if (typeof syncProductsToCloud === 'function') {
-                            var sr = await syncProductsToCloud(products);
-                            if (sr && sr.ok) serverOk = true;
-                        }
-                    }
-                } catch (eSrv) { console.warn('delete server', eSrv); }
-                if (typeof showNotification === 'function') {
-                    showNotification(serverOk
-                        ? ('🗑️ حذف شد و از سرور هم پاک شد — باقی‌مانده: ' + products.length)
-                        : ('🗑️ از لیست محلی حذف شد. ثبت سرور: ناموفق یا آفلاین — دکمه «ثبت محصولات روی سرور» را بزنید'));
-                }
+                if (typeof showNotification === 'function') showNotification('✅ محصول با تأیید سرور حذف شد.');
             } catch (e) {
                 console.error('deleteProduct', e);
-                alert('خطا در حذف: ' + (e && e.message ? e.message : e));
+                if (typeof showNotification === 'function') showNotification('❌ خطا در حذف محصول: ' + (e && e.message ? e.message : e), 'error');
             }
         }
         window.deleteProduct = deleteProduct;
