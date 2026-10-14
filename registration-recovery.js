@@ -94,20 +94,9 @@
           .single();
 
         if (pr.error) {
-          if (pr.error.code === '23505') {
-            // شماره قبلاً توسط پروفایل دیگری ثبت شده (RLS جلوی خواندنش را می‌گیرد)
-            // کاربر را به صورت محلی قبول می‌کنیم تا بتواند وارد برنامه شود
-            isReturning = true;
-            finalUserData = {
-              name: name,
-              phone: phone,
-              registeredAt: registeredAt,
-              user_id: user.id,
-              returning: true
-            };
-          } else {
-            throw pr.error;
-          }
+          // Online-only: a phone number already in use is not proof of account ownership.
+          // Never create a local-only session when the server rejects registration.
+          throw pr.error;
         } else {
           finalUserData = {
             name: name,
