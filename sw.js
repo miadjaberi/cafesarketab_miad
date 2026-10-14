@@ -1,6 +1,6 @@
 /* کافه سرکتاب میعاد — اگر اینترنت جهانی قطع باشد، پوستهٔ ذخیره‌شده فوراً باز می‌شود.
    سوپابیس کش نمی‌شود؛ سفارش آفلاین جداگانه روی گوشی می‌ماند. */
-const CACHE_VERSION = 'kafe-miad-v700.7-rc25';
+const CACHE_VERSION = 'kafe-miad-v700.7-portfolio-1';
 const SHELL_CACHE = 'shell-' + CACHE_VERSION;
 
 const PRECACHE_URLS = [
@@ -20,6 +20,8 @@ const PRECACHE_URLS = [
   './offline-sync.js',
   './theme-atelier.css',
   './theme-lock.css',
+  './theme-portfolio.css',
+  './theme-portfolio.js',
   './manifest.webmanifest',
   './icon-miad.svg',
   './icon192.png',
