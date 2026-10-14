@@ -3079,3 +3079,48 @@ header .header-notifications .header-btn.kafe-notif-clear i { color:#fff !import
 #pageShop .page-header h2, #pageShop .featured-banner strong {
   color:#ffdc9a !important; -webkit-text-fill-color:#ffdc9a !important;
 }
+
+
+/* RC23 — cinematic portrait-style splash using the admin-selected server image */
+#splashScreen {
+  position:fixed !important; inset:0 !important; overflow:hidden !important;
+  background:#070b14 !important;
+  isolation:isolate !important;
+}
+#splashScreen .splash-bg-img {
+  position:absolute !important; inset:0 !important; width:100% !important; height:100% !important;
+  display:block !important; object-fit:cover !important; object-position:center 30% !important;
+  filter:saturate(.92) contrast(1.08) brightness(.68) !important;
+  transform:scale(1.025) !important;
+}
+#splashScreen .splash-dim {
+  position:absolute !important; inset:0 !important; z-index:1 !important;
+  background:linear-gradient(180deg,rgba(3,7,18,.18) 0%,rgba(3,7,18,.12) 25%,rgba(3,7,18,.72) 72%,rgba(3,7,18,.96) 100%) !important;
+}
+#splashScreen .splash-bg-glow {
+  position:absolute !important; inset:0 !important; z-index:1 !important; pointer-events:none !important;
+  background:radial-gradient(ellipse at 50% 38%,rgba(201,152,78,.18),transparent 48%) !important;
+}
+#splashScreen .splash-center {
+  display:flex !important; flex-direction:column !important; align-items:center !important;
+  justify-content:flex-end !important; min-height:100% !important; padding:24px 20px max(42px,env(safe-area-inset-bottom)) !important;
+  box-sizing:border-box !important; text-align:center !important;
+}
+#splashScreen .splash-verse {
+  color:#ffdc9a !important; text-shadow:0 2px 18px rgba(0,0,0,.9) !important;
+  letter-spacing:.06em !important; font-weight:800 !important;
+}
+#splashScreen .splash-loader {
+  width:min(220px,68vw) !important; border:1px solid rgba(255,220,154,.38) !important;
+  background:rgba(5,8,16,.72) !important; box-shadow:0 6px 28px rgba(0,0,0,.4) !important;
+}
+#splashScreen .splash-loader-bar {
+  background:linear-gradient(90deg,#9f6d2a,#ffdc9a,#f4c66c) !important;
+  box-shadow:0 0 16px rgba(255,220,154,.45) !important;
+}
+#splashScreen .splash-version {
+  color:rgba(243,230,200,.72) !important; text-shadow:0 1px 8px #000 !important;
+}
+@media (prefers-reduced-motion:reduce) {
+  #splashScreen .splash-bg-img { transform:none !important; }
+}
