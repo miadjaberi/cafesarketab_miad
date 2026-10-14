@@ -1,20 +1,33 @@
 <!DOCTYPE html>
-<!-- کافه سرکتاب میعاد — V700.7 -->
 <html lang="fa" dir="rtl">
 <head>
-    <!-- Critical safety helpers must run first (before any other script) -->
-<meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=5.0, viewport-fit=cover" />
-    <title>کافه سرکتاب میعاد — V700.7</title>
-    <meta name="description" content="کافه سرکتاب میعاد — آموزش، محتوا و فروش محصولات علوم حروف، ابجد، رمل و مشاوره تخصصی">
-    <meta name="theme-color" content="#070B14">
-    <script>/* emergency: if this partial loads, redirect to raw restore */</script>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>کافه سرکتاب میعاد — در حال بارگذاری...</title>
+<script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
 </head>
-<body>
-<p style="text-align:center;margin-top:40vh;font-family:Tahoma">در حال بازگردانی فایل اصلی...</p>
+<body style="background:#070B14;color:#f5d76e;font-family:Tahoma,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0">
+<div style="text-align:center">
+<div style="font-size:22px;margin-bottom:12px">✦ الملک القدوس ✦</div>
+<div id="st">در حال بازگردانی برنامه...</div>
+</div>
 <script>
-// Temporary emergency page - full restore in progress
-setTimeout(function(){ location.href = location.pathname + '?restore=' + Date.now(); }, 2000);
+(function(){
+  var st = document.getElementById('st');
+  fetch('https://cdn.jsdelivr.net/gh/miadjaberi/cafesarketab_miad@7270338ba3436de4440130608f00a589e5b106e1/index.html')
+    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
+    .then(function(html){
+      // bump registration-recovery cache to load the login fix
+      html = html.replace('registration-recovery.js?v=20261014-rc25','registration-recovery.js?v=20261014-rc26');
+      document.open();
+      document.write(html);
+      document.close();
+    })
+    .catch(function(e){
+      st.textContent = 'خطا در بازگردانی: ' + e.message + ' — صفحه را رفرش کنید';
+      console.error(e);
+    });
+})();
 </script>
 </body>
 </html>
