@@ -42,7 +42,7 @@ async function refresh(force){
  x.from('orders').select('id,user_id,name,phone,customer_name,customer_phone,productName,status,payment_status,created_at,date').order('created_at',{ascending:false}).limit(300),
  x.from('subscription_requests').select('id,user_id,name,phone,plan,status,created_at').order('created_at',{ascending:false}).limit(300),
  x.from('subscriptions').select('id,user_id,name,phone,plan,status,created_at,active').order('created_at',{ascending:false}).limit(300),
- x.from('messages').select('id,user_id,user,name,phone,subject,body,text,created_at,read,is_from_admin,conversation_id').eq('read',false).eq('is_from_admin',false).order('created_at',{ascending:false}).limit(100)
+ x.from('messages').select('id,user_id,user,phone,subject,body,text,created_at,read,is_from_admin,conversation_id').eq('read',false).eq('is_from_admin',false).order('created_at',{ascending:false}).limit(100)
  ]);
  var profiles=rr[0].error?[]:(rr[0].data||[]),orders=rr[1].error?[]:(rr[1].data||[]),subs=rr[2].error?[]:(rr[2].data||[]),active=rr[3].error?[]:(rr[3].data||[]),messages=rr[4].error?[]:(rr[4].data||[]);
  var total=document.getElementById('adminTotalUsers');if(total)total.textContent=String(profiles.length);
