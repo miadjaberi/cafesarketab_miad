@@ -50,3 +50,11 @@ textarea:focus {
   box-shadow: 0 0 0 3px rgba(201,168,76,0.28) !important;
   background: rgba(255,255,255,0.07) !important;
 }
+
+
+/* RC12 — consistent visible touch feedback for every interactive button */
+button:not(:disabled) { transition: transform .12s ease, filter .12s ease, box-shadow .12s ease; }
+button:not(:disabled):active { transform: scale(.97); filter: brightness(.88); }
+button:focus-visible { outline: 2px solid #C9A84C; outline-offset: 2px; }
+button:disabled { opacity: .62; cursor: wait; }
+@media (prefers-reduced-motion: reduce) { button { transition: none !important; } }
