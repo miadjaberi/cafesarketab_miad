@@ -3297,19 +3297,58 @@ async function submitProductOrder() {
                 if (el) el.value = map[id];
             });
         }
-        window.saveMediaSettings = function saveMediaSettings() {
-            var s = {};
-            try { s = JSON.parse(localStorage.getItem('cafeSettings')||'{}'); } catch(e){}
-            s.headerLogo = (document.getElementById('mediaHeaderLogo')||{}).value || '';
-            s.registerLogo = (document.getElementById('mediaRegisterLogo')||{}).value || '';
-            s.splashBg = (document.getElementById('mediaSplashBg')||{}).value || '';
-            s.managerPhone = (document.getElementById('mediaManagerPhone')||{}).value || '';
-            s.managerHours = (document.getElementById('mediaManagerHours')||{}).value || 'پنج‌روز هفته، ۱۸ الی ۲۱ — جمعه و دوشنبه پاسخ‌گو نیستیم؛ پیام بگذارید';
-            localStorage.setItem('cafeSettings', JSON.stringify(s));
-            if (s.headerLogo) { var h=document.getElementById('headerLogoImg'); if(h) h.src=s.headerLogo; }
-            if (s.registerLogo) { var r=document.getElementById('registerLogoImg'); if(r) r.src=s.registerLogo; }
-            if (s.splashBg) { var sp=document.getElementById('splashBgImg'); if(sp) sp.src=s.splashBg; }
-            showNotification('✅ ذخیره شد');
+        window.saveMediaSettings = async function saveMediaSettings() {
+            if (!supabaseClient) {
+                showNotification('❌ اتصال سرور برقرار نیست؛ تنظیمات ذخیره نشد.', 'error');
+                return;
+            }
+            if (typeof verifyOnlineAdmin !== 'function' || !(await verifyOnlineAdmin())) {
+                showNotification('❌ برای ذخیره تنظیمات، ورود امن مدیر لازم است.', 'error');
+                return;
+            }
+            var local = {};
+            try { local = JSON.parse(localStorage.getItem('cafeSettings') || '{}'); } catch(e) {}
+            var headerLogo = (document.getElementById('mediaHeaderLogo') || {}).value || '';
+            var registerLogo = (document.getElementById('mediaRegisterLogo') || {}).value || '';
+            var splashBg = (document.getElementById('mediaSplashBg') || {}).value || '';
+            var managerPhone = (document.getElementById('mediaManagerPhone') || {}).value || '';
+            var managerHours = (document.getElementById('mediaManagerHours') || {}).value || 'پنج‌روز هفته، ۱۸ الی ۲۱ — جمعه و دوشنبه پاسخ‌گو نیستیم؛ پیام بگذارید';
+            if ([headerLogo, registerLogo, splashBg].some(function(v) { return /^data:image\//i.test(String(v)); })) {
+                showNotification('❌ برای ذخیره پایدار، ابتدا تصویر را در Storage بارگذاری کنید و لینک آن را وارد کنید.', 'error');
+                return;
+            }
+            try {
+                var remote = await supabaseClient.from('app_settings').select('value').eq('key', 'admin:cafeSettings').maybeSingle();
+                if (remote.error) throw remote.error;
+                var serverSettings = remote.data && remote.data.value ? remote.data.value : {};
+                if (typeof serverSettings === 'string') {
+                    try { serverSettings = JSON.parse(serverSettings); } catch(e) { serverSettings = {}; }
+                }
+                if (!serverSettings || typeof serverSettings !== 'object' || Array.isArray(serverSettings)) serverSettings = {};
+                // Keep sensitive payment fields from the server; never overwrite them with stale local copies.
+                delete local.paymentCard;
+                delete local.paymentSheba;
+                var full = Object.assign({}, serverSettings, local, {
+                    headerLogo: headerLogo,
+                    registerLogo: registerLogo,
+                    splashBg: splashBg,
+                    managerPhone: managerPhone,
+                    managerHours: managerHours
+                });
+                var saved = await cloudSaveAdminSetting('cafeSettings', full);
+                if (!saved) throw new Error('ذخیره تنظیمات روی سرور تأیید نشد.');
+                var localSafe = Object.assign({}, full);
+                delete localSafe.paymentCard;
+                delete localSafe.paymentSheba;
+                localStorage.setItem('cafeSettings', JSON.stringify(localSafe));
+                if (headerLogo) { var h = document.getElementById('headerLogoImg'); if (h) h.src = headerLogo; }
+                if (registerLogo) { var r = document.getElementById('registerLogoImg'); if (r) r.src = registerLogo; }
+                if (splashBg) { var sp = document.getElementById('splashBgImg'); if (sp) sp.src = splashBg; }
+                showNotification('✅ تنظیمات با تأیید سرور ذخیره شد.');
+            } catch(e) {
+                console.warn('saveMediaSettings server-first', e);
+                showNotification('❌ تنظیمات ذخیره نشد؛ نسخه محلی تغییر نکرد. ' + (e.message || ''), 'error');
+            }
         }
         function loadMediaSettings() {
             var s = {};
