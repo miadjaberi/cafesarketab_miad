@@ -208,6 +208,14 @@
     window.addEventListener('focus', renderAds);
     document.addEventListener('visibilitychange', function(){ if (!document.hidden) renderAds(); });
     window.addEventListener('miad:products-updated', renderAds);
+    var pages = document.getElementById('pagesContainer');
+    if (pages) pages.addEventListener('scroll', function(){
+      var width = pages.offsetWidth || 1;
+      var index = Math.max(0, Math.min(2, Math.round(Math.abs(pages.scrollLeft) / width)));
+      document.querySelectorAll('[data-miad-go]').forEach(function(chip){
+        chip.classList.toggle('active', chip.dataset.miadGo === String(index));
+      });
+    }, {passive:true});
     var grid = document.getElementById('productsGrid');
     if (grid && window.MutationObserver) {
       var obs = new MutationObserver(function(){ renderAds(); });
