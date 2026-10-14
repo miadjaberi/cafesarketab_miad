@@ -147,10 +147,17 @@
         async function sbSyncOrderLocalId(localId, fields) {
             if (!supabaseClient || localId == null) return null;
             try {
-                var r = await supabaseClient.from('orders').update(fields).eq('local_id', localId).select();
-                if (r.error) { console.warn('order sync', r.error); return null; }
-                return r.data;
-            } catch(e) { return null; }
+                var r = await supabaseClient.from('orders').update(fields).eq('local_id', localId).select('id');
+                if (r.error) throw r.error;
+                if (Array.isArray(r.data) && r.data.length) return r.data;
+                // Older server rows may not have local_id; try the real server UUID only.
+                if (/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(localId))) {
+                    var byId = await supabaseClient.from('orders').update(fields).eq('id', String(localId)).select('id');
+                    if (byId.error) throw byId.error;
+                    if (Array.isArray(byId.data) && byId.data.length) return byId.data;
+                }
+                return null;
+            } catch(e) { console.warn('order update was not confirmed by server', e); return null; }
         }
 
         async function sbPullAdminData() {
@@ -3153,36 +3160,55 @@ async function submitProductOrder() {
             });
             list.innerHTML = html;
         }
-        function updateOrderStatus(id, status) {
+        async function updateOrderStatus(id, status) {
+            if (!supabaseClient) { showNotification('❌ اتصال سرور برقرار نیست؛ وضعیت سفارش تغییر نکرد', 'error'); return; }
             var orders = [];
             try { orders = JSON.parse(localStorage.getItem('cafeOrders') || '[]'); } catch(e) {}
             if (!Array.isArray(orders)) orders = [];
-            var found = false;
-            orders.forEach(function(o) {
-                if (String(o.id) === String(id)) { o.status = status; found = true; }
-            });
-            if (!found) { showNotification('سفارش پیدا نشد', 'error'); return; }
-            localStorage.setItem('cafeOrders', JSON.stringify(orders));
-            sbSyncOrderLocalId(id, {status: status});
+            var index = orders.findIndex(function(o) { return String(o.id) === String(id); });
+            if (index < 0) { showNotification('سفارش پیدا نشد', 'error'); return; }
+            var saved = await sbSyncOrderLocalId(id, {status: status});
+            if (!saved || !saved.length) {
+                showNotification('❌ سرور تغییر وضعیت سفارش را تأیید نکرد؛ تغییری اعمال نشد', 'error');
+                return;
+            }
+            orders[index].status = status;
+            try { localStorage.setItem('cafeOrders', JSON.stringify(orders)); } catch(e) {}
             renderAdminOrders();
-            showNotification('وضعیت سفارش: ' + status);
+            showNotification('✅ وضعیت سفارش در سرور ثبت شد: ' + status);
         }
         async function sbDeleteOrderLocalId(localId) {
-            if (!supabaseClient) return false;
+            if (!supabaseClient || localId == null) return false;
             try {
-                var r = await supabaseClient.from('orders').delete().eq('local_id', localId);
-                return !r.error;
-            } catch(e) { return false; }
+                var r = await supabaseClient.from('orders').delete().eq('local_id', localId).select('id');
+                if (r.error) throw r.error;
+                if (Array.isArray(r.data) && r.data.length) return true;
+                if (/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(localId))) {
+                    var byId = await supabaseClient.from('orders').delete().eq('id', String(localId)).select('id');
+                    if (byId.error) throw byId.error;
+                    if (Array.isArray(byId.data) && byId.data.length) return true;
+                }
+                return false;
+            } catch(e) { console.warn('order deletion was not confirmed by server', e); return false; }
         }
-        function deleteOrderAdmin(id) {
+        async function deleteOrderAdmin(id) {
             if (!confirm('حذف این سفارش؟')) return;
-            var orders = [];
-            try { orders = JSON.parse(localStorage.getItem('cafeOrders') || '[]'); } catch(e) {}
-            orders = (orders || []).filter(function(o){ return String(o.id) !== String(id); });
-            localStorage.setItem('cafeOrders', JSON.stringify(orders));
-            sbDeleteOrderLocalId(id);
+            if (!supabaseClient) { showNotification('❌ اتصال سرور برقرار نیست؛ سفارش حذف نشد', 'error'); return; }
+            var current = [];
+            try { current = JSON.parse(localStorage.getItem('cafeOrders') || '[]'); } catch(e) {}
+            if (!Array.isArray(current)) current = [];
+            if (!current.some(function(o){ return String(o.id) === String(id); })) {
+                showNotification('سفارش پیدا نشد', 'error'); return;
+            }
+            var deleted = await sbDeleteOrderLocalId(id);
+            if (!deleted) {
+                showNotification('❌ سرور حذف سفارش را تأیید نکرد؛ سفارش همچنان باقی است', 'error');
+                return;
+            }
+            var orders = current.filter(function(o){ return String(o.id) !== String(id); });
+            try { localStorage.setItem('cafeOrders', JSON.stringify(orders)); } catch(e) {}
             renderAdminOrders();
-            showNotification('🗑️ سفارش حذف شد');
+            showNotification('🗑️ سفارش با تأیید سرور حذف شد');
         }
         function loadMediaSettingsForm() {
             var s = {};
