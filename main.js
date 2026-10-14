@@ -5631,35 +5631,23 @@ document.addEventListener('DOMContentLoaded',function(){try{window.applyGalleryI
     // App icon is independent from the header logo. Update browser icons and the install manifest.
     var sels = 'link[rel="icon"], link[rel="apple-touch-icon"], link[rel="shortcut icon"]';
     var links = document.querySelectorAll(sels);
+    var iconType = 'image/png';
+    if (/^data:image\/svg\+xml/i.test(dataUrl) || /\.svg(?:[?#]|$)/i.test(dataUrl)) iconType = 'image/svg+xml';
+    else if (/^data:image\/webp/i.test(dataUrl) || /\.webp(?:[?#]|$)/i.test(dataUrl)) iconType = 'image/webp';
+    else if (/^data:image\/jpeg/i.test(dataUrl) || /\.jpe?g(?:[?#]|$)/i.test(dataUrl)) iconType = 'image/jpeg';
     if (!links.length) {
-      var l1 = document.createElement('link'); l1.rel='icon'; l1.href=dataUrl; document.head.appendChild(l1);
+      var l1 = document.createElement('link'); l1.rel='icon'; l1.type=iconType; l1.href=dataUrl; document.head.appendChild(l1);
       var l2 = document.createElement('link'); l2.rel='apple-touch-icon'; l2.href=dataUrl; document.head.appendChild(l2);
     } else {
-      links.forEach(function(l){ l.href = dataUrl; });
+      links.forEach(function(l){ l.href = dataUrl; if (l.rel === 'icon' || l.rel === 'shortcut icon') l.type = iconType; });
     }
-    // The PWA manifest is what Android reads for the installed/home-screen app icon.
-    // Use a same-origin blob manifest with the saved appIcon URL; fall back to the packaged default.
-    try {
+    // Ask the server-backed manifest to refresh only for a permanently uploaded icon.
+    if (/^https:\/\/evxxvnlwtbaqpjbjaxdk\.supabase\.co\/storage\/v1\/object\/public\/public-assets\/app-media\//i.test(dataUrl)) {
       var manifestLink = document.querySelector('link[rel="manifest"]');
-      if (manifestLink && /^https:\/\//i.test(dataUrl) && dataUrl.indexOf('evxxvnlwtbaqpjbjaxdk.supabase.co/storage/v1/object/public/public-assets/app-media/') === 8) {
-        fetch('./manifest.webmanifest?v=20261014-rc19', { cache: 'no-store' }).then(function(resp) {
-          if (!resp.ok) throw new Error('manifest fetch failed');
-          return resp.json();
-        }).then(function(manifest) {
-          manifest.icons = [
-            { src: dataUrl, sizes: '192x192', type: 'image/jpeg', purpose: 'any' },
-            { src: dataUrl, sizes: '512x512', type: 'image/jpeg', purpose: 'any' }
-          ];
-          var blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
-          var nextUrl = URL.createObjectURL(blob);
-          var previous = window.__kafeManifestBlobUrl;
-          manifestLink.href = nextUrl;
-          window.__kafeManifestBlobUrl = nextUrl;
-          if (previous) setTimeout(function(){ try { URL.revokeObjectURL(previous); } catch(e){} }, 60000);
-        }).catch(function(e){ console.warn('PWA app icon manifest update failed', e); });
-      }
-    } catch(e) { console.warn('PWA app icon manifest update failed', e); }
+      if (manifestLink) manifestLink.href = 'https://evxxvnlwtbaqpjbjaxdk.supabase.co/functions/v1/app-manifest?v=20261014-rc19&t=' + Date.now();
+    }
     // Keep the install banner aligned with appIcon, never with headerLogo.
+    if (typeof window.syncKafeInstallIcon === 'function') window.syncKafeInstallIcon();
     var installIcon = document.querySelector('#kafe-install-banner .kafe-install-icon');
     if (installIcon) installIcon.src = dataUrl;
     // Preview in admin panel.
