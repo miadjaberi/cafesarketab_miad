@@ -223,7 +223,7 @@
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
       navigator.serviceWorker
-        .register('./sw.js?v=20261014-rc25', { scope: './' })
+        .register('./sw.js?v=miad-portfolio-1', { scope: './' })
         .then(function (reg) {
           if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
             console.log('✅ Service Worker ثبت شد', reg.scope);
