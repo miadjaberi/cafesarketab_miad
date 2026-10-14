@@ -145,7 +145,7 @@
         var settings = JSON.parse(localStorage.getItem('cafeSettings') || '{}');
         src = settings.appIcon || localStorage.getItem('cafeAppIcon') || '';
       } catch (e) {}
-      if (!src) src = './icon-miad.svg?v=20261014-rc24';
+      if (!src) src = './icon-miad.svg?v=20261014-rc25';
       if (icon.getAttribute('src') !== src) icon.src = src;
     }
     window.syncKafeInstallIcon = syncInstallBannerIcon;
@@ -223,7 +223,7 @@
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
       navigator.serviceWorker
-        .register('./sw.js?v=20261014-rc24', { scope: './' })
+        .register('./sw.js?v=20261014-rc25', { scope: './' })
         .then(function (reg) {
           if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
             console.log('✅ Service Worker ثبت شد', reg.scope);
