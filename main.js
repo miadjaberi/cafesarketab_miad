@@ -2503,9 +2503,12 @@ async function submitProductOrder() {
                 let pending = getPending();
 
                 if (!pending) {
+                    // Requesting an OTP creates server state and sends a Telegram message.
+                    // Do not replay it automatically after a transport error: the first request
+                    // may already have succeeded and the server enforces a 45-second cooldown.
                     const request = await invokeAdminTelegram({
                         action: 'request'
-                    });
+                    }, 1);
 
                     if (request.error || !request.data || request.data.ok !== true) {
                         console.warn(
