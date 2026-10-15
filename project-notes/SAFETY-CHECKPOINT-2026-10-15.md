@@ -45,3 +45,13 @@
 4. Inspect final PR diff and update its verification notes.
 5. The user must test the branch build on the phone for registration, user entry, admin OTP, and control-panel access. The assistant has not performed that device test.
 6. Do not merge PR #3 or publish any changes until the user has tested the branch build and explicitly approved release.
+
+
+## Continued audit — 2026-10-15 morning
+- Rechecked deployed public-schema definitions using read-only queries only. Both admin_decide_order(p_order_id uuid, p_decision text, p_note text) and admin_decide_subscription(p_request_id uuid, p_decision text, p_note text) exist as SECURITY DEFINER functions with search_path constrained to public, pg_temp and an is_admin() check. The subscription function rejects already-decided requests and creates an active subscription plus a user notification on approval; it also records a rejection and notification when rejected.
+- Reviewed current RLS policies for orders, subscription_requests, subscriptions, notifications, and profiles. Expected owner/admin access policies exist. Some tables have overlapping/duplicate policies (notably orders and subscription requests); these were not altered because there is no demonstrated cause requiring a risky live policy change.
+- Strengthened sbAdd() on this branch: it now returns an insert result only when Supabase returns exactly one row with an id. This prevents callers from treating an empty/missing returned row as confirmed persistence. Static main.js syntax check passed after the change.
+- Found two HTML shell assets missing from the service-worker precache list: button-feedback.css and assets/splash.jpg. Added both to precache and bumped the shell cache to kafe-miad-v700.7-online-3; the HTML guard script query now uses admin-entry-guard.js?v=20261015-online-3.
+- Cross-file audit now confirms every local JS/CSS/image/manifest reference in index.html is represented in the service-worker's quoted asset paths. Static syntax checks passed for main.js, sw.js, admin-entry-guard.js, registration-recovery.js, offline-sync.js, ops-center.js, session-recovery.js, and pwa-register.js.
+- Current checked file blobs: main.js 2d76d26893591503026c9f1ae842e16c5daff173; sw.js 9aca15eee2ec6c52c1ff214921cb7f1c91fbadf4; index.html 1f3da211bda96a784aa3a422f5d2c7ef8e2a3cd0.
+- These are static/source/database-definition checks only. No real-device end-to-end test was performed, and no user/order/subscription/receipt data or RLS/schema definitions were changed. Keep PR #3 unmerged until the branch is tested on the user's phone.
