@@ -100,3 +100,10 @@
 - Static JavaScript parse checks passed for all eight branch files: `main.js`, `sw.js`, `registration-recovery.js`, `offline-sync.js`, `ops-center.js`, `session-recovery.js`, `pwa-register.js`, and `admin-entry-guard.js`.
 - Read-only Supabase Auth logs from the last 24 hours showed 51 successful `/user` requests, two successful `refresh_token` requests, one successful `/signup`, and two HTTP 401 calls to `admin-telegram-otp`. The logs do not identify the specific user or prove whether the 401s were mistyped, expired, or reused codes; no sensitive values were retrieved.
 - This narrows a possible indefinite-wait/stale-challenge failure mode but is not proof that admin login or registration is fixed. Real-device end-to-end tests remain required. Keep PR #3 unmerged and production untouched.
+
+
+## Local-record preservation correction — 2026-10-16
+- During the continued review, found that the prior `offline-sync.js` implementation deleted local `cafeOrders` entries marked `pendingUpload`. That contradicted the preservation rule, even though those entries were not server-confirmed.
+- Corrected `offline-sync.js` on the safe branch: the offline upload/retry queue remains disabled, but existing local order drafts are now left intact. They must not be represented as server-confirmed or auto-uploaded.
+- Commit: `6d4d549fc34b6720004fb7f1cef05d6b9d82fcf2`; latest `offline-sync.js` blob: `9a697a6d2edb5cb6ba17140bdfa91dcd2d4dd7c4`.
+- This restores preservation of local drafts going forward; it does not recover any draft that may already have been removed by an earlier build on a user's device. No server orders or other database data were touched.
