@@ -208,6 +208,11 @@
             try {
                 var res = await supabaseClient.from(table).insert([row]).select();
                 if (res.error) { console.warn('sbAdd', table, res.error); return null; }
+                // A successful HTTP response without a returned inserted row is not proof of persistence.
+                if (!Array.isArray(res.data) || res.data.length !== 1 || !res.data[0] || !res.data[0].id) {
+                    console.warn('sbAdd: server did not confirm a single inserted row', table);
+                    return null;
+                }
                 return res.data;
             } catch (e) { console.warn(e); return null; }
         }
