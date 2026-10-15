@@ -72,3 +72,10 @@
 - Regular user registration currently creates an anonymous Supabase Auth session when none exists; it does not verify control of the phone number. A safe phone-based account-recovery flow cannot be implemented merely by changing the UI. It requires selecting/configuring a genuine verification mechanism and a migration/identity-linking plan that preserves existing user IDs, spouse account, orders, subscriptions and receipts.
 - Production backend, RLS, Auth users, and data remain unchanged. These observations are code/database-definition review only; no live device test has been performed.
 
+
+
+## OTP retry safety correction — 2026-10-15 (continued review)
+- Inspected the admin OTP caller and confirmed that its shared invoke helper automatically retries errors twice. That is unsafe for a one-time verification call: the first request may have reached the server and consumed the code or incremented an attempt counter even if the client saw a transport error.
+- Changed only the main.js admin OTP verification call on online-only-hardening to pass attempts=1, preventing automatic replay of the same one-time code. Code-request retry behavior was left unchanged. JavaScript syntax compilation passed.
+- Commit: 96b7f816d30e066ed651d1d87cc56318d1c046fd; new main.js blob: 690387576d8227a681a063abd64b8b08c8c02775.
+- This is a targeted safety correction, not a complete diagnosis or proof that intermittent admin login is fixed. OTP provider/backend behavior and real phone/browser flow still need end-to-end verification. No live deployment, database, secrets, account, or user data changed.
