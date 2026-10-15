@@ -147,10 +147,17 @@
         async function sbSyncOrderLocalId(localId, fields) {
             if (!supabaseClient || localId == null) return null;
             try {
-                var r = await supabaseClient.from('orders').update(fields).eq('local_id', localId).select();
-                if (r.error) { console.warn('order sync', r.error); return null; }
-                return r.data;
-            } catch(e) { return null; }
+                var r = await supabaseClient.from('orders').update(fields).eq('local_id', localId).select('id');
+                if (r.error) throw r.error;
+                if (Array.isArray(r.data) && r.data.length) return r.data;
+                // Older server rows may not have local_id; try the real server UUID only.
+                if (/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(localId))) {
+                    var byId = await supabaseClient.from('orders').update(fields).eq('id', String(localId)).select('id');
+                    if (byId.error) throw byId.error;
+                    if (Array.isArray(byId.data) && byId.data.length) return byId.data;
+                }
+                return null;
+            } catch(e) { console.warn('order update was not confirmed by server', e); return null; }
         }
 
         async function sbPullAdminData() {
@@ -201,6 +208,11 @@
             try {
                 var res = await supabaseClient.from(table).insert([row]).select();
                 if (res.error) { console.warn('sbAdd', table, res.error); return null; }
+                // A successful HTTP response without a returned inserted row is not proof of persistence.
+                if (!Array.isArray(res.data) || res.data.length !== 1 || !res.data[0] || !res.data[0].id) {
+                    console.warn('sbAdd: server did not confirm a single inserted row', table);
+                    return null;
+                }
                 return res.data;
             } catch (e) { console.warn(e); return null; }
         }
@@ -894,66 +906,100 @@
             return getProducts();
         }
 
-        function saveProducts(products) {
-            localStorage.setItem('cafeProducts', JSON.stringify(products));
-            // sync to cloud (fire and forget)
-            syncProductsToCloud(products);
+        async function saveProducts(products) {
+            if (typeof saveProductsSafe !== 'function') {
+                throw new Error('ذخیرهٔ امن محصولات آماده نیست.');
+            }
+            var result = await saveProductsSafe(products);
+            if (!result || !result.ok) {
+                throw new Error((result && result.reason) || 'تأیید ذخیرهٔ محصولات از سرور دریافت نشد.');
+            }
+            return result;
+        }
+
+        async function loadProductsFromServerStrict() {
+            if (!supabaseClient) return { ok:false, reason:'no-client' };
+            try {
+                var result = await supabaseClient.from('products').select('*').order('local_id', {ascending:true});
+                if (result.error) throw result.error;
+                var rows = Array.isArray(result.data) ? result.data : [];
+                var mapped = rows.map(function(r) {
+                    return {
+                        id: r.local_id != null ? Number(r.local_id) : r.id,
+                        cloudId: r.id,
+                        title: r.title || r.name || '',
+                        price: Number(r.price) || 0,
+                        image: r.image || '📦',
+                        imageUrl: r.image_url || '',
+                        badge: r.badge || '',
+                        desc: r.desc || r.description || ''
+                    };
+                });
+                return { ok:true, products:mapped, rows:rows };
+            } catch (e) {
+                console.warn('strict products read', e);
+                return { ok:false, reason:String(e && e.message || e) };
+            }
         }
 
         async function syncProductsToCloud(products) {
             if (!supabaseClient) return { ok:false, reason:'no-client' };
-            if (!Array.isArray(products)) products = [];
+            if (!Array.isArray(products)) return { ok:false, reason:'invalid-products' };
             try {
-                var localIds = {};
-                for (var i = 0; i < products.length; i++) {
-                    localIds[String(Number(products[i].id))] = true;
-                }
-                // حذف از سرور هر محصولی که در لیست محلی نیست
-                try {
-                    var remote = await sbGet('products');
-                    if (remote && remote.length) {
-                        for (var r = 0; r < remote.length; r++) {
-                            var rid = remote[r].local_id != null ? String(Number(remote[r].local_id)) : '';
-                            if (rid && !localIds[rid]) {
-                                try {
-                                    await supabaseClient.from('products').delete().eq('id', remote[r].id);
-                                } catch (de) { console.warn('delete orphan product', de); }
-                                try {
-                                    await supabaseClient.from('products').delete().eq('local_id', Number(rid));
-                                } catch (de2) {}
-                            }
-                        }
-                    }
-                } catch (eDel) { console.warn('orphan cleanup', eDel); }
-                // upsert باقی‌مانده
+                // Read current server rows first, and preserve every column not edited by this UI.
+                var current = await supabaseClient.from('products').select('*');
+                if (current.error) throw current.error;
+                var remoteRows = Array.isArray(current.data) ? current.data : [];
+                var remoteByLocalId = {};
+                remoteRows.forEach(function(r) {
+                    if (r.local_id != null) remoteByLocalId[String(Number(r.local_id))] = r;
+                });
                 for (var j = 0; j < products.length; j++) {
                     var p = products[j];
-                    var row = {
-                        local_id: Number(p.id),
-                        title: p.title,
-                        price: p.price,
+                    var localId = Number(p.id);
+                    if (!Number.isFinite(localId) || localId <= 0) {
+                        return { ok:false, reason:'invalid-local-id', index:j };
+                    }
+                    var existing = remoteByLocalId[String(localId)] || null;
+                    var row = Object.assign({}, existing || {}, {
+                        local_id: localId,
+                        title: String(p.title || ''),
+                        price: Number(p.price) || 0,
                         image: p.image || '',
                         image_url: p.imageUrl || '',
                         badge: p.badge || '',
                         desc: p.desc || '',
-                        is_active: true
-                    };
-                    await sbUpsert('products', row, 'local_id');
+                        is_active: existing && typeof existing.is_active === 'boolean' ? existing.is_active : true,
+                        updated_at: new Date().toISOString()
+                    });
+                    var saved = await sbUpsert('products', row, 'local_id');
+                    if (!saved || !saved.length) {
+                        return { ok:false, reason:'server-write-failed', index:j, product:row.title };
+                    }
                 }
                 return { ok:true, count: products.length };
-            } catch (e) { console.warn('syncProductsToCloud', e); return { ok:false, reason: String(e && e.message || e) }; }
+            } catch (e) {
+                console.warn('syncProductsToCloud', e);
+                return { ok:false, reason: String(e && e.message || e) };
+            }
         }
         window.syncProductsToCloud = syncProductsToCloud;
         window.saveProductsToServer = async function() {
-            var products = (typeof getProductsSafe === 'function') ? getProductsSafe() : [];
-            if (typeof showNotification === 'function') showNotification('⏳ در حال ثبت محصولات روی سرور...');
-            var res = await syncProductsToCloud(products);
-            if (res && res.ok) {
-                if (typeof showNotification === 'function') showNotification('✅ محصولات روی سرور ثبت شد (' + (res.count||0) + ' مورد)');
-            } else {
-                if (typeof showNotification === 'function') showNotification('❌ ثبت روی سرور ناموفق: ' + ((res && res.reason) || 'خطا'), 'error');
+            if (!supabaseClient) {
+                if (typeof showNotification === 'function') showNotification('❌ اتصال سرور برقرار نیست.', 'error');
+                return { ok:false, reason:'no-client' };
             }
-            return res;
+            if (typeof showNotification === 'function') showNotification('⏳ در حال تازه‌سازی محصولات از سرور...');
+            var result = await loadProductsFromServerStrict();
+            if (!result || !result.ok) {
+                if (typeof showNotification === 'function') showNotification('❌ خواندن محصولات از سرور ناموفق بود؛ دادهٔ محلی تغییر نکرد.', 'error');
+                return result || { ok:false, reason:'server-read-failed' };
+            }
+            try { localStorage.setItem('cafeProducts', JSON.stringify(result.products)); } catch(e) {}
+            if (typeof renderProducts === 'function') renderProducts();
+            if (typeof renderAdminProducts === 'function') renderAdminProducts();
+            if (typeof showNotification === 'function') showNotification('✅ فهرست محصولات از سرور تازه شد (' + result.products.length + ' مورد).');
+            return { ok:true, count:result.products.length };
         };
 
         function renderProducts() {
@@ -1319,14 +1365,20 @@ async function submitProductOrder() {
                 status: 'در انتظار تایید فیش',
                 date: new Date().toLocaleString('fa-IR')
             };
-            var authState = await supabaseClient.auth.getSession();
-            var session = authState && authState.data && authState.data.session;
-            if (!session || !session.user) {
-                showNotification('❌ ابتدا وارد حساب کاربری شوید؛ سفارش ثبت نشد', 'error');
+            if (!supabaseClient || !supabaseClient.auth) {
+                showNotification('❌ اتصال آنلاین در دسترس نیست؛ سفارش ثبت نشد', 'error');
                 return;
             }
-            if (!supabaseClient) {
-                showNotification('❌ اتصال آنلاین در دسترس نیست؛ سفارش ثبت نشد', 'error');
+            var authState;
+            try {
+                authState = await supabaseClient.auth.getSession();
+            } catch (authError) {
+                showNotification('❌ بررسی نشست آنلاین ناموفق بود؛ سفارش ثبت نشد', 'error');
+                return;
+            }
+            var session = authState && authState.data && authState.data.session;
+            if (!authState || authState.error || !session || !session.user) {
+                showNotification('❌ ابتدا وارد حساب کاربری شوید؛ سفارش ثبت نشد', 'error');
                 return;
             }
             var receiptPath = await sbUploadReceipt(window._orderReceiptData, order.id);
@@ -2243,7 +2295,15 @@ async function submitProductOrder() {
 
         // Telegram OTP admin login: no email/password is requested from the admin.
         function withTimeout(promise, ms, label) {
-            return Promise.race([promise, new Promise(function(_, reject){ setTimeout(function(){ reject(new Error(label || 'timeout')); }, ms); })]);
+            var timer;
+            return Promise.race([
+                Promise.resolve(promise),
+                new Promise(function(_, reject) {
+                    timer = setTimeout(function() { reject(new Error(label || 'timeout')); }, ms);
+                })
+            ]).finally(function() {
+                if (timer) clearTimeout(timer);
+            });
         }
         async function signInOrBootstrapAdmin() {
             if (!supabaseClient) {
@@ -2253,7 +2313,7 @@ async function submitProductOrder() {
 
             /*
              * V7 REAL ONLINE:
-             * The deployed server function is `admin-telegram-otp` version 1.
+             * The deployed server function is `admin-telegram-otp` version 3.
              * Contract:
              *   request -> { ok, challengeId, expiresIn }
              *   verify  -> { ok, access_token, refresh_token }
@@ -2308,7 +2368,10 @@ async function submitProductOrder() {
                     if (!p || !p.createdAt || !p.challengeId) return null;
 
                     const age = Date.now() - Number(p.createdAt);
-                    if (age >= 5 * 60 * 1000) {
+                    const ttlMs = Math.max(1, Math.min(300, Number(p.expiresIn) || 300)) * 1000;
+                    // Expire the browser-side challenge slightly before the server TTL,
+                    // so clock/network delay does not keep offering a code at its edge.
+                    if (age < 0 || age >= ttlMs - 15000) {
                         sessionStorage.removeItem(STORAGE_KEY);
                         return null;
                     }
@@ -2448,9 +2511,12 @@ async function submitProductOrder() {
                 let pending = getPending();
 
                 if (!pending) {
-                    const request = await invokeAdminTelegram({
+                    // Requesting an OTP creates server state and sends a Telegram message.
+                    // Do not replay it automatically after a transport error: the first request
+                    // may already have succeeded and the server enforces a 45-second cooldown.
+                    const request = await withTimeout(invokeAdminTelegram({
                         action: 'request'
-                    });
+                    }, 1), 15000, 'telegram_otp_request_timeout');
 
                     if (request.error || !request.data || request.data.ok !== true) {
                         console.warn(
@@ -2478,7 +2544,11 @@ async function submitProductOrder() {
                     }
 
                     setPending(challengeId, expiresIn);
-                    pending = getPending();
+                    pending = getPending() || {
+                        challengeId: String(challengeId),
+                        createdAt: Date.now(),
+                        expiresIn: expiresIn
+                    };
 
                     showNotification('✅ کد ورود به تلگرام مدیر ارسال شد.');
                 } else {
@@ -2492,11 +2562,14 @@ async function submitProductOrder() {
 
                 if (code === null) return false;
 
-                const verify = await invokeAdminTelegram({
+                // OTP verification is a one-time, state-changing operation.
+                // Never replay the same code automatically after a transport/HTTP error:
+                // the server may already have consumed it, or counted the failed attempt.
+                const verify = await withTimeout(invokeAdminTelegram({
                     action: 'verify',
                     challengeId: pending.challengeId,
                     code: code
-                });
+                }, 1), 15000, 'telegram_otp_verify_timeout');
 
                 if (verify.error || !verify.data || verify.data.ok !== true) {
                     console.warn(
@@ -2506,14 +2579,24 @@ async function submitProductOrder() {
                     );
 
                     const serverMessage = parseServerError(verify);
+                    const status = verify.error && verify.error.context && Number(verify.error.context.status);
+                    const ambiguousFailure = !!verify.error && (!Number.isFinite(status) || status === 0 || status >= 500);
 
-                    showNotification(
-                        serverMessage ||
-                        'تأیید کد توسط سرور انجام نشد.',
-                        'error'
-                    );
-
-                    // Keep the challenge so the user can retry while it is valid.
+                    if (ambiguousFailure) {
+                        // The server may have consumed the one-time code even if its response was lost.
+                        // Drop the browser challenge rather than trapping the next attempt on a used code.
+                        clearPending();
+                        showNotification(
+                            'پاسخ نهایی سرویس ورود دریافت نشد؛ کد قبلی کنار گذاشته شد. برای کد تازه، در صورت نمایش محدودیت، ۴۵ ثانیه صبر کنید.',
+                            'error'
+                        );
+                    } else {
+                        showNotification(
+                            serverMessage || 'تأیید کد توسط سرور انجام نشد.',
+                            'error'
+                        );
+                        // For an explicit invalid/expired code, keep the challenge while it remains valid.
+                    }
                     return false;
                 }
 
@@ -2521,9 +2604,12 @@ async function submitProductOrder() {
                 const refreshToken = verify.data.refresh_token;
 
                 if (!accessToken || !refreshToken) {
+                    // The server has already consumed this OTP. Do not leave a
+                    // browser-side challenge that can only fail on the next attempt.
+                    clearPending();
                     console.warn('Verified OTP but no session returned:', verify.data);
                     showNotification(
-                        'کد صحیح است، اما نشست امن مدیریت از سرور دریافت نشد.',
+                        'کد تأیید شد، اما نشست امن مدیریت از سرور دریافت نشد. برای کد تازه دوباره تلاش کنید.',
                         'error'
                     );
                     return false;
@@ -2535,8 +2621,11 @@ async function submitProductOrder() {
                 });
 
                 if (sessionSet.error) {
+                    // A successful OTP verification consumes the code server-side.
+                    // If local session establishment fails, discard the consumed challenge.
+                    clearPending();
                     console.warn('setSession failed:', sessionSet.error);
-                    showNotification('برقراری نشست مدیریت انجام نشد.', 'error');
+                    showNotification('کد تأیید شد، اما برقراری نشست مدیریت انجام نشد. دوباره برای کد تازه تلاش کنید.', 'error');
                     return false;
                 }
 
@@ -2552,11 +2641,19 @@ async function submitProductOrder() {
                 return true;
 
             } catch (e) {
+                clearPending();
                 console.warn('telegram admin auth:', e);
-                showNotification(
-                    'ارتباط با سامانه ورود تلگرامی برقرار نشد.',
-                    'error'
-                );
+                if (/timeout/i.test(String(e && e.message || e))) {
+                    showNotification(
+                        'پاسخ سرویس ورود بیش از ۱۵ ثانیه طول کشید؛ برای جلوگیری از تکرار کد مصرف‌شده، درخواست فعلی کنار گذاشته شد. اگر کد تازه محدود شد، ۴۵ ثانیه صبر کنید.',
+                        'error'
+                    );
+                } else {
+                    showNotification(
+                        'ارتباط با سامانه ورود تلگرامی برقرار نشد؛ وضعیت کد قبلی نامطمئن است و برای ادامه باید کد تازه درخواست شود.',
+                        'error'
+                    );
+                }
                 return false;
             }
         }
@@ -2624,7 +2721,7 @@ async function submitProductOrder() {
             showNotification('✅ ورود مدیریت موفق بود؛ پنل مدیریت باز شد.');
         }
 
-        const ADMIN_MEDIA_SETTING_KEYS = ['cafeSettings','cafeCustomCSS'];
+        const ADMIN_MEDIA_SETTING_KEYS = ['cafeSettings','cafeCustomCSS','discountSettings'];
         async function cloudSaveAdminSetting(key,value){
             if(!supabaseClient) return false;
             try{
@@ -2825,17 +2922,34 @@ async function submitProductOrder() {
             toggle.classList.toggle('active');
         }
 
-        function saveDiscountSettings() {
+        async function saveDiscountSettings() {
+            if (!supabaseClient) { showNotification('❌ اتصال سرور برقرار نیست؛ تخفیف ذخیره نشد.', 'error'); return false; }
+            if (typeof verifyOnlineAdmin !== 'function' || !(await verifyOnlineAdmin())) {
+                showNotification('❌ برای ذخیره تخفیف، ورود امن مدیر لازم است.', 'error'); return false;
+            }
+            var titleEl = document.getElementById('discountTitleInput');
+            var subEl = document.getElementById('discountSubInput');
+            var iconEl = document.getElementById('discountIconInput');
+            var toggle = document.getElementById('discountToggle');
             var discount = {
-                title: document.getElementById('discountTitleInput').value,
-                sub: document.getElementById('discountSubInput').value,
-                icon: document.getElementById('discountIconInput').value,
-                active: document.getElementById('discountToggle').classList.contains('active')
+                title: titleEl ? titleEl.value : '',
+                sub: subEl ? subEl.value : '',
+                icon: iconEl ? iconEl.value : '🔥',
+                active: !!(toggle && toggle.classList.contains('active'))
             };
-            localStorage.setItem('discountSettings', JSON.stringify(discount));
-            updateDiscountPreview();
-            applyDiscountToBanner();
-            showNotification('✅ تخفیف با موفقیت ذخیره شد');
+            try {
+                var ok = await cloudSaveAdminSetting('discountSettings', discount);
+                if (!ok) throw new Error('ذخیره تخفیف روی سرور تأیید نشد.');
+                localStorage.setItem('discountSettings', JSON.stringify(discount));
+                updateDiscountPreview();
+                applyDiscountToBanner();
+                showNotification('✅ تخفیف با تأیید سرور ذخیره شد.');
+                return true;
+            } catch (e) {
+                console.warn('saveDiscountSettings', e);
+                showNotification('❌ تخفیف ذخیره نشد؛ تغییر محلی اعمال نشد. ' + (e.message || ''), 'error');
+                return false;
+            }
         }
         window.saveDiscount = function saveDiscount() { return saveDiscountSettings(); }
 
@@ -2904,15 +3018,29 @@ async function submitProductOrder() {
             return [];
         }
         async function saveProductsSafe(products) {
-            if (!Array.isArray(products)) products = [];
+            if (!Array.isArray(products)) return { ok:false, reason:'invalid-products' };
+            // Server is authoritative: update the local display cache only after every upsert succeeds.
+            var result;
             try {
-                var cache = products.map(function(p){ var q=Object.assign({},p); if(q.imageUrl && String(q.imageUrl).indexOf('data:image/')===0 && String(q.imageUrl).length>200000) q.imageUrl=''; return q; });
+                if (typeof syncProductsToCloud !== 'function') return { ok:false, reason:'sync-unavailable' };
+                result = await syncProductsToCloud(products);
+            } catch (e) {
+                console.warn('product server save', e);
+                return { ok:false, reason: String(e && e.message || e) };
+            }
+            if (!result || !result.ok) return result || { ok:false, reason:'server-write-failed' };
+            try {
+                var cache = products.map(function(p){
+                    var q = Object.assign({}, p);
+                    if (q.imageUrl && String(q.imageUrl).indexOf('data:image/') === 0 && String(q.imageUrl).length > 200000) q.imageUrl = '';
+                    return q;
+                });
                 localStorage.setItem('cafeProducts', JSON.stringify(cache));
             } catch (e) {
                 console.warn('saveProductsSafe local cache', e);
-                if (typeof showNotification === 'function') showNotification('⚠️ حافظه محلی پر است؛ نسخه ابری استفاده می‌شود.', 'warning');
+                if (typeof showNotification === 'function') showNotification('⚠️ سرور ذخیره شد، اما حافظهٔ نمایشی گوشی به‌روز نشد.', 'warning');
             }
-            try { if (typeof syncProductsToCloud === 'function') await syncProductsToCloud(products); } catch (e2) { console.warn('product cloud save',e2); }
+            return result;
         }
         // override getProducts/saveProducts to use safe versions
         window.getProducts = function() { return getProductsSafe(); };
@@ -2995,7 +3123,12 @@ async function submitProductOrder() {
                     else alert('قیمت معتبر وارد کنید');
                     return;
                 }
-                var products = getProductsSafe();
+                var serverProducts = await loadProductsFromServerStrict();
+                if (!serverProducts.ok) {
+                    if (typeof showNotification === 'function') showNotification('❌ دریافت فهرست محصولات از سرور ناموفق بود؛ تغییری اعمال نشد.', 'error');
+                    return;
+                }
+                var products = serverProducts.products;
                 if (editId) {
                     var idx = products.findIndex(function(p){ return String(p.id) === String(editId); });
                     if (idx < 0) {
@@ -3011,7 +3144,7 @@ async function submitProductOrder() {
                         imageUrl: imageUrl,
                         desc: desc
                     };
-                    if (typeof showNotification === 'function') showNotification('✅ محصول ویرایش شد');
+
                 } else {
                     var maxId = 0;
                     products.forEach(function(p){ var n = parseInt(p.id, 10); if (!isNaN(n) && n > maxId) maxId = n; });
@@ -3024,9 +3157,14 @@ async function submitProductOrder() {
                         imageUrl: imageUrl,
                         desc: desc
                     });
-                    if (typeof showNotification === 'function') showNotification('✅ محصول اضافه شد (' + products.length + ')');
+
                 }
-                saveProductsSafe(products);
+                var savedResult = await saveProductsSafe(products);
+                if (!savedResult || !savedResult.ok) {
+                    if (typeof showNotification === 'function') showNotification('❌ سرور ذخیرهٔ محصول را تأیید نکرد؛ تغییر اعمال نشد.', 'error');
+                    return;
+                }
+                if (typeof showNotification === 'function') showNotification(editId ? '✅ ویرایش محصول در سرور ثبت شد.' : '✅ محصول در سرور ثبت شد (' + products.length + ')');
                 if (typeof renderProducts === 'function') renderProducts();
                 renderAdminProducts();
                 resetProductForm();
@@ -3079,44 +3217,63 @@ async function submitProductOrder() {
 
         async function deleteProduct(id) {
             try {
-                if (!confirm('این محصول حذف شود؟\n\nحذف از لیست محلی و سرور انجام می‌شود.')) return;
-                var all = getProductsSafe();
+                if (!confirm('این محصول حذف شود؟\n\nحذف فقط پس از تأیید سرور انجام می‌شود.')) return;
+                if (!supabaseClient) {
+                    if (typeof showNotification === 'function') showNotification('❌ اتصال سرور برقرار نیست؛ محصول حذف نشد.', 'error');
+                    return;
+                }
+                var serverProducts = await loadProductsFromServerStrict();
+                if (!serverProducts.ok) {
+                    if (typeof showNotification === 'function') showNotification('❌ دریافت محصول از سرور ناموفق بود؛ حذف انجام نشد.', 'error');
+                    return;
+                }
+                var all = serverProducts.products;
                 var victim = null;
                 for (var i = 0; i < all.length; i++) {
-                    if (String(all[i].id) === String(id) || String(all[i].cloudId) === String(id)) { victim = all[i]; break; }
+                    if (String(all[i].id) === String(id) || String(all[i].cloudId || '') === String(id)) { victim = all[i]; break; }
                 }
-                var products = all.filter(function(p){ return String(p.id) !== String(id) && String(p.cloudId||'') !== String(id); });
+                if (!victim) {
+                    if (typeof showNotification === 'function') showNotification('محصول پیدا نشد؛ فهرست را از سرور تازه‌سازی کنید.', 'error');
+                    return;
+                }
+                var deleted = false;
                 try {
-                    var cache = products.map(function(p){ var q=Object.assign({},p); if(q.imageUrl && String(q.imageUrl).indexOf('data:image/')===0 && String(q.imageUrl).length>200000) q.imageUrl=''; return q; });
+                    if (victim.cloudId) {
+                        var byCloudId = await supabaseClient.from('products').delete().eq('id', victim.cloudId).select('id');
+                        if (byCloudId.error) throw byCloudId.error;
+                        deleted = Array.isArray(byCloudId.data) && byCloudId.data.length > 0;
+                    }
+                    if (!deleted && victim.id != null) {
+                        var byLocalId = await supabaseClient.from('products').delete().eq('local_id', Number(victim.id)).select('id');
+                        if (byLocalId.error) throw byLocalId.error;
+                        deleted = Array.isArray(byLocalId.data) && byLocalId.data.length > 0;
+                    }
+                } catch (serverError) {
+                    console.warn('delete product server confirmation', serverError);
+                    if (typeof showNotification === 'function') showNotification('❌ سرور حذف محصول را تأیید نکرد؛ محصول باقی ماند.', 'error');
+                    return;
+                }
+                if (!deleted) {
+                    if (typeof showNotification === 'function') showNotification('❌ محصول در سرور پیدا یا حذف نشد؛ فهرست محلی تغییر نکرد.', 'error');
+                    return;
+                }
+                var products = all.filter(function(p) {
+                    return String(p.id) !== String(victim.id) && String(p.cloudId || '') !== String(victim.cloudId || '');
+                });
+                try {
+                    var cache = products.map(function(p) {
+                        var q = Object.assign({}, p);
+                        if (q.imageUrl && String(q.imageUrl).indexOf('data:image/') === 0 && String(q.imageUrl).length > 200000) q.imageUrl = '';
+                        return q;
+                    });
                     localStorage.setItem('cafeProducts', JSON.stringify(cache));
-                } catch (eLoc) {}
+                } catch (cacheError) { console.warn('product cache update', cacheError); }
                 if (typeof renderProducts === 'function') renderProducts();
                 renderAdminProducts();
-                // حذف از سرور
-                var serverOk = false;
-                try {
-                    if (supabaseClient) {
-                        if (victim && victim.cloudId) {
-                            var r1 = await supabaseClient.from('products').delete().eq('id', victim.cloudId);
-                            if (!r1.error) serverOk = true;
-                        }
-                        var r2 = await supabaseClient.from('products').delete().eq('local_id', Number(id));
-                        if (!r2.error) serverOk = true;
-                        // sync full list to clean orphans
-                        if (typeof syncProductsToCloud === 'function') {
-                            var sr = await syncProductsToCloud(products);
-                            if (sr && sr.ok) serverOk = true;
-                        }
-                    }
-                } catch (eSrv) { console.warn('delete server', eSrv); }
-                if (typeof showNotification === 'function') {
-                    showNotification(serverOk
-                        ? ('🗑️ حذف شد و از سرور هم پاک شد — باقی‌مانده: ' + products.length)
-                        : ('🗑️ از لیست محلی حذف شد. ثبت سرور: ناموفق یا آفلاین — دکمه «ثبت محصولات روی سرور» را بزنید'));
-                }
+                if (typeof showNotification === 'function') showNotification('✅ محصول با تأیید سرور حذف شد.');
             } catch (e) {
                 console.error('deleteProduct', e);
-                alert('خطا در حذف: ' + (e && e.message ? e.message : e));
+                if (typeof showNotification === 'function') showNotification('❌ خطا در حذف محصول: ' + (e && e.message ? e.message : e), 'error');
             }
         }
         window.deleteProduct = deleteProduct;
@@ -3153,36 +3310,55 @@ async function submitProductOrder() {
             });
             list.innerHTML = html;
         }
-        function updateOrderStatus(id, status) {
+        async function updateOrderStatus(id, status) {
+            if (!supabaseClient) { showNotification('❌ اتصال سرور برقرار نیست؛ وضعیت سفارش تغییر نکرد', 'error'); return; }
             var orders = [];
             try { orders = JSON.parse(localStorage.getItem('cafeOrders') || '[]'); } catch(e) {}
             if (!Array.isArray(orders)) orders = [];
-            var found = false;
-            orders.forEach(function(o) {
-                if (String(o.id) === String(id)) { o.status = status; found = true; }
-            });
-            if (!found) { showNotification('سفارش پیدا نشد', 'error'); return; }
-            localStorage.setItem('cafeOrders', JSON.stringify(orders));
-            sbSyncOrderLocalId(id, {status: status});
+            var index = orders.findIndex(function(o) { return String(o.id) === String(id); });
+            if (index < 0) { showNotification('سفارش پیدا نشد', 'error'); return; }
+            var saved = await sbSyncOrderLocalId(id, {status: status});
+            if (!saved || !saved.length) {
+                showNotification('❌ سرور تغییر وضعیت سفارش را تأیید نکرد؛ تغییری اعمال نشد', 'error');
+                return;
+            }
+            orders[index].status = status;
+            try { localStorage.setItem('cafeOrders', JSON.stringify(orders)); } catch(e) {}
             renderAdminOrders();
-            showNotification('وضعیت سفارش: ' + status);
+            showNotification('✅ وضعیت سفارش در سرور ثبت شد: ' + status);
         }
         async function sbDeleteOrderLocalId(localId) {
-            if (!supabaseClient) return false;
+            if (!supabaseClient || localId == null) return false;
             try {
-                var r = await supabaseClient.from('orders').delete().eq('local_id', localId);
-                return !r.error;
-            } catch(e) { return false; }
+                var r = await supabaseClient.from('orders').delete().eq('local_id', localId).select('id');
+                if (r.error) throw r.error;
+                if (Array.isArray(r.data) && r.data.length) return true;
+                if (/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(localId))) {
+                    var byId = await supabaseClient.from('orders').delete().eq('id', String(localId)).select('id');
+                    if (byId.error) throw byId.error;
+                    if (Array.isArray(byId.data) && byId.data.length) return true;
+                }
+                return false;
+            } catch(e) { console.warn('order deletion was not confirmed by server', e); return false; }
         }
-        function deleteOrderAdmin(id) {
+        async function deleteOrderAdmin(id) {
             if (!confirm('حذف این سفارش؟')) return;
-            var orders = [];
-            try { orders = JSON.parse(localStorage.getItem('cafeOrders') || '[]'); } catch(e) {}
-            orders = (orders || []).filter(function(o){ return String(o.id) !== String(id); });
-            localStorage.setItem('cafeOrders', JSON.stringify(orders));
-            sbDeleteOrderLocalId(id);
+            if (!supabaseClient) { showNotification('❌ اتصال سرور برقرار نیست؛ سفارش حذف نشد', 'error'); return; }
+            var current = [];
+            try { current = JSON.parse(localStorage.getItem('cafeOrders') || '[]'); } catch(e) {}
+            if (!Array.isArray(current)) current = [];
+            if (!current.some(function(o){ return String(o.id) === String(id); })) {
+                showNotification('سفارش پیدا نشد', 'error'); return;
+            }
+            var deleted = await sbDeleteOrderLocalId(id);
+            if (!deleted) {
+                showNotification('❌ سرور حذف سفارش را تأیید نکرد؛ سفارش همچنان باقی است', 'error');
+                return;
+            }
+            var orders = current.filter(function(o){ return String(o.id) !== String(id); });
+            try { localStorage.setItem('cafeOrders', JSON.stringify(orders)); } catch(e) {}
             renderAdminOrders();
-            showNotification('🗑️ سفارش حذف شد');
+            showNotification('🗑️ سفارش با تأیید سرور حذف شد');
         }
         function loadMediaSettingsForm() {
             var s = {};
@@ -3199,19 +3375,58 @@ async function submitProductOrder() {
                 if (el) el.value = map[id];
             });
         }
-        window.saveMediaSettings = function saveMediaSettings() {
-            var s = {};
-            try { s = JSON.parse(localStorage.getItem('cafeSettings')||'{}'); } catch(e){}
-            s.headerLogo = (document.getElementById('mediaHeaderLogo')||{}).value || '';
-            s.registerLogo = (document.getElementById('mediaRegisterLogo')||{}).value || '';
-            s.splashBg = (document.getElementById('mediaSplashBg')||{}).value || '';
-            s.managerPhone = (document.getElementById('mediaManagerPhone')||{}).value || '';
-            s.managerHours = (document.getElementById('mediaManagerHours')||{}).value || 'پنج‌روز هفته، ۱۸ الی ۲۱ — جمعه و دوشنبه پاسخ‌گو نیستیم؛ پیام بگذارید';
-            localStorage.setItem('cafeSettings', JSON.stringify(s));
-            if (s.headerLogo) { var h=document.getElementById('headerLogoImg'); if(h) h.src=s.headerLogo; }
-            if (s.registerLogo) { var r=document.getElementById('registerLogoImg'); if(r) r.src=s.registerLogo; }
-            if (s.splashBg) { var sp=document.getElementById('splashBgImg'); if(sp) sp.src=s.splashBg; }
-            showNotification('✅ ذخیره شد');
+        window.saveMediaSettings = async function saveMediaSettings() {
+            if (!supabaseClient) {
+                showNotification('❌ اتصال سرور برقرار نیست؛ تنظیمات ذخیره نشد.', 'error');
+                return;
+            }
+            if (typeof verifyOnlineAdmin !== 'function' || !(await verifyOnlineAdmin())) {
+                showNotification('❌ برای ذخیره تنظیمات، ورود امن مدیر لازم است.', 'error');
+                return;
+            }
+            var local = {};
+            try { local = JSON.parse(localStorage.getItem('cafeSettings') || '{}'); } catch(e) {}
+            var headerLogo = (document.getElementById('mediaHeaderLogo') || {}).value || '';
+            var registerLogo = (document.getElementById('mediaRegisterLogo') || {}).value || '';
+            var splashBg = (document.getElementById('mediaSplashBg') || {}).value || '';
+            var managerPhone = (document.getElementById('mediaManagerPhone') || {}).value || '';
+            var managerHours = (document.getElementById('mediaManagerHours') || {}).value || 'پنج‌روز هفته، ۱۸ الی ۲۱ — جمعه و دوشنبه پاسخ‌گو نیستیم؛ پیام بگذارید';
+            if ([headerLogo, registerLogo, splashBg].some(function(v) { return /^data:image\//i.test(String(v)); })) {
+                showNotification('❌ برای ذخیره پایدار، ابتدا تصویر را در Storage بارگذاری کنید و لینک آن را وارد کنید.', 'error');
+                return;
+            }
+            try {
+                var remote = await supabaseClient.from('app_settings').select('value').eq('key', 'admin:cafeSettings').maybeSingle();
+                if (remote.error) throw remote.error;
+                var serverSettings = remote.data && remote.data.value ? remote.data.value : {};
+                if (typeof serverSettings === 'string') {
+                    try { serverSettings = JSON.parse(serverSettings); } catch(e) { serverSettings = {}; }
+                }
+                if (!serverSettings || typeof serverSettings !== 'object' || Array.isArray(serverSettings)) serverSettings = {};
+                // Keep sensitive payment fields from the server; never overwrite them with stale local copies.
+                delete local.paymentCard;
+                delete local.paymentSheba;
+                var full = Object.assign({}, serverSettings, local, {
+                    headerLogo: headerLogo,
+                    registerLogo: registerLogo,
+                    splashBg: splashBg,
+                    managerPhone: managerPhone,
+                    managerHours: managerHours
+                });
+                var saved = await cloudSaveAdminSetting('cafeSettings', full);
+                if (!saved) throw new Error('ذخیره تنظیمات روی سرور تأیید نشد.');
+                var localSafe = Object.assign({}, full);
+                delete localSafe.paymentCard;
+                delete localSafe.paymentSheba;
+                localStorage.setItem('cafeSettings', JSON.stringify(localSafe));
+                if (headerLogo) { var h = document.getElementById('headerLogoImg'); if (h) h.src = headerLogo; }
+                if (registerLogo) { var r = document.getElementById('registerLogoImg'); if (r) r.src = registerLogo; }
+                if (splashBg) { var sp = document.getElementById('splashBgImg'); if (sp) sp.src = splashBg; }
+                showNotification('✅ تنظیمات با تأیید سرور ذخیره شد.');
+            } catch(e) {
+                console.warn('saveMediaSettings server-first', e);
+                showNotification('❌ تنظیمات ذخیره نشد؛ نسخه محلی تغییر نکرد. ' + (e.message || ''), 'error');
+            }
         }
         function loadMediaSettings() {
             var s = {};
@@ -3329,6 +3544,7 @@ async function submitProductOrder() {
         }
         async function saveModalDataCloud(modalId,content){
             try{
+                if(typeof verifyOnlineAdmin!=='function'||!(await verifyOnlineAdmin()))throw new Error('Verified admin session required');
                 var client=getModalDataSupabase(); if(!client)throw new Error('Supabase client unavailable');
                 var r=await client.from('modal_data').upsert({modal_id:modalId,content:content,version:1,updated_at:new Date().toISOString()},{onConflict:'modal_id'});
                 if(r.error)throw r.error;
@@ -3597,7 +3813,7 @@ async function submitProductOrder() {
             var title=((document.getElementById('modalEditTitle')||{}).value||'').trim(),icon=((document.getElementById('modalEditIcon')||{}).value||'').trim(),guide=((document.getElementById('modalEditGuide')||{}).value||'').trim(),question=((document.getElementById('modalEditQuestion')||{}).value||'').trim();
             var content={title:title,icon:icon,guide:guide,question:question};Object.assign(content,collectModalEditorData(id));
             var ok=await saveModalDataCloud(id,content);
-            if(!ok){var map=getModalMetaMap();map[id]=Object.assign({},map[id]||{},content);saveModalMetaMap(map);showNotification('⚠️ ذخیره سرور انجام نشد؛ تغییرات فقط به‌عنوان fallback آفلاین نگه داشته شد.','error');return;}
+            if(!ok){showNotification('❌ ذخیره سرور انجام نشد؛ تغییرات اعمال نشد. اتصال و دسترسی مدیر را بررسی کنید.','error');return;}
             window.__modalCloudData[id]=content;var map2=getModalMetaMap();delete map2[id];saveModalMetaMap(map2);
             
             // اعمال resultsDB برای مودال‌های عمومی
@@ -3616,10 +3832,12 @@ async function submitProductOrder() {
         }
         async function resetModalMetaAdmin(modalId){
             if(!confirm('بازنشانی این مودال به حالت اولیه؟'))return;
+            if(typeof verifyOnlineAdmin!=='function'||!(await verifyOnlineAdmin())){showNotification('❌ برای بازنشانی، ورود امن مدیر لازم است.','error');return;}
             var client=getModalDataSupabase();var ok=false;
-            try{if(client){var r=await client.from('modal_data').delete().eq('modal_id',modalId);if(r.error)throw r.error;ok=true;}}catch(e){console.error(e);}
+            try{if(client){var r=await client.from('modal_data').delete().eq('modal_id',modalId).select('modal_id');if(r.error)throw r.error;ok=Array.isArray(r.data)&&r.data.length>0;}}catch(e){console.error(e);}
+            if(!ok){showNotification('❌ سرور حذف داده را تأیید نکرد؛ اطلاعات تغییری نکرد.','error');return;}
             delete window.__modalCloudData[modalId];try{var map=getModalMetaMap();delete map[modalId];saveModalMetaMap(map);}catch(e){}
-            showNotification(ok?'✅ داده سفارشی از سرور حذف شد':'⚠️ حذف سروری انجام نشد','error');setTimeout(function(){location.reload();},500);
+            showNotification('✅ داده سفارشی با تأیید سرور حذف شد');setTimeout(function(){location.reload();},500);
         }
         async function loadAllModalDataCloud(){
             try{
@@ -3645,49 +3863,53 @@ async function submitProductOrder() {
         // تنظیمات مدیریت
         // ============================================================
         window.saveAdminSettings = async function saveAdminSettings() {
-            if (typeof verifyOnlineAdmin === 'function') {
-                var okA = await verifyOnlineAdmin();
-                if (!okA) { showNotification('فقط مدیر واردشده می‌تواند تنظیمات پرداخت را ذخیره کند', 'error'); return; }
+            if (typeof verifyOnlineAdmin !== 'function' || !(await verifyOnlineAdmin())) {
+                showNotification('فقط مدیر واردشده می‌تواند تنظیمات پرداخت را ذخیره کند', 'error');
+                return;
             }
-            var s = {};
-            try { s = JSON.parse(localStorage.getItem('cafeSettings') || '{}'); } catch (e) { s = {}; }
+            if (!supabaseClient) {
+                showNotification('❌ اتصال سرور برقرار نیست؛ تنظیمات پرداخت ذخیره نشد.', 'error');
+                return;
+            }
+            var local = {};
+            try { local = JSON.parse(localStorage.getItem('cafeSettings') || '{}'); } catch (e) {}
             var cardEl = document.getElementById('paymentCardNumber');
             var shebaEl = document.getElementById('paymentSheba');
             var ownerEl = document.getElementById('paymentCardOwner');
             var guideEl = document.getElementById('paymentGuide');
             var card = cardEl ? (cardEl.value || '').trim() : '';
             var sheba = shebaEl ? (shebaEl.value || '').trim() : '';
-            var owner = ownerEl ? (ownerEl.value || '').trim() : (s.paymentOwner || '');
-            var guide = guideEl ? (guideEl.value || '').trim() : (s.paymentGuide || '');
+            var owner = ownerEl ? (ownerEl.value || '').trim() : (local.paymentOwner || '');
+            var guide = guideEl ? (guideEl.value || '').trim() : (local.paymentGuide || '');
 
-            // نسخه کامل برای سرور
-            var full = Object.assign({}, s, {
-                paymentCard: card,
-                paymentSheba: sheba,
-                paymentOwner: owner,
-                paymentGuide: guide
-            });
-
-            // حافظه نشست برای نمایش به کاربر در همین مرورگر
-            setSensitivePayCache({ paymentCard: card, paymentSheba: sheba, paymentOwner: owner });
-
-            // localStorage بدون کارت و شبا
-            delete s.paymentCard;
-            delete s.paymentSheba;
-            s.paymentOwner = owner;
-            s.paymentGuide = guide;
-            localStorage.setItem('cafeSettings', JSON.stringify(s));
-            try { localStorage.removeItem('adminPassword'); } catch (e) {}
-
-            var cloudOk = false;
-            if (typeof cloudSaveAdminSetting === 'function') {
-                try { cloudOk = !!(await cloudSaveAdminSetting('cafeSettings', full)); } catch (e) { console.warn(e); }
-            }
-            if (typeof fillPaymentInfoUI === 'function') fillPaymentInfoUI();
-            if (typeof showNotification === 'function') {
-                showNotification(cloudOk
-                    ? '✅ تنظیمات پرداخت روی سرور ذخیره شد (کارت روی گوشی دائمی ذخیره نمی‌شود)'
-                    : '⚠️ محلی/نشست ذخیره شد؛ ذخیره سرور ناموفق بود', cloudOk ? undefined : 'error');
+            try {
+                var remote = await supabaseClient.from('app_settings').select('value').eq('key', 'admin:cafeSettings').maybeSingle();
+                if (remote.error) throw remote.error;
+                var serverSettings = remote.data && remote.data.value ? remote.data.value : {};
+                if (typeof serverSettings === 'string') {
+                    try { serverSettings = JSON.parse(serverSettings); } catch(e) { serverSettings = {}; }
+                }
+                if (!serverSettings || typeof serverSettings !== 'object' || Array.isArray(serverSettings)) serverSettings = {};
+                // Preserve all current server settings; only payment fields are changed here.
+                var full = Object.assign({}, serverSettings, {
+                    paymentCard: card,
+                    paymentSheba: sheba,
+                    paymentOwner: owner,
+                    paymentGuide: guide
+                });
+                var cloudOk = typeof cloudSaveAdminSetting === 'function' && await cloudSaveAdminSetting('cafeSettings', full);
+                if (!cloudOk) throw new Error('ذخیره تنظیمات پرداخت روی سرور تأیید نشد.');
+                var localSafe = Object.assign({}, serverSettings, { paymentOwner: owner, paymentGuide: guide });
+                delete localSafe.paymentCard;
+                delete localSafe.paymentSheba;
+                localStorage.setItem('cafeSettings', JSON.stringify(localSafe));
+                setSensitivePayCache({ paymentCard: card, paymentSheba: sheba, paymentOwner: owner });
+                try { localStorage.removeItem('adminPassword'); } catch (e) {}
+                if (typeof fillPaymentInfoUI === 'function') fillPaymentInfoUI();
+                showNotification('✅ تنظیمات پرداخت با تأیید سرور ذخیره شد؛ اطلاعات حساس دائمی روی گوشی ذخیره نشد.');
+            } catch (e) {
+                console.warn('saveAdminSettings server-first', e);
+                showNotification('❌ تنظیمات پرداخت ذخیره نشد؛ نسخه محلی تغییر نکرد. ' + (e.message || ''), 'error');
             }
         }
         async function loadAdminPaymentForm() {
@@ -3739,10 +3961,10 @@ async function submitProductOrder() {
             var file = event.target.files[0];
             if (!file) return;
             var reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = async function(e) {
                 try {
                     var data = JSON.parse(e.target.result);
-                    if (data.products) { saveProducts(data.products); }
+                    if (data.products) { await saveProducts(data.products); }
                     if (data.subscriptions) { localStorage.setItem('adminSubscriptions', JSON.stringify(data.subscriptions)); }
                     if (data.users) { localStorage.setItem('cafeUsers', JSON.stringify(data.users)); }
                     if (data.discount) { localStorage.setItem('discountSettings', JSON.stringify(data.discount)); }
@@ -4656,6 +4878,9 @@ async function submitProductOrder() {
             var row={user_id:session.user.id,name:name,phone:phone,plan:plan,plan_id:String(days),plan_days:days,amount:null,receipt_path:path,status:'pending',receipt_note:'',created_at:new Date().toISOString(),updated_at:new Date().toISOString()};
             var r=await supabaseClient.from('subscription_requests').insert([row]).select().single();
             if(r.error)throw r.error;
+            if(!r.data||!r.data.id||String(r.data.user_id)!==String(session.user.id)||String(r.data.status)!=='pending'){
+              throw new Error('ثبت درخواست اشتراک از سرور تأیید نشد؛ لطفاً وضعیت درخواست را بررسی کنید.');
+            }
             window._subscriptionReceiptFile=null;
             window._subscriptionSelectedPlanDays=null;
             if(btn)btn.textContent='✅ درخواست با موفقیت ارسال شد';
@@ -5442,36 +5667,63 @@ async function submitProductOrder() {
     catch(e){ console.warn('showCallPurchaseInfo',e); }
   };
 
-  /* ---------- receipt-aware order submit wrapper ---------- */
+  /* ---------- receipt-aware order submit wrapper (await + exact order id) ---------- */
   var originalSubmitProductOrder=window.submitProductOrder;
-  window.submitProductOrder=function(){
+  var receiptSubmitRunning=false;
+  window.submitProductOrder=async function(){
+    if(receiptSubmitRunning){
+      if(typeof showNotification==='function') showNotification('درخواست سفارش در حال ثبت است؛ لطفاً صبر کنید.','info');
+      return;
+    }
     var receipt=window._orderReceiptData;
     if(!receipt){
       if(typeof showNotification==='function') showNotification('❌ تصویر فیش واریزی الزامی است','error');
       return;
     }
-    try { originalSubmitProductOrder.apply(this,arguments); }
-    catch(e){ console.error('submitProductOrder',e); return; }
+    if(typeof originalSubmitProductOrder!=='function'){
+      if(typeof showNotification==='function') showNotification('ثبت سفارش آماده نیست؛ صفحه را دوباره باز کنید.','error');
+      return;
+    }
+    receiptSubmitRunning=true;
+    var beforeIds={};
     try{
-      var orders=JSON.parse(localStorage.getItem('cafeOrders')||'[]');
-      if(!Array.isArray(orders)||!orders.length) return;
-      var order=orders[0];
-      var receiptId='receipt-'+String(order.id);
-      saveReceipt(receiptId,receipt).then(function(){
-        var latest=[];
-        try{latest=JSON.parse(localStorage.getItem('cafeOrders')||'[]');}catch(e){}
-        if(!Array.isArray(latest)||!latest.length)return;
-        latest[0].receiptId=receiptId;
-        latest[0].receiptStoredLocally=true;
-        /* نسخه کامل فیش دیگر داخل localStorage ذخیره نمی‌شود. */
-        latest[0].receiptData='';
-        localStorage.setItem('cafeOrders',JSON.stringify(latest));
+      var before=JSON.parse(localStorage.getItem('cafeOrders')||'[]');
+      if(Array.isArray(before)) before.forEach(function(o){if(o&&o.id!=null)beforeIds[String(o.id)]=true;});
+    }catch(e){}
+    try{
+      // The original async flow uploads the receipt and requires a confirmed Supabase order insert.
+      await originalSubmitProductOrder.apply(this,arguments);
+      var latest=[];
+      try{latest=JSON.parse(localStorage.getItem('cafeOrders')||'[]');}catch(e){}
+      if(!Array.isArray(latest)) latest=[];
+      // Never assume orders[0] is the order just submitted.
+      var order=latest.find(function(o){return o&&o.id!=null&&!beforeIds[String(o.id)];});
+      if(!order) return; // No newly server-confirmed local order was created.
+      var orderId=String(order.id);
+      var receiptId='receipt-'+orderId;
+      try{
+        await saveReceipt(receiptId,receipt);
+        var refreshed=[];
+        try{refreshed=JSON.parse(localStorage.getItem('cafeOrders')||'[]');}catch(e){}
+        if(!Array.isArray(refreshed)) refreshed=[];
+        var exact=refreshed.find(function(o){return o&&String(o.id)===orderId;});
+        if(!exact) return;
+        exact.receiptId=receiptId;
+        exact.receiptStoredLocally=true;
+        /* Keep the image out of localStorage; the server already stores the receipt path. */
+        exact.receiptData='';
+        localStorage.setItem('cafeOrders',JSON.stringify(refreshed));
         if(typeof window.renderAdminOrders==='function') window.renderAdminOrders();
-      }).catch(function(e){
-        console.warn('receipt vault failed',e);
-        if(typeof showNotification==='function') showNotification('⚠️ فیش ثبت شد ولی ذخیره محلی آن ناموفق بود','error');
-      });
-    }catch(e){ console.warn('receipt wrapper',e); }
+      }catch(e){
+        console.warn('receipt vault failed for order '+orderId,e);
+        if(typeof showNotification==='function') showNotification('⚠️ سفارش در سرور ثبت شد، اما ذخیره محلی تصویر فیش انجام نشد.','error');
+      }
+    }catch(e){
+      console.error('submitProductOrder',e);
+      if(typeof showNotification==='function') showNotification('ثبت سفارش کامل نشد؛ وضعیت سرور را بررسی کنید.','error');
+    }finally{
+      receiptSubmitRunning=false;
+    }
   };
 
   window.viewLocalReceipt=function(orderId){
@@ -5580,9 +5832,33 @@ function settings(){try{return JSON.parse(localStorage.getItem('cafeSettings')||
 function put(s){try{localStorage.setItem('cafeSettings',JSON.stringify(s));return true}catch(e){console.warn(e);return false}}
 async function upload(data,key){/* V22.9-RC1: شکست Storage = null، نه Base64 */if(!data||String(data).indexOf('data:image/')!==0)return null;if(!supabaseClient){console.warn('media upload: no client');return null;}try{var a=data.split(','),mime=(a[0].match(/data:([^;]+);base64/)||[,'image/jpeg'])[1],bin=atob(a[1]),b=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)b[i]=bin.charCodeAt(i);var blob=new Blob([b],{type:mime}),ext=(mime.split('/')[1]||'jpg').replace(/[^a-z0-9]/gi,'')||'jpg',path='app-media/'+key+'-'+Date.now()+'-'+Math.random().toString(36).slice(2)+'.'+ext,r=await supabaseClient.storage.from('public-assets').upload(path,blob,{upsert:true,contentType:mime});if(r.error)throw r.error;var u=supabaseClient.storage.from('public-assets').getPublicUrl(path);var url=u.data&&u.data.publicUrl?u.data.publicUrl:null;if(!url)throw new Error('publicUrl empty');return url}catch(e){console.warn('media upload',key,e);return null}}
 function apply(s){if(!s)return;if(s.headerLogo){var h=document.getElementById('headerLogoImg');if(h)h.src=s.headerLogo}if(s.registerLogo){var r=document.getElementById('registerLogoImg')||document.querySelector('#registerScreen img');if(r)r.src=s.registerLogo}if(s.splashBg){var spImg=document.getElementById('splashBgImg');if(spImg){spImg.src=s.splashBg;spImg.style.display='block';spImg.style.opacity='1';}var sp=document.getElementById('splashScreen');if(sp){sp.style.backgroundImage='url(\"'+s.splashBg+'\")';sp.style.backgroundSize='cover';sp.style.backgroundPosition='center';}}if(s.appBg){try{document.documentElement.style.setProperty('--app-user-bg','url(\"'+s.appBg+'\")');document.body.style.setProperty('background-image','url(\"'+s.appBg+'\")','important');document.body.style.setProperty('background-size','cover','important');document.body.style.setProperty('background-attachment','fixed','important');document.body.style.setProperty('background-position','center','important');var app=document.getElementById('app');if(app){app.style.setProperty('background-image','url(\"'+s.appBg+'\")','important');app.style.setProperty('background-size','cover','important');app.style.setProperty('background-position','center','important');}}catch(e){console.warn('appBg',e)}}if(s.appIcon){try{localStorage.setItem('cafeAppIcon',s.appIcon)}catch(e){}if(typeof applyAppIcon==='function')applyAppIcon(s.appIcon);else{document.querySelectorAll('link[rel=\"icon\"],link[rel=\"apple-touch-icon\"],link[rel=\"shortcut icon\"]').forEach(function(l){l.href=s.appIcon})}}}
-window.saveAndApplyAllMediaImages=async function(){var b=document.getElementById('saveAllMediaImagesBtn');if(b){b.disabled=true;b.textContent='⏳ در حال ذخیره...'}try{var s=settings(),keys=['headerLogo','registerLogo','splashBg','appBg','appIcon'];for(var i=0;i<keys.length;i++){if(s[keys[i]]&&String(s[keys[i]]).indexOf('data:image/')===0){var upUrl=await upload(s[keys[i]],keys[i]);if(upUrl&&String(upUrl).indexOf('http')===0)s[keys[i]]=upUrl;else{throw new Error('بارگذاری تصویر «'+keys[i]+'» روی سرور ناموفق بود؛ تنظیمات قبلی حفظ شد. اتصال و دسترسی Storage را بررسی کنید و دوباره تلاش کنید.');}}}put(s);if(s.appIcon)try{localStorage.setItem('cafeAppIcon',s.appIcon)}catch(e){}var cloudOk=false;try{if(typeof cloudSaveAdminSetting==='function'){cloudOk=!!(await cloudSaveAdminSetting('cafeSettings',s));}else if(supabaseClient){var ur=await supabaseClient.from('app_settings').upsert([{key:'admin:cafeSettings',value:s,updated_at:new Date().toISOString()}],{onConflict:'key'});cloudOk=!ur.error;}}catch(ce){console.warn(ce);}apply(s);if(typeof showNotification==='function'){var n=0,u=0;['headerLogo','registerLogo','splashBg','appBg','appIcon'].forEach(function(k){if(s[k]){n++;if(String(s[k]).indexOf('http')===0)u++;}});if(cloudOk&&u>0)showNotification('✅ سرور: '+u+' تصویر با لینک دائمی ذخیره شد'+(n>u?' | '+(n-u)+' هنوز فقط محلی (آپلود نشد)':''));else if(cloudOk)showNotification('⚠️ تنظیمات روی سرور ثبت شد ولی تصویرها لینک عمومی نگرفتند (باکت Storage یا دسترسی را چک کنید)');else showNotification('❌ ذخیره روی سرور ناموفق — فقط روی این مرورگر ماند','error');}}catch(e){console.warn(e);if(typeof showNotification==='function')showNotification('❌ ذخیره تصاویر کامل نشد: '+(e.message||e),'error')}finally{if(b){b.disabled=false;b.textContent='💾 ذخیره و اعمال همه تصاویر'}}}
+window.saveAndApplyAllMediaImages=async function(){
+var b=document.getElementById('saveAllMediaImagesBtn'),oldText=b?b.textContent:'';
+if(b){b.disabled=true;b.textContent='⏳ در حال ذخیره روی سرور...'}
+try{
+if(!supabaseClient||typeof cloudSaveAdminSetting!=='function'||typeof verifyOnlineAdmin!=='function'||!(await verifyOnlineAdmin()))throw new Error('اتصال سرور یا ورود امن مدیر در دسترس نیست.');
+var previous=settings(),s=Object.assign({},previous),keys=['headerLogo','registerLogo','splashBg','appBg','appIcon'];
+for(var i=0;i<keys.length;i++){
+var key=keys[i];
+if(s[key]&&String(s[key]).indexOf('data:image/')===0){
+var upUrl=await upload(s[key],key);
+if(!upUrl||String(upUrl).indexOf('http')!==0)throw new Error('بارگذاری تصویر «'+key+'» روی سرور ناموفق بود؛ تنظیمات قبلی حفظ شد.');
+s[key]=upUrl;
+}
+}
+var cloudOk=await cloudSaveAdminSetting('cafeSettings',s);
+if(!cloudOk)throw new Error('سرور ذخیره تنظیمات تصاویر را تأیید نکرد؛ تنظیمات قبلی حفظ شد.');
+if(!put(s))throw new Error('سرور ذخیره کرد، اما حافظه نمایشی گوشی به‌روز نشد؛ صفحه را تازه کنید.');
+if(s.appIcon)try{localStorage.setItem('cafeAppIcon',s.appIcon)}catch(e){}
+apply(s);
+if(typeof showNotification==='function')showNotification('✅ تصاویر و تنظیمات فقط پس از تأیید سرور اعمال شدند.');
+}catch(e){
+console.warn('save media images server-first',e);
+if(typeof showNotification==='function')showNotification('❌ '+(e.message||'ذخیره تصاویر ناموفق بود.'),'error');
+}finally{if(b){b.disabled=false;b.textContent=oldText||'💾 ذخیره و اعمال همه تصاویر'}}
+}
 window.applyGalleryImagesToUI=function(){var s=settings();apply(s);[['headerLogo','previewHeaderLogo'],['registerLogo','previewRegisterLogo'],['splashBg','previewSplash'],['appBg','previewAppBg'],['appIcon','previewAppIcon']].forEach(function(x){var e=document.getElementById(x[1]);if(e&&s[x[0]]){e.src=s[x[0]];e.style.display='block'}})};
-window.clearGalleryImages=function(){if(!confirm('همه تصاویر گالری پاک شوند؟'))return;var s=settings();['headerLogo','registerLogo','splashBg','appBg','appIcon'].forEach(function(k){delete s[k]});put(s);document.body.style.backgroundImage='';if(typeof showNotification==='function')showNotification('تصاویر محلی پاک شد؛ برای ذخیره تغییرات جدید دکمه ذخیره و اعمال را بزنید')};
+window.clearGalleryImages=async function(){if(!confirm('همه تصاویر گالری از تنظیمات سرور پاک شوند؟'))return;if(!supabaseClient||typeof verifyOnlineAdmin!=='function'||!(await verifyOnlineAdmin())){if(typeof showNotification==='function')showNotification('❌ اتصال سرور یا ورود امن مدیر در دسترس نیست؛ تصاویر حذف نشدند.','error');return;}var s=settings();['headerLogo','registerLogo','splashBg','appBg','appIcon'].forEach(function(k){delete s[k]});try{var ok=await cloudSaveAdminSetting('cafeSettings',s);if(!ok)throw new Error('سرور حذف تصاویر را تأیید نکرد.');put(s);document.body.style.backgroundImage='';if(typeof applyGalleryImagesToUI==='function')applyGalleryImagesToUI();if(typeof showNotification==='function')showNotification('✅ تصاویر از تنظیمات سرور حذف شدند.');}catch(e){if(typeof showNotification==='function')showNotification('❌ تصاویر حذف نشدند؛ '+(e.message||''),'error');}};
 function read(file,mb,cb){if(!file)return;if(file.size>mb*1024*1024){alert('حداکثر '+mb+' مگابایت');return}var r=new FileReader();r.onload=function(){cb(r.result)};r.readAsDataURL(file)}
 document.addEventListener('change',function(ev){var t=ev.target;if(!t||!t.id)return;var c={galleryHeaderLogo:['headerLogo','previewHeaderLogo',1.5],galleryRegisterLogo:['registerLogo','previewRegisterLogo',1.5],gallerySplash:['splashBg','previewSplash',2],galleryAppBg:['appBg','previewAppBg',2],galleryAppIcon:['appIcon','previewAppIcon',1.2]}[t.id];if(!c)return;var f=t.files&&t.files[0];if(!f)return;read(f,c[2],function(data){var s=settings();s[c[0]]=data;put(s);var p=document.getElementById(c[1]);if(p){p.src=data;p.style.display='block'}apply(s);if(typeof showNotification==='function')showNotification('🖼️ تصویر انتخاب شد؛ برای ذخیره دائمی «ذخیره و اعمال همه تصاویر» را بزنید')})});
 document.addEventListener('DOMContentLoaded',function(){try{window.applyGalleryImagesToUI()}catch(e){}});setTimeout(function(){try{window.applyGalleryImagesToUI()}catch(e){}},500);setTimeout(function(){try{window.applyGalleryImagesToUI()}catch(e){}},1500);setTimeout(function(){try{window.applyGalleryImagesToUI()}catch(e){}},3500);
@@ -5802,14 +6078,25 @@ document.addEventListener('DOMContentLoaded',function(){try{window.applyGalleryI
   window.acceptTermsAndContinue = function(){
     try { localStorage.setItem(TERMS_KEY, '1'); } catch (e) {}
     hideEl('termsScreen');
-    var user = savedUser();
-    if (user) { openApp(user); return; }
-    showSplashThen(function(){ hideEl('splashScreen'); showEl('registerScreen', 'flex'); }, 700);
+    if (savedUser()) {
+      bootGate();
+      return;
+    }
+    showSplashThen(function(){ hideEl('splashScreen'); bootGate(); }, 700);
   };
   function startupRequestTimeout(promise, ms, label){
     return Promise.race([promise, new Promise(function(_, reject){
       setTimeout(function(){ reject(new Error(label + ' timeout')); }, ms);
     })]);
+  }
+  function blockForOnlineRegistration(message){
+    hideEl('splashScreen');
+    hideEl('termsScreen');
+    hideEl('app');
+    showEl('registerScreen', 'flex');
+    if (message && typeof showNotification === 'function') {
+      try { showNotification(message, 'error'); } catch (e) {}
+    }
   }
   async function bootGate(){
     var user = savedUser();
@@ -5822,53 +6109,51 @@ document.addEventListener('DOMContentLoaded',function(){try{window.applyGalleryI
       showEl('termsScreen', 'flex');
       return;
     }
-
-    if (!user) {
-      hideEl('termsScreen');
-      showEl('registerScreen', 'flex');
+    if (navigator.onLine === false) {
+      blockForOnlineRegistration('برای ورود و استفاده، اتصال به سرور لازم است. پس از اتصال دوباره تلاش کنید.');
+      return;
+    }
+    if (!window.supabaseClient || !window.supabaseClient.auth) {
+      blockForOnlineRegistration('اتصال امن به سرور آماده نیست؛ ورود انجام نشد.');
       return;
     }
 
-    // Keep the existing local profile usable during offline/temporary network failures.
-    // When Supabase can be reached, require the current session UID and server profile
-    // to agree before treating this browser as a registered online user.
-    if (navigator.onLine !== false && window.supabaseClient && window.supabaseClient.auth) {
-      try {
-        var sr = await startupRequestTimeout(window.supabaseClient.auth.getSession(), 2500, 'Supabase session');
-        if (sr && !sr.error) {
-          var session = sr.data && sr.data.session;
-          if (!session || !session.user || !session.user.id) {
-            hideEl('termsScreen');
-            showEl('registerScreen', 'flex');
-            return;
-          }
-          var pr = await startupRequestTimeout(window.supabaseClient.from('profiles')
-            .select('id,name,phone,role,registered_at')
-            .eq('id', session.user.id)
-            .maybeSingle(), 2500, 'Supabase profile');
-          if (!pr.error && !pr.data) {
-            hideEl('termsScreen');
-            showEl('registerScreen', 'flex');
-            return;
-          }
-          if (!pr.error && pr.data) {
-            user = {
-              name: pr.data.name || user.name || '',
-              phone: pr.data.phone || user.phone || '',
-              registeredAt: pr.data.registered_at || user.registeredAt || '',
-              user_id: pr.data.id,
-              role: pr.data.role || 'user'
-            };
-            try { localStorage.setItem('cafeUser', JSON.stringify(user)); } catch (e) {}
-          }
-          // If the profile query itself fails, do not trap the user at startup;
-          // retain the last locally saved profile and let the app recover online later.
-        }
-      } catch (e) {
-        console.warn('Startup session validation skipped:', e);
+    try {
+      var sr = await startupRequestTimeout(window.supabaseClient.auth.getSession(), 8000, 'Supabase session');
+      if (!sr || sr.error) {
+        blockForOnlineRegistration(user ? 'بررسی نشست آنلاین ناموفق بود؛ ورود انجام نشد.' : '');
+        return;
       }
+      var session = sr.data && sr.data.session;
+      if (!session || !session.user || !session.user.id) {
+        blockForOnlineRegistration(user ? 'نشست آنلاین معتبر پیدا نشد؛ برای ادامه دوباره ثبت‌نام کنید.' : '');
+        return;
+      }
+      var pr = await startupRequestTimeout(window.supabaseClient.from('profiles')
+        .select('id,name,phone,role,registered_at')
+        .eq('id', session.user.id)
+        .maybeSingle(), 8000, 'Supabase profile');
+      if (!pr || pr.error) {
+        blockForOnlineRegistration('تأیید حساب از سرور انجام نشد؛ اتصال را بررسی و دوباره تلاش کنید.');
+        return;
+      }
+      if (!pr.data) {
+        blockForOnlineRegistration(user ? 'حساب این نشست در سرور ثبت نشده است؛ ثبت‌نام آنلاین لازم است.' : '');
+        return;
+      }
+      user = {
+        name: pr.data.name || '',
+        phone: pr.data.phone || '',
+        registeredAt: pr.data.registered_at || '',
+        user_id: pr.data.id,
+        role: pr.data.role || 'user'
+      };
+      try { localStorage.setItem('cafeUser', JSON.stringify(user)); } catch (e) {}
+      openApp(user);
+    } catch (e) {
+      console.warn('Online-only startup gate blocked access:', e);
+      blockForOnlineRegistration('ارتباط با سرور برقرار نشد؛ تا زمان اتصال، برنامه وارد محیط اصلی نمی‌شود.');
     }
-    openApp(user);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootGate, true);
   else bootGate();
@@ -6599,7 +6884,7 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){lo
 
   window.decideCloudOrder = async function(id,decision){
     var s=await admin(); if(!s){showNotification('❌ دسترسی مدیریت ندارید','error');return false;}
-    try{var r=await sb().rpc('admin_decide_order',{p_order_id:id,p_decision:decision,p_note:null});if(r.error)throw r.error;showNotification(decision==='approved'?'✅ خرید تأیید و نتیجه برای همان کاربر ثبت شد':'❌ خرید رد و نتیجه برای همان کاربر ثبت شد');await window.renderAdminOrders();return true;}catch(e){console.error('admin_decide_order',e);showNotification('❌ تصمیم خرید ثبت نشد: '+(e.message||e),'error');return false;}
+    try{var r=await sb().rpc('admin_decide_order',{p_order_id:id,p_decision:decision,p_note:null});if(r.error)throw r.error;if(!r.data||r.data.ok!==true||r.data.order_id!==id||r.data.status!==decision)throw new Error('پاسخ تأییدشدهٔ سرور برای این سفارش دریافت نشد');showNotification(decision==='approved'?'✅ خرید تأیید و نتیجه برای همان کاربر ثبت شد':'❌ خرید رد و نتیجه برای همان کاربر ثبت شد');await window.renderAdminOrders();return true;}catch(e){console.error('admin_decide_order',e);showNotification('❌ تصمیم خرید ثبت نشد: '+(e.message||e),'error');return false;}
   };
   window.updateOrderStatus = async function(id,status){var s=await admin();if(!s){showNotification('❌ دسترسی مدیریت ندارید','error');return;}var q=await sb().from('orders').select('id').eq('local_id',id).maybeSingle();if(q.error||!q.data)return showNotification('❌ خرید سروری با این شناسه پیدا نشد','error');return window.decideCloudOrder(q.data.id,/تایید|approved/i.test(status)?'approved':'rejected');};
   window.viewCloudReceipt = async function(path,bucket){var s=await admin();if(!s)return showNotification('❌ دسترسی مدیریت ندارید','error');try{bucket=bucket||'receipts';var r=await sb().storage.from(bucket).createSignedUrl(path,300);if(r.error||!r.data||!r.data.signedUrl)throw(r.error||new Error('receipt unavailable'));var url=r.data.signedUrl,ext=String(path||'').split('.').pop().toLowerCase(),old=document.getElementById('kafeReceiptViewer');if(old)old.remove();var w=document.createElement('div');w.id='kafeReceiptViewer';w.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;padding:18px;direction:rtl;';var media=ext==='pdf'?'<iframe src="'+esc(url)+'" title="فیش خرید" style="display:block;width:90vw;height:86vh;border:0;border-radius:8px;background:#fff;margin-top:28px"></iframe>':'<img src="'+esc(url)+'" alt="فیش خرید" style="display:block;max-width:90vw;max-height:86vh;object-fit:contain;border-radius:8px;margin-top:28px">';w.innerHTML='<div style="position:relative;max-width:95vw;max-height:95vh;background:#111;border:1px solid #c9a84c;border-radius:14px;padding:12px;text-align:center"><button type="button" style="position:absolute;top:6px;left:6px;border:0;border-radius:8px;padding:6px 10px;background:#c9a84c;color:#111;font-weight:700" onclick="document.getElementById(\'kafeReceiptViewer\').remove()">✕</button>'+media+'</div>';document.body.appendChild(w);}catch(e){showNotification('❌ خواندن فیش ناموفق بود: '+(e.message||e),'error');}};
@@ -6610,7 +6895,7 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){lo
     try{var r=await sb().from('subscription_requests').select('*').order('created_at',{ascending:false}).limit(100);if(r.error)throw r.error;var rows=r.data||[];window.__adminSubscriptionRequestsCache=rows;if(reqList)reqList.innerHTML=rows.length?rows.map(function(x){var done=x.status==='approved'||x.status==='rejected';return '<div class="admin-item" style="flex-direction:column;align-items:stretch;gap:7px"><div><strong>⭐ '+esc(x.plan||'اشتراک')+'</strong> — '+esc(x.plan_days||'—')+' روز</div><small style="color:#1A1A1A">'+esc(x.name||'')+' · '+esc(x.phone||'')+' · '+esc(x.status||'در انتظار بررسی')+' · '+esc(fmt(x.created_at))+'</small><div class="admin-item-actions" style="justify-content:flex-start"><button type="button" onclick="showAdminPurchaseDetail(\'subscription\',window.__adminSubscriptionRequestsCache.find(function(y){return String(y.id)===String('+kafeHtmlJsArg(String(x.id))+')}))">📂 جزئیات کامل</button>'+(x.receipt_path?'<button type="button" onclick="viewCloudReceipt('+kafeHtmlJsArg(String(x.receipt_path))+')">🧾 فیش</button>':'')+(done?'':'<button type="button" onclick="decideCloudSubscription('+kafeHtmlJsArg(String(x.id))+',\'approved\')">✅ تأیید و فعال‌سازی</button><button type="button" onclick="decideCloudSubscription('+kafeHtmlJsArg(String(x.id))+',\'rejected\')">❌ رد</button>')+'<button type="button" class="danger" onclick="deleteCloudSubscription('+kafeHtmlJsArg(String(x.id))+')">🗑️ حذف</button></div></div>';}).join(''):'<p style="font-size:.8rem;color:#555">درخواستی ثبت نشده است.</p>';}catch(e){if(reqList)reqList.innerHTML='<p style="color:#b00020;font-size:.8rem">خطا: '+esc(e.message||e)+'</p>';}
     try{var old=JSON.parse(localStorage.getItem('adminSubscriptions')||'[]');if(codeList)codeList.innerHTML=old.length?old.slice(0,50).map(function(x){return '<div class="admin-item"><span>🔑 '+esc(x.code)+' - '+esc(x.days)+' روز</span><button class="danger" onclick="deleteSubscription('+kafeHtmlJsArg(String(x.code))+')">🗑️</button></div>';}).join(''):'<p style="font-size:.8rem;color:#555">کد دستی وجود ندارد.</p>';}catch(e){if(codeList)codeList.innerHTML='<p style="font-size:.8rem;color:#555">کد دستی وجود ندارد.</p>';}
   };
-  window.decideCloudSubscription = async function(id,decision){var s=await admin();if(!s){showNotification('❌ دسترسی مدیریت ندارید','error');return false;}try{var r=await sb().rpc('admin_decide_subscription',{p_request_id:id,p_decision:decision,p_note:null});if(r.error)throw r.error;showNotification(decision==='approved'?'✅ اشتراک تأیید، فعال و نتیجه برای همان کاربر ثبت شد':'❌ درخواست اشتراک رد شد و نتیجه برای کاربر ثبت شد');await window.renderAdminSubscriptions();return true;}catch(e){console.error('admin_decide_subscription',e);showNotification('❌ تصمیم اشتراک ثبت نشد: '+(e.message||e),'error');return false;}};
+  window.decideCloudSubscription = async function(id,decision){var s=await admin();if(!s){showNotification('❌ دسترسی مدیریت ندارید','error');return false;}try{var r=await sb().rpc('admin_decide_subscription',{p_request_id:id,p_decision:decision,p_note:null});if(r.error)throw r.error;if(!r.data||r.data.ok!==true||r.data.request_id!==id||r.data.status!==decision)throw new Error('پاسخ تأییدشدهٔ سرور برای این درخواست اشتراک دریافت نشد');showNotification(decision==='approved'?'✅ اشتراک تأیید، فعال و نتیجه برای همان کاربر ثبت شد':'❌ درخواست اشتراک رد شد و نتیجه برای کاربر ثبت شد');await window.renderAdminSubscriptions();return true;}catch(e){console.error('admin_decide_subscription',e);showNotification('❌ تصمیم اشتراک ثبت نشد: '+(e.message||e),'error');return false;}};
   window.deleteCloudSubscription = async function(id){var s=await admin();if(!s){showNotification('❌ دسترسی مدیریت ندارید','error');return false;}if(!confirm('این درخواست اشتراک از سرور حذف شود؟'))return false;try{var r=await sb().from('subscription_requests').delete().eq('id',id);if(r.error)throw r.error;showNotification('🗑️ درخواست اشتراک از سرور حذف شد');await window.renderAdminSubscriptions();return true;}catch(e){showNotification('❌ حذف درخواست اشتراک انجام نشد: '+(e.message||e),'error');return false;}};
 
   (function(){

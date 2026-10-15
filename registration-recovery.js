@@ -1,6 +1,5 @@
-/* Kafe Miad — registration recovery + fixed server-backed registerUser
-   Fixes: duplicate key value violates unique constraint "profiles_phone_unique"
-   Note: RLS blocks select-by-phone for other users, so on 23505 we accept locally.
+/* Kafe Miad — server-confirmed registration.
+   Duplicate phone or any Supabase write failure must not create a local-only login.
 */
 (function () {
   'use strict';
@@ -64,18 +63,31 @@
         .eq('id', user.id)
         .maybeSingle();
 
+      if (own.error) {
+        // A failed profile read is not the same as "no profile".
+        throw own.error;
+      }
+
       if (own.data && own.data.phone) {
-        // همین سشن قبلاً پروفایل دارد
+        // همین سشن قبلاً پروفایل دارد؛ تغییر نام هم باید از سرور تأیید شود.
         finalUserData = {
-          name: name || own.data.name,
+          name: own.data.name || name,
           phone: own.data.phone,
           registeredAt: own.data.registered_at || registeredAt,
           user_id: own.data.id,
           role: own.data.role || 'user'
         };
         if (name && name !== own.data.name) {
-          await supabaseClient.from('profiles').update({ name: name }).eq('id', user.id);
-          finalUserData.name = name;
+          var nameUpdate = await supabaseClient
+            .from('profiles')
+            .update({ name: name })
+            .eq('id', user.id)
+            .select('id,name,phone,registered_at,role')
+            .maybeSingle();
+          if (nameUpdate.error || !nameUpdate.data || nameUpdate.data.id !== user.id) {
+            throw (nameUpdate.error || new Error('تغییر نام از سرور تأیید نشد.'));
+          }
+          finalUserData.name = nameUpdate.data.name || name;
         }
         isReturning = true;
       } else {
@@ -93,27 +105,17 @@
           .select()
           .single();
 
-        if (pr.error) {
-          if (pr.error.code === '23505') {
-            // شماره قبلاً توسط پروفایل دیگری ثبت شده (RLS جلوی خواندنش را می‌گیرد)
-            // کاربر را به صورت محلی قبول می‌کنیم تا بتواند وارد برنامه شود
-            isReturning = true;
-            finalUserData = {
-              name: name,
-              phone: phone,
-              registeredAt: registeredAt,
-              user_id: user.id,
-              returning: true
-            };
-          } else {
-            throw pr.error;
-          }
+        if (pr.error || !pr.data || pr.data.id !== user.id || pr.data.phone !== phone) {
+          // Online-only: a phone number already in use is not proof of account ownership.
+          // Never create a local-only session when the server rejects registration.
+          throw (pr.error || new Error('ثبت حساب توسط سرور تأیید نشد.'));
         } else {
           finalUserData = {
-            name: name,
-            phone: phone,
-            registeredAt: registeredAt,
-            user_id: user.id
+            name: pr.data.name || name,
+            phone: pr.data.phone,
+            registeredAt: pr.data.registered_at || registeredAt,
+            user_id: pr.data.id,
+            role: pr.data.role || 'user'
           };
         }
       }
@@ -152,5 +154,5 @@
     }
   };
 
-  console.log('✅ registration-recovery fixed v2 (RLS-safe returning users) loaded');
+  console.log('✅ registration-recovery online-only policy loaded');
 })();

@@ -1,33 +1,1980 @@
 <!DOCTYPE html>
+<!-- کافه سرکتاب میعاد — V700.7 -->
 <html lang="fa" dir="rtl">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>کافه سرکتاب میعاد — در حال بارگذاری...</title>
-<script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
+    <!-- Critical safety helpers must run first (before any other script) -->
+<meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=5.0, viewport-fit=cover" />
+    <title>کافه سرکتاب میعاد — V700.7</title>
+    <meta name="description" content="کافه سرکتاب میعاد — آموزش، محتوا و فروش محصولات علوم حروف، ابجد، رمل و مشاوره تخصصی">
+    <meta name="theme-color" content="#070B14">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="کافه میعاد">
+    <meta name="application-name" content="کافه سرکتاب میعاد">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="کافه سرکتاب میعاد">
+    <meta property="og:description" content="آموزش، محتوا و فروش محصولات علوم حروف، ابجد، رمل و مشاوره تخصصی">
+    <meta property="og:locale" content="fa_IR">
+    <meta property="og:image" content="./icon512.png">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="کافه سرکتاب میعاد">
+    <meta name="twitter:description" content="آموزش، محتوا و فروش محصولات">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' data: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.gstatic.com; img-src 'self' data: blob: https://*.supabase.co https://evxxvnlwtbaqpjbjaxdk.supabase.co; connect-src 'self' https://evxxvnlwtbaqpjbjaxdk.supabase.co https://*.supabase.co wss://evxxvnlwtbaqpjbjaxdk.supabase.co wss://*.supabase.co https://cdn.jsdelivr.net https://api.alquran.cloud https://api.quran.com; worker-src 'self'; manifest-src 'self' https://evxxvnlwtbaqpjbjaxdk.supabase.co; media-src 'self' blob:; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
+    <link rel="manifest" href="https://evxxvnlwtbaqpjbjaxdk.supabase.co/functions/v1/app-manifest?v=20261015-online-1">
+    <link rel="icon" href="./icon-miad.svg?v=20261014-rc21" type="image/svg+xml" sizes="128x128">
+    <link rel="apple-touch-icon" href="./icon-miad.svg?v=20261014-rc21" sizes="180x180">
+    <link rel="apple-touch-icon" href="./icon-miad.svg?v=20261014-rc21" sizes="192x192">
+
+
+    <!-- Favicon (same base64 as original) -->
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Main styles (original already expected this file) -->
+    <!-- Small extracted style blocks -->
+    
+    <link rel="stylesheet" href="./styles.css?v=20261015-online-1" />
+    <link rel="stylesheet" href="./theme-atelier.css" />
+    <!-- Duplicate unversioned manifest removed; use the single cache-busted manifest link in the head. -->
+    <link rel="stylesheet" href="./theme-lock.css?v=20261015-online-1">
+    <link rel="stylesheet" href="./button-feedback.css?v=20261015-online-1">
+
 </head>
-<body style="background:#070B14;color:#f5d76e;font-family:Tahoma,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0">
-<div style="text-align:center">
-<div style="font-size:22px;margin-bottom:12px">✦ الملک القدوس ✦</div>
-<div id="st">در حال بازگردانی برنامه...</div>
+<body>
+
+
+    <!-- ===== قبول شرایط (قبل از اسپلش — هر بار) ===== -->
+    <div id="termsScreen">
+        <div class="terms-inner">
+            <div class="terms-header">
+                <h1>بسم الله الرحمن الرحیم</h1>
+                <p>شرایط، احتیاط‌ها و تعهدات ورود به کافه سرکتاب میعاد</p>
+            </div>
+
+            <div class="terms-card">
+                <h3>۱. توکل و عدم قطعیت</h3>
+                <p>
+                    تمام محاسبات، استخراج‌ها و نتایج این برنامه صرفاً بر پایه روش‌های سنتی علوم حروف، ابجد، رمل و تجربیات منقول است
+                    و <strong>هیچ قطعیت شرعی یا علمی مطلقی</strong> بر آن‌ها مترتب نیست.
+                    نتیجه نهایی بسته به مشیت الهی، نیت، طهارت و شرایط فرد متفاوت است.
+                </p>
+                <div class="terms-ayah">
+                    «وَمَا تَشَاءُونَ إِلَّا أَن يَشَاءَ اللَّهُ»<br>
+                    <small style="opacity:0.9;">و شما نمی‌خواهید مگر آنکه خدا بخواهد — تکویر ۳۰</small>
+                </div>
+                <p>
+                    کاربر با آگاهی کامل می‌پذیرد که این ابزارها <strong>جایگزین توکل، دعا، مشورت عالم دینی و تشخیص پزشک</strong> نیستند.
+                </p>
+            </div>
+
+            <div class="terms-card">
+                <h3>۲. طهارت بدن و مکان</h3>
+                <p>
+                    در سنت اهل معرفت، ورود به اعمال مرتبط با اسماء، اوراد، رمل و استخراج موکل نیازمند
+                    <strong>طهارت بدن، لباس و مکان</strong> است.
+                    توصیه اکید است پیش از هر محاسبه یا عمل:
+                </p>
+                <p>
+                    • با وضو یا غسل متناسب باشید<br>
+                    • مکان پاک و آرام باشد<br>
+                    • از لهو، غفلت و نیت ناصالح پرهیز شود<br>
+                    • ذکر و توجه قلبی فراموش نشود
+                </p>
+            </div>
+
+            <div class="terms-card">
+                <h3>۳. اصول اخلاقی سرکتاب</h3>
+                <p>
+                    استفاده از دانش حروف و اسرار نباید برای <strong>ضرر به دیگران، سحر حرام، تجسس نامشروع یا فریب</strong> باشد.
+                    مسئولیت نیت و عمل بر عهده خود کاربر است.
+                </p>
+                <div class="terms-ayah">
+                    «إِنَّمَا يَتَقَبَّلُ اللَّهُ مِنَ الْمُتَّقِينَ»<br>
+                    <small style="opacity:0.9;">خداوند فقط از پرهیزگاران می‌پذیرد — مائده ۲۷</small>
+                </div>
+            </div>
+
+            <div class="terms-card">
+                <h3>۴. آداب و شرایط صحیح سرکتاب</h3>
+                <p>
+                    سرکتاب در سنت اهل معرفت، صرفاً یک محاسبه خشک نیست؛ بلکه عملی است که با
+                    <strong>نیت، طهارت، زمان و ادب حضور</strong> پیوند دارد.
+                    رعایت آداب زیر برای صحت معنوی کار توصیه می‌شود:
+                </p>
+                <p>
+                    <strong>الف) نیت:</strong>
+                    نیت باید خالص، مشروع و خالی از ضرر به دیگران باشد.
+                    هدف از سرکتاب، طلب فهم، گشایش حلال، یا راهنمایی در مسیر خیر است؛ نه کنجکاوی بیهوده یا آزمایش خداوند.
+                </p>
+                <p>
+                    <strong>ب) طهارت:</strong>
+                    بدن، لباس و مکان حتی‌الامکان پاک باشد.
+                    با وضو بنشینید، رو به قبله بودن پسندیده است، و از مکان‌های آلوده، شلوغ یا پر از لهو دوری کنید.
+                </p>
+                <p>
+                    <strong>ج) حضور قلب:</strong>
+                    پیش از شروع، لحظه‌ای ذکر و توجه داشته باشید.
+                    عجله، عصبانیت، خستگی شدید یا ذهن پریشان، کیفیت کار را پایین می‌آورد.
+                </p>
+                <p>
+                    <strong>د) صداقت در اطلاعات:</strong>
+                    نام، نام مادر و سایر داده‌ها را تا حد ممکن دقیق و بدون تحریف وارد کنید.
+                    اطلاعات نادرست، نتیجه را از مسیر خارج می‌کند.
+                </p>
+                <p>
+                    <strong>هـ) ادب نتیجه:</strong>
+                    پس از مشاهده نتیجه، شکر کنید، عجله در قضاوت نکنید، و در امور مهم با
+                    <strong>عالم دینی و افراد امین</strong> نیز مشورت نمایید.
+                    نتیجه سرکتاب به‌تنهایی حجت قطعی شرعی نیست.
+                </p>
+                <p>
+                    <strong>و) زمان مناسب:</strong>
+                    بهتر است در ساعات آرامش و پاکی انجام شود.
+                    از ایام و حالات مکروه (از جمله روزهای ۲۷ تا ۲۹ ماه قمری، و نیز حال جنابت یا بی‌طهارتی) پرهیز شود.
+                </p>
+            </div>
+
+            <div class="terms-card">
+                <h3>۵. پرهیز از تفریح و تکرار بی‌مورد</h3>
+                <p>
+                    <strong>برای تفریح و سرگرمی</strong> اقدام به انجام سرکتاب نکنید.
+                    سرکتاب امری جدی است و باید با نیت صادق، طهارت و آمادگی قلبی انجام شود؛ نه از روی کنجکاوی لحظه‌ای یا شوخی.
+                </p>
+                <p>
+                    از <strong>تکرار سرکتاب در چندین نوبت</strong> با یک نیت واحد جداً احتیاط کنید.
+                    اصرار و تکرار پیاپی بدون فاصله و تأمل، نه تنها نتیجه را روشن‌تر نمی‌کند، بلکه ممکن است موجب تشویش نیت و سردرگمی شود.
+                </p>
+            </div>
+
+            <div class="terms-card">
+                <h3>۶. روزهای آخر ماه عربی</h3>
+                <p>
+                    از انجام سرکتاب در <strong>روزهای پایانی ماه قمری (عربی) یعنی ۲۷، ۲۸ و ۲۹</strong> هر ماه عربی پرهیز کنید.
+                    در سنت اهل این علوم، این ایام برای استخراج و عمل توصیه نمی‌شود.
+                </p>
+            </div>
+
+            <div class="terms-card">
+                <h3>۷. پذیرش مسئولیت</h3>
+                <p>
+                    با فشردن دکمه «موافقم»، تأیید می‌کنید که:
+                    مطالب فوق را خوانده‌اید، به محدودیت نتایج آگاهید،
+                    و هرگونه بهره‌برداری را با <strong>توکل به خداوند</strong> و رعایت شرع انجام می‌دهید.
+                    این تأیید <strong>فقط یک بار</strong>، در اولین ورود، لازم است.
+                </p>
+            </div>
+        </div>
+        <div class="terms-footer-bar">
+            <button type="button" class="terms-agree-btn" onclick="if(window.acceptTermsAndContinue)window.acceptTermsAndContinue()">✓ موافقم — ورود به برنامه</button>
+        </div>
+    </div>
+
+    <!-- ===== SPLASH ===== -->
+    <div id="splashScreen" class="waiting" style="display:none;">
+        <img class="splash-bg-img" id="splashBgImg" alt="" data-src="./assets/splash.jpg" onerror="this.onerror=null;this.src='./icon512.png'" />
+        <div class="splash-dim"></div>
+        <div class="splash-bg-glow"></div>
+        <div class="splash-center" style="position:relative;z-index:2;">
+            <div class="splash-verse">✦ الملک القدوس ✦</div>
+            <div class="splash-loader"><div class="splash-loader-bar" id="splashLoaderBar"></div></div>
+            <div class="splash-version">نسخه V700.7</div>
+        </div>
+    </div>
+
+    <!-- ===== REGISTER ===== -->
+    <div id="registerScreen">
+        <div class="register-box">
+            <img class="register-logo-img" id="registerLogoImg" alt="لوگو" src="./icon192.png" />
+            <div class="register-title">کافه سرکتاب میعاد</div>
+            <div class="register-sub">برای دسترسی به امکانات، لطفاً ثبت‌نام کنید</div>
+            <input type="text" class="register-input" id="regName" placeholder="نام و نام خانوادگی">
+            <input type="tel" class="register-input" id="regPhone" placeholder="شماره تماس">
+            <button class="register-btn" onclick="registerUser()">
+                <i class="fas fa-arrow-left"></i> ورود به برنامه
+            </button>
+            <div class="register-footer">✦ هر آنچه می‌خواهی، در اینجاست ✦</div>
+        </div>
+    </div>
+
+    <!-- ===== STARS ===== -->
+    <canvas id="stars-canvas"></canvas>
+
+    <!-- ===== APP ===== -->
+    <div id="app" style="display:none;">
+
+        <!-- ===== HEADER ===== -->
+                        <header>
+            <div class="header-top" style="display:flex;flex-direction:row;align-items:center;justify-content:space-between;width:100%;gap:6px;">
+                <div class="header-left" style="display:flex;flex-direction:column;gap:6px;width:70px;min-width:70px;max-width:70px;flex:0 0 70px;">
+                    <div class="header-datetime" style="display:flex;flex-direction:column;gap:6px;width:100%;">
+                        <button class="header-btn" style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;min-height:42px;padding:6px 4px;gap:3px;" onclick="showNotification('📅 ' + new Date().toLocaleDateString('fa-IR'))">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span class="header-label" id="dateDisplay">۱۴۰۴/۰۵/۱۴</span>
+                        </button>
+                        <button class="header-btn" style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;min-height:42px;padding:6px 4px;gap:3px;" onclick="showNotification('🕐 ' + new Date().toLocaleTimeString('fa-IR'))">
+                            <i class="fas fa-clock"></i>
+                            <span class="header-label" id="timeDisplay">۲۱:۵۸</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="header-brand" id="headerBrandLogo" onclick="kafeLogoTap()" style="flex:1 1 auto;min-width:0;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+                    <div class="brand-background">
+                        <div class="brand-pattern"></div>
+                        <div class="brand-content">
+                            <img class="brand-logo-img" id="headerLogoImg" alt="لوگو" src="./icon192.png" />
+                            <span class="brand-text">کافه سرکتاب میعاد</span>
+                            <span class="brand-sub">✦ الملک القدوس ✦</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="header-right" style="display:flex;flex-direction:column;gap:6px;width:70px;min-width:70px;max-width:70px;flex:0 0 70px;">
+                    <div class="header-notifications" style="display:flex;flex-direction:column;gap:6px;width:100%;">
+                        <button class="header-btn" style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;min-height:42px;padding:6px 4px;gap:3px;position:relative;" onclick="showNotifications()">
+                            <i class="fas fa-bell"></i>
+                            <span class="header-label">اعلان‌ها</span>
+                            <span class="badge" id="notifBadge">0</span>
+                        </button>
+                        <button class="header-btn" style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;min-height:42px;padding:6px 4px;gap:3px;" onclick="window.open('https://google.com','_blank')">
+                            <i class="fab fa-google"></i>
+                            <span class="header-label">گوگل</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </header>
+
+
+
+        <!-- ===== PAGES CONTAINER (Swipe) ===== -->
+        <div class="pages-container" id="pagesContainer">
+
+            <!-- صفحه ۰: فروشگاه (صفحه اصلی هنگام باز شدن) -->
+            <div class="page-swipe" id="pageShop">
+                <div class="page-header">
+                    <h2>🏪 فروشگاه کافه سرکتاب</h2>
+                    <span class="page-subtitle">به فروشگاه کافه سرکتاب خوش آمدید</span>
+                </div>
+
+                <div class="featured-banner" id="discountBanner" onclick="showNotification('🔥 ' + getDiscountText())">
+                    <div class="featured-banner-content">
+                        <span class="featured-banner-icon" id="discountIcon">🔥</span>
+                        <div class="featured-banner-text">
+                            <span id="discountTitle">تخفیف ویژه تابستانه</span>
+                            <small id="discountSub">تا ۵۰٪ تخفیف برای همه محصولات</small>
+                        </div>
+                    </div>
+                    <span class="featured-banner-arrow">←</span>
+                </div>
+
+                <div class="products-grid" id="productsGrid"></div>
+
+
+                <div style="margin-top:20px;background:rgba(255,255,255,0.05);backdrop-filter:blur(12px);border:1px solid rgba(255,215,0,0.15);border-radius:16px;padding:24px 20px;text-align:center;">
+                    <h3 style="color:var(--txt-title,#F0D878);font-size:1.15rem;font-weight:800;margin-bottom:12px;">کافه سرکتاب میعاد</h3>
+                    <p style="color:var(--txt-body,#F5F0E4);line-height:1.85;text-align:justify;font-size:0.9rem;margin-bottom:10px;">
+                        <strong style="color:var(--txt-title,#F0D878);">بسم الله الرحمن الرحیم</strong><br><br>
+                        به <strong style="color:var(--txt-title,#F0D878);">کافه سرکتاب میعاد</strong> خوش آمدید.
+                        این برنامه مرجعی جامع برای علاقه‌مندان به علوم غریبه، جفر، رمل، اعداد و طالع‌بینی است.
+                    </p>
+                    <p style="color:var(--txt-body,#F5F0E4);line-height:1.85;text-align:justify;font-size:0.9rem;margin-bottom:10px;">
+                        در این برنامه می‌توانید با <strong style="color:var(--txt-title,#F0D878);">۱۸ مودال تخصصی</strong> آشنا شوید.
+                    </p>
+                    <div style="margin-top:16px;padding:12px;background:rgba(201,168,76,0.08);border-radius:10px;border:1px solid rgba(255,215,0,0.15);">
+                        <p style="color:var(--txt-title,#F0D878);font-weight:700;text-align:center;font-size:0.9rem;">🌟 ارتباط با استاد میعاد</p>
+                        <span style="color:var(--txt-body,#F5F0E4);font-size:0.8rem;">@miad_jaberi</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- صفحه ۲: ابزارهای پیشرفته -->
+
+            <!-- صفحه ۱: مودال‌ها -->
+            <div class="page-swipe" id="pageModals">
+                <div class="modals-home-hero">
+                    <h2>📜 مودال‌های تخصصی</h2>
+                    <p>ابزارهای تخصصی جفر، رمل و محاسبات — یکی را انتخاب کنید</p>
+                </div>
+                <div class="modals-home-grid" id="modalsHomeGrid">
+                    <!-- با JS پر می‌شود -->
+                </div>
+            </div>
+
+            <!-- صفحه ۲: ابزارها -->
+            <div class="page-swipe" id="pageTools">
+                <div id="dashboardContent">
+                    <div class="dashboard-welcome">
+                        <h1>سلام، <span id="userName">کاربر عزیز</span> 👋</h1>
+                        <p>ابزارهای کاربردی و محاسبات تخصصی در این صفحه</p>
+                    </div>
+                    <div class="quick-stats">
+                        <div class="stat-card" onclick="showToolDashboard()"><div class="stat-icon">🧮</div><div class="stat-value" id="statTools">12</div><div class="stat-label">ابزار فعال</div></div>
+                        <div class="stat-card" onclick="showHistoryDashboard()"><div class="stat-icon">📜</div><div class="stat-value" id="statHistory">0</div><div class="stat-label">محاسبه شده</div></div>
+                        <div class="stat-card" onclick="showNotification('⭐ اشتراک ویژه فعال است')"><div class="stat-icon">👑</div><div class="stat-value" id="statDays">∞</div><div class="stat-label">روز اشتراک</div></div>
+                    </div>
+                    
+                    <div class="section-title"><h2>✨ ابزارهای کاربردی</h2></div>
+                    <div class="utility-tools-grid" id="utilityToolsGrid">
+                        <button type="button" class="utility-tool-card" onclick="openModalGlass('compassModal')">
+                            <span class="ut-icon">🧭</span><span class="ut-title">قطب‌نما</span>
+                            <span class="ut-desc">جهت‌یابی با حسگر گوشی</span>
+                        </button>
+                        <button type="button" class="utility-tool-card" onclick="openModalGlass('adhanModal')">
+                            <span class="ut-icon">🕌</span><span class="ut-title">اوقات شرعی</span>
+                            <span class="ut-desc">اذان و اوقات امروز</span>
+                        </button>
+                        <button type="button" class="utility-tool-card" onclick="openModalGlass('hafezModal')">
+                            <span class="ut-icon">📜</span><span class="ut-title">فال حافظ</span>
+                            <span class="ut-desc">غزل و نیت</span>
+                        </button>
+                        <button type="button" class="utility-tool-card" onclick="openModalGlass('falnamehModal')">
+                            <span class="ut-icon">📖</span><span class="ut-title">فالنامه</span>
+                            <span class="ut-desc">برگ نیت و پاسخ</span>
+                        </button>
+                        <button type="button" class="utility-tool-card" onclick="openModalGlass('letterNumModal')">
+                            <span class="ut-icon">🔢</span><span class="ut-title">حروف و اعداد</span>
+                            <span class="ut-desc">تبدیل ابجد</span>
+                        </button>
+                        <button type="button" class="utility-tool-card" onclick="openModalGlass('quranModal')">
+                            <span class="ut-icon">📗</span><span class="ut-title">قرآن کریم</span>
+                            <span class="ut-desc">دانلود و مطالعه آفلاین</span>
+                        </button>
+                    </div>
+
+                    <div class="section-title"><h2>🚀 ابزارهای پرکاربرد</h2><a onclick="showToolDashboard()">همه</a></div>
+                    <div class="tools-scroll" id="quickTools"></div>
+                    <div class="section-title"><h2>📜 تاریخچه محاسبات</h2><a onclick="clearHistory()">پاک کردن</a></div>
+                    <div class="history-container" id="historyList">
+                        <div style="text-align:center;color:var(--text-secondary);font-size:0.8rem;padding:20px;">هنوز محاسبه‌ای انجام نداده‌اید.<br>از ابزارهای بالا شروع کنید.</div>
+                    </div>
+                </div>
+                <div id="toolPageContent" style="display:none;">
+                    <div class="tool-hero"><div class="hero-glow"></div><h2 id="toolTitle">عنوان ابزار</h2><p id="toolDesc">توضیحات ابزار</p></div>
+                    <div id="toolForm"></div>
+                    <button class="btn-primary" onclick="runCurrentTool()"><i class="fas fa-calculator"></i> محاسبه</button>
+                    <div class="result-card" id="toolResult">
+                        <div class="result-number" id="resultNumber"></div>
+                        <div class="result-text" id="resultText"></div>
+                        <div class="result-actions">
+                            <button onclick="copyResult()"><i class="fas fa-copy"></i> کپی</button>
+                            <button onclick="shareResult()"><i class="fas fa-share-alt"></i> اشتراک</button>
+                            <button onclick="saveResult()"><i class="fas fa-bookmark"></i> ذخیره</button>
+                        </div>
+                    </div>
+                    <button class="btn-primary" style="background:rgba(255,255,255,0.05);color:var(--text-secondary);box-shadow:none;margin-top:10px;" onclick="showDashboard()">← بازگشت به داشبورد</button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ===== SWIPE INDICATOR ===== -->
+        <div class="swipe-indicator" id="swipeIndicator">
+            <span class="swipe-dot active" id="dot0"></span>
+            <span class="swipe-dot" id="dot1"></span>
+            <span style="color:rgba(255,255,255,0.3);font-size:0.6rem;margin-right:6px;">↔</span>
+        </div>
+
+        <!-- ===== MENU DRAWER (از پایین به بالا) ===== -->
+        <div class="menu-drawer-overlay" id="menuDrawerOverlay" onclick="closeMenuDrawer()"></div>
+        <div class="menu-drawer" id="menuDrawer">
+            <div class="drawer-handle"></div>
+            <div class="drawer-title">📜 منوی مودال‌ها</div>
+            <div class="drawer-grid" id="drawerGrid">
+                <!-- توسط جاوااسکریپت پر می‌شود -->
+            </div>
+            <!-- تنظیمات کاربر فقط از نوار پایین — اینجا تکرار نمی‌شود -->
+        </div>
+
+        <!-- ===== BOTTOM NAV ===== -->
+        <nav class="bottom-nav" id="bottomNav">
+            <!-- ۰. فروشگاه -->
+            <button class="nav-item-bottom active" onclick="scrollToPage(0)">
+                <span class="nav-icon-bottom"><i class="fas fa-store"></i></span>
+                <span class="nav-label-bottom">فروشگاه</span>
+            </button>
+
+            <!-- ۱. اشتراک و سفارش -->
+            <button class="nav-item-bottom" onclick="openSubOrdersPanel()">
+                <span class="nav-icon-bottom"><i class="fas fa-crown"></i></span>
+                <span class="nav-label-bottom">خرید</span>
+            </button>
+
+            <!-- ۲. منو وسط (مودال‌ها) -->
+            <button class="nav-item-bottom center-btn" onclick="toggleMenuDrawer()">
+                <span class="nav-icon-bottom"><i class="fas fa-bars"></i></span>
+                <span class="nav-label-bottom">منو</span>
+            </button>
+
+            <!-- ۳. ابزارها -->
+            <button class="nav-item-bottom" onclick="scrollToPage(2)">
+                <span class="nav-icon-bottom"><i class="fas fa-tools"></i></span>
+                <span class="nav-label-bottom">ابزارها</span>
+            </button>
+
+            <!-- ۴. تنظیمات -->
+            <button class="nav-item-bottom" onclick="toggleUserSettings()">
+                <span class="nav-icon-bottom"><i class="fas fa-user-cog"></i></span>
+                <span class="nav-label-bottom">تنظیمات</span>
+            </button>
+        </nav><!-- ===== SETTINGS PANEL (کاربر) ===== -->
+<div id="settingsPanel">
+    <div class="settings-header">
+        <h3>⚙️ تنظیمات</h3>
+        <button class="settings-close" onclick="toggleUserSettings()">✕</button>
+    </div>
+
+    <div class="settings-section">
+        <h4>👤 اطلاعات کاربری</h4>
+        <div class="settings-field"><label>نام کاربری:</label><input id="userDisplayName" value="" readonly></div>
+        <div class="settings-field"><label>شماره تماس:</label><input id="userDisplayPhone" value="" readonly></div>
+        <div class="settings-field"><label>آیدی / کد کاربری:</label><input id="userIdDisplay" value="" readonly></div>
+    </div>
+
+
+    <div class="settings-divider"></div>
+
+    <div class="settings-section" id="userThemeSection">
+        <h4>🎨 ظاهر برنامه</h4>
+        <p style="font-size:0.78rem;opacity:0.85;line-height:1.6;margin-bottom:10px;">پیش‌فرض: طلایی تیره فلزی. در صورت تمایل می‌توانید تم روشن را انتخاب کنید.</p>
+        <div class="theme-toggle-row" style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button type="button" class="btn theme-choice-btn" id="themeBtnDark" onclick="setAppThemeMode('dark')" style="flex:1;min-width:120px;">🌙 تیره طلایی</button>
+            <button type="button" class="btn theme-choice-btn" id="themeBtnLight" onclick="setAppThemeMode('light')" style="flex:1;min-width:120px;">☀️ تم روشن</button>
+        </div>
+    </div>
+
+    <div class="settings-divider"></div>
+
+    <div class="settings-section">
+        <h4>📅 تاریخ ورود به اپ</h4>
+        <div class="settings-history-card"><span>تاریخ ثبت‌نام / ورود:</span><strong id="userRegisteredAt">—</strong></div>
+        <div class="settings-history-card"><span>آخرین ورود:</span><strong id="userLastLogin">—</strong></div>
+    </div>
+
+    <div class="settings-divider"></div>
+
+    <div class="settings-section">
+        <h4>⭐ تاریخچه اشتراک‌های تهیه‌شده</h4>
+        <div id="subscriptionHistoryList" class="settings-history-list"><div class="settings-empty">در حال دریافت...</div></div>
+    </div>
+
+    <div class="settings-divider"></div>
+
+    <div class="settings-section">
+        <h4>🛍️ تاریخچه محصولات خریداری‌شده</h4>
+        <div id="productPurchaseHistoryList" class="settings-history-list"><div class="settings-empty">در حال دریافت...</div></div>
+    </div>
+
+    <div class="settings-divider"></div>
+
+    <div class="settings-section" id="contactUsSection">
+        <h4>📣 ارتباط با استاد</h4>
+        <div class="settings-contact-fixed">
+            <p><strong>کافه سرکتاب میعاد</strong></p>
+            <p>کانال تلگرام: <a href="https://t.me/khatmjaberi" target="_blank" rel="noopener">@khatmjaberi</a></p>
+            <p>پیج اینستاگرام: <a href="https://instagram.com/khatmjaberi" target="_blank" rel="noopener">@khatmjaberi</a></p>
+            <p>آیدی استاد: <strong>@khatmjaberi</strong></p>
+            <p>تماس تلفنی: <a href="tel:09392979200">۰۹۳۹۲۹۷۹۲۰۰</a></p>
+        </div>
+    </div>
+
+    <div class="settings-divider"></div>
+
+    <div class="settings-section" id="v18UserMessagesSection">
+        <h4>💬 پیام به مدیریت</h4>
+        <div id="v18MessageStatus" class="v18-msg-status">برای ارسال پیام باید وارد حساب کاربری باشید.</div>
+        <input id="v18MessageSubject" class="settings-input" type="text" maxlength="160" placeholder="موضوع پیام">
+        <textarea id="v18MessageBody" class="settings-input" rows="5" maxlength="5000" placeholder="متن پیام خود را بنویسید..."></textarea>
+        <button type="button" class="btn" id="v18SendMessageBtn" onclick="v18SendUserMessage()">📨 ارسال پیام</button>
+        <div id="v18UserConversationList" class="v18-conversation-list"><div class="settings-empty">برای دریافت پیام‌ها، وارد حساب شوید.</div></div>
+    </div>
+
+    <div class="settings-divider"></div>
+
+    <div class="settings-divider"></div>
+
+    <div class="settings-section" id="offlineNoteSection">
+        <h4>📡 استفاده آفلاین و هماهنگی</h4>
+        <div class="settings-contact-fixed" style="line-height:1.9;font-size:0.88rem;">
+            <p>در زمان قطع اینترنت بین‌المللی یا اختلالات شدید اینترنتی، این اپ به‌صورت <strong>آفلاین</strong> قابل استفاده است و داده‌ها روی همین دستگاه ذخیره می‌شوند.</p>
+            <p>با برقراری مجدد اینترنت، اطلاعات محلی (در حد امکان) با سرور هماهنگ می‌شوند.</p>
+            <p>برای هماهنگی اشتراک‌ها، محصولات یا موارد دیگر، از طریق شماره تماس استاد و اپلیکیشن <strong>بله</strong> در ارتباط باشید:</p>
+            <p>تماس: <a href="tel:09392979200">۰۹۳۹۲۹۷۹۲۰۰</a></p>
+            <p>کانال تلگرام: <a href="https://t.me/khatmjaberi" target="_blank" rel="noopener">@khatmjaberi</a></p>
+        </div>
+    </div>
+
+    <div class="settings-divider"></div>
+
+    <div class="settings-section" id="logoutSection">
+        <h4>🚪 حساب کاربری</h4>
+        <button type="button" class="settings-logout-btn" onclick="logoutUser()">🚪 خروج از حساب کاربری</button>
+    </div>
+
+    <div style="height:12px"></div>
 </div>
-<script>
-(function(){
-  var st = document.getElementById('st');
-  fetch('https://cdn.jsdelivr.net/gh/miadjaberi/cafesarketab_miad@7270338ba3436de4440130608f00a589e5b106e1/index.html')
-    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
-    .then(function(html){
-      // bump registration-recovery cache to load the login fix
-      html = html.replace('registration-recovery.js?v=20261014-rc25','registration-recovery.js?v=20261014-rc26');
-      document.open();
-      document.write(html);
-      document.close();
-    })
-    .catch(function(e){
-      st.textContent = 'خطا در بازگردانی: ' + e.message + ' — صفحه را رفرش کنید';
-      console.error(e);
-    });
-})();
-</script>
+
+<!-- ===== ADMIN PANEL ===== -->
+<div id="adminPanel">
+    <div class="admin-panel-header">
+        <h2>👑 کنترل پنل مدیریت</h2>
+        <button class="admin-close" onclick="closeAdmin()">✕ بستن</button>
+    </div>
+
+    <div class="admin-tabs" id="adminTabs">
+        <button class="admin-tab active" data-tab="dashboard" onclick="switchAdminTab('dashboard')">📊 داشبورد</button>
+        <button class="admin-tab" data-tab="modals" onclick="switchAdminTab('modals')">📋 مودال‌ها</button>
+        <button class="admin-tab" data-tab="otp" onclick="switchAdminTab('otp')">🔑 OTP</button>
+        <button class="admin-tab" data-tab="products" onclick="switchAdminTab('products')">📦 محصولات</button>
+        <button class="admin-tab" data-tab="discount" onclick="switchAdminTab('discount')">🏷️ تخفیف</button>
+                <button class="admin-tab" data-tab="subscriptions" onclick="switchAdminTab('subscriptions')">⭐ اشتراک‌ها</button>
+        <button class="admin-tab" data-tab="messages" onclick="switchAdminTab('messages')">💬 پیام‌ها</button>
+        <button class="admin-tab" data-tab="media" onclick="switchAdminTab('media')">🖼️ تصاویر</button>
+        <button class="admin-tab" data-tab="dalilImages" onclick="switchAdminTab('dalilImages')">❓ تصاویر دلیل</button>
+        <button class="admin-tab" data-tab="settings" onclick="switchAdminTab('settings')">⚙️ تنظیمات</button>
+    </div>
+
+    <!-- داشبورد مدیریت -->
+    <div class="admin-content active" id="adminDashboard">
+        <div class="admin-card">
+            <h4>📊 خلاصه وضعیت</h4>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;">
+                <div style="background:rgba(255,255,255,0.03);padding:12px;border-radius:8px;text-align:center;">
+                    <div style="font-size:1.5rem;" id="adminTotalProducts">0</div>
+                    <div style="font-size:0.7rem;color:var(--text-secondary);">کل محصولات</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.03);padding:12px;border-radius:8px;text-align:center;">
+                    <div style="font-size:1.5rem;" id="adminTotalSubscriptions">0</div>
+                    <div style="font-size:0.7rem;color:var(--text-secondary);">اشتراک‌ها</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.03);padding:12px;border-radius:8px;text-align:center;">
+                    <div style="font-size:1.5rem;" id="adminTotalUsers">0</div>
+                    <div style="font-size:0.7rem;color:var(--text-secondary);">کاربران</div>
+                </div>
+            </div>
+        </div>
+        <div class="admin-card">
+            <h4>🆕 آخرین کاربران ثبت‌نام‌شده</h4>
+            <div id="adminRecentUsersList" style="display:flex;flex-direction:column;gap:8px;">
+                <p style="font-size:.8rem;color:var(--text-secondary);">پس از تأیید ورود مدیر، اطلاعات از سرور دریافت می‌شود.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- مدیریت تخفیف -->
+    <div class="admin-content" id="adminDiscount">
+        <div class="admin-card">
+            <h4>🏷️ مدیریت بنر تخفیف</h4>
+            <div class="admin-row">
+                <input type="text" id="discountTitleInput" placeholder="عنوان تخفیف" value="تخفیف ویژه تابستانه" oninput="updateDiscountPreview()">
+                <input type="text" id="discountSubInput" placeholder="زیرنویس تخفیف" value="تا ۵۰٪ تخفیف برای همه محصولات" oninput="updateDiscountPreview()">
+            </div>
+            <div class="admin-row">
+                <input type="text" id="discountIconInput" placeholder="آیکون (مثل 🔥)" value="🔥" oninput="updateDiscountPreview()">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span style="color:var(--text-secondary);font-size:0.8rem;">فعال:</span>
+                    <div class="admin-toggle active" id="discountToggle" onclick="toggleDiscount()">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- پیش‌نمایش زنده -->
+            <div style="margin:12px 0;padding:12px 16px;background:linear-gradient(135deg,#a8872a,#c9a84c,#e8d5a3);border-radius:12px;display:flex;align-items:center;gap:12px;">
+                <span id="discountPreviewIcon" style="font-size:1.5rem;">🔥</span>
+                <div style="color:#0a1628;">
+                    <div id="discountPreviewTitle" style="font-weight:700;font-size:0.85rem;">تخفیف ویژه تابستانه</div>
+                    <small id="discountPreviewSub" style="opacity:0.75;font-size:0.7rem;">تا ۵۰٪ تخفیف برای همه محصولات</small>
+                </div>
+            </div>
+            <button onclick="saveDiscount()">💾 ذخیره تخفیف</button>
+        </div>
+</div>
+
+    <!-- مدیریت محصولات -->
+    <div class="admin-content" id="adminProducts">
+        <div class="admin-card">
+            <h4>➕ افزودن / ویرایش محصول</h4>
+            <input type="hidden" id="editProductId" value="">
+            <div class="admin-row" style="flex-direction:column;align-items:stretch;gap:8px;">
+                <input type="text" id="newProductTitle" placeholder="عنوان محصول *" style="width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;box-sizing:border-box;">
+                <input type="number" id="newProductPrice" placeholder="قیمت (تومان) *" style="width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;box-sizing:border-box;">
+                <div style="display:flex;gap:8px;">
+                    <input type="text" id="newProductImage" placeholder="ایموجی" value="📚" style="width:90px;padding:12px;border-radius:10px;border:1px solid #ccc;">
+                    <input type="text" id="newProductBadge" placeholder="برچسب (جدید/ویژه/محبوب)" style="flex:1;padding:12px;border-radius:10px;border:1px solid #ccc;">
+                </div>
+                <label style="color:var(--txt-body,#F5F0E4);font-weight:700;font-size:0.85rem;">📷 تصویر از گالری گوشی</label>
+                <input type="file" id="newProductImageFile" accept="image/*" style="width:100%;padding:10px;">
+                <img id="newProductImagePreview" alt="" style="display:none;max-width:100%;max-height:160px;border-radius:12px;object-fit:cover;border:2px solid #c9a84c;">
+                <input type="text" id="newProductImageUrl" placeholder="یا آدرس/داده تصویر (خودکار پر می‌شود)" style="width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;box-sizing:border-box;">
+                <textarea id="newProductDesc" rows="3" placeholder="توضیحات کامل محصول..." style="width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;font-family:inherit;box-sizing:border-box;color:var(--txt-body,#F5F0E4);background:#fff;"></textarea>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <button type="button" onclick="window.addProduct && window.addProduct()" style="flex:1;min-width:120px;padding:12px;border:none;border-radius:10px;background:linear-gradient(135deg,#a8872a,#c9a84c);color:#0a1628;font-weight:700;cursor:pointer;font-family:inherit;">💾 ذخیره محصول</button>
+                    <button type="button" onclick="window.resetProductForm && window.resetProductForm()" style="flex:1;min-width:100px;padding:12px;border:1px solid #c9a84c;border-radius:10px;background:#fff;color:#1A365D;cursor:pointer;font-family:inherit;">پاک کردن فرم</button>
+                </div>
+            </div>
+        </div>
+        <div class="admin-card">
+            <h4>📦 لیست محصولات (<span id="adminProductCount">0</span>)</h4>
+            <button type="button" class="btn" onclick="saveProductsToServer()" style="width:100%;margin:8px 0 12px;">💾 ثبت / ذخیره محصولات روی سرور</button>
+            <p style="font-size:0.75rem;color:var(--txt-hint,#C8C0B0);margin:0 0 10px;line-height:1.6;">بعد از حذف یا ویرایش، این دکمه را بزنید تا تغییرات روی سرور قطعی شود و محصول حذف‌شده برنگردد.</p>
+            <div id="adminProductsList"><p style="color:var(--txt-hint,#C8C0B0);font-size:0.85rem;">در حال بارگذاری...</p></div>
+        </div>
+        <div class="admin-card">
+            <h4>🛒 خریدهای ثبت‌شده</h4>
+            <div id="adminOrdersList"><p style="color:var(--txt-hint,#C8C0B0);font-size:0.8rem;">سفارشی نیست</p></div>
+        </div>
+    </div>
+
+    <!-- مدیریت اشتراک‌ها -->
+    
+    <div class="admin-content" id="adminOtp">
+        <div class="admin-card">
+            <h4>🔑 سیستم رمز یک‌بارمصرف (OTP)</h4>
+            <p style="font-size:0.8rem;margin-bottom:12px;color:var(--txt-body,#F5F0E4);line-height:1.7;">
+                این بخش برای مدیریت کدهای اشتراک کاربران است؛ این کد با OTP ورود مدیر کاملاً جداست. کد اشتراک برای فعال‌سازی دسترسی VIP مودال‌ها استفاده می‌شود و باید در Supabase ثبت و قابل پیگیری باشد.
+            </p>
+            <div class="admin-row" style="flex-wrap:wrap;gap:8px;align-items:center;">
+                <label style="font-size:0.8rem;color:var(--txt-body,#F5F0E4);">تعداد استفاده:</label>
+                <input type="number" id="otpUsesInput" value="3" min="1" max="50" style="width:80px;">
+                <label style="font-size:0.8rem;color:var(--txt-body,#F5F0E4);">معتبر (ساعت):</label>
+                <input type="number" id="otpHoursInput" value="24" min="1" max="168" style="width:80px;">
+                <input type="text" id="otpPhoneNote" placeholder="شماره کاربر (یادداشت)" style="flex:1;min-width:140px;">
+            </div>
+            <div class="admin-row" style="flex-wrap:wrap;gap:8px;margin-top:8px;">
+                <button type="button" onclick="generateAdminOTP()">➕ ساخت و نمایش OTP</button>
+                <button type="button" onclick="if(typeof openSubscriptionPurchase==='function')openSubscriptionPurchase()">📦 پنل اشتراک کاربر</button>
+            </div>
+            <div id="otpLastGenerated" style="display:none;margin-top:14px;padding:14px;background:linear-gradient(135deg,#fff8e7,#ffe9a8);border:2px solid #c9a84c;border-radius:12px;text-align:center;">
+                <div style="font-size:0.75rem;color:var(--txt-hint,#C8C0B0);margin-bottom:4px;">آخرین OTP ساخته‌شده</div>
+                <div id="otpLastCode" style="font-size:1.8rem;font-weight:800;letter-spacing:4px;color:var(--txt-title,#F0D878);font-family:monospace;">------</div>
+                <div id="otpLastMeta" style="font-size:0.75rem;color:#444;margin-top:6px;"></div>
+                <button type="button" onclick="copyLastOTP()" style="margin-top:8px;">📋 کپی کد</button>
+            </div>
+            <div id="adminOTPList" style="margin-top:14px;"></div>
+            <p style="font-size:0.75rem;color:var(--txt-body,#F5F0E4);margin-top:10px;line-height:1.6;">مودال‌های نیازمند اشتراک/OTP: مکاشفه موکلین، استخراج موکل، دلیل الحیران، رمل امام علی، طلسم‌ساز وفق</p>
+        </div>
+    </div>
+
+    <div class="admin-content" id="adminSubscriptions">
+        <div class="admin-card">
+            <h4>⭐ مدیریت اشتراک‌ها</h4>
+            <div class="admin-row">
+                <input type="text" id="subscriptionCode" placeholder="کد اشتراک">
+                <input type="number" id="subscriptionDays" placeholder="تعداد روز" value="30">
+            </div>
+            <button onclick="addSubscription()">➕ افزودن کد اشتراک</button>
+        </div>
+        <div class="admin-card" style="background:#fff !important;color:#1A1A1A !important;">
+            <h4 style="color:var(--txt-body,#F5F0E4) !important;">🆕 درخواست‌های اشتراک در انتظار بررسی</h4>
+            <div id="adminSubscriptionRequestsList"><p style="color:var(--txt-hint,#C8C0B0)">در حال بارگذاری...</p></div>
+        </div>
+        <div class="admin-card" style="background:#fff !important;color:#1A1A1A !important;">
+            <h4 style="color:var(--txt-body,#F5F0E4) !important;">📋 کدهای اشتراک فعال</h4>
+            <div id="adminSubscriptionsList"></div>
+        </div>
+    </div>
+
+    <!-- مدیریت مودال‌ها -->
+    <div class="admin-content" id="adminMessages">
+        <div class="admin-card">
+            <h3>💬 پیام‌های کاربران</h3>
+            <p style="font-size:.78rem;line-height:1.7;color:var(--txt-hint,#C8C0B0);margin:6px 0 10px">پیام‌ها و پاسخ‌ها مستقیماً از Supabase خوانده و در Supabase ذخیره می‌شوند.</p>
+            <div id="v18AdminConversationList"><p style="color:var(--txt-hint,#C8C0B0);font-size:.8rem">در حال بارگذاری...</p></div>
+        </div>
+        <div class="admin-card" id="v18AdminConversationCard" style="display:none">
+            <div id="v18AdminConversationHeader"></div>
+            <div id="v18AdminMessageList" class="v18-admin-message-list"></div>
+            <textarea id="v18AdminReply" rows="4" maxlength="5000" placeholder="پاسخ مدیریت..."></textarea>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+                <button type="button" class="btn" onclick="v18SendAdminReply()">📨 ارسال پاسخ</button>
+                <button type="button" class="btn" onclick="v18CloseConversation()">🔒 بستن گفتگو</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-content" id="adminModals">
+        <div class="admin-card">
+            <h4>📋 ویرایش متن و داده مودال‌ها</h4>
+            <p style="color:var(--txt-body,#F5F0E4);font-size:0.8rem;margin-bottom:12px;line-height:1.7;">
+                همه مودال‌ها اینجا لیست می‌شوند.
+                با <b>ویرایش</b> عنوان و راهنما را عوض کنید.
+                با تیک <b>قفل VIP</b> مودال فقط برای کاربران دارای اشتراک باز می‌شود؛ با برداشتن تیک، مودال برای همه آزاد است.
+            </p>
+            <div id="adminModalsList"></div>
+        </div>
+        <div class="admin-card" id="modalEditFormCard" style="display:none;margin-top:12px;">
+            <h4 id="modalEditFormTitle">✏️ ویرایش مودال</h4>
+            <input type="hidden" id="modalEditId" value="">
+            <div class="modal-editor-note">ویرایش برای همه مودال‌ها فعال است. مودال‌های ساختاری (همزاد، مکاشفه، رمل، نتایج ثابت) فیلدهای خود را دارند؛ بقیه مودال‌ها لیست متن آزاد با افزودن/حذف دارند. ذخیره روی Supabase.</div>
+            <div class="admin-row">
+                <input type="text" id="modalEditTitle" placeholder="عنوان مودال" style="flex:1;">
+                <input type="text" id="modalEditIcon" placeholder="آیکون" style="width:70px;">
+            </div>
+            <div class="admin-row">
+                <input type="text" id="modalEditGuide" placeholder="متن راهنما (بالای فرم)" style="flex:1;">
+            </div>
+            <div class="admin-row">
+                <textarea id="modalEditQuestion" rows="2" placeholder="ویرایش سؤال" style="width:100%;padding:10px;border-radius:10px;border:1px solid #9ab0bd;font-family:inherit;"></textarea>
+            </div>
+            <div id="modalEditAnswers" class="modal-edit-answers"></div>
+            <div class="admin-row" style="gap:8px;flex-wrap:wrap;">
+                <button type="button" onclick="saveModalMetaAdmin()">💾 ذخیره تغییرات</button>
+                <button type="button" onclick="cancelModalMetaEdit()" style="background:#e0e0e0;color:var(--txt-body,#F5F0E4);">❌ لغو</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="admin-content" id="adminMedia">
+        <div class="admin-card">
+            <h4>🖼️ تصاویر از گالری گوشی</h4>
+            <p style="font-size:0.8rem;color:var(--txt-body,#F5F0E4);line-height:1.7;margin-bottom:12px;">
+                مستقیم از <b>گالری موبایل</b> انتخاب کنید — بدون لینک اینترنت.
+            </p>
+            <div style="margin-bottom:14px;padding:12px;background:#fff;border-radius:12px;border:1px solid #c9a84c;">
+                <label style="display:block;font-weight:700;color:var(--txt-title,#F0D878);margin-bottom:6px;">📷 لوگوی هدر</label>
+                <input type="file" id="galleryHeaderLogo" accept="image/*" style="width:100%;padding:10px;margin-bottom:8px;">
+                <img id="previewHeaderLogo" alt="" style="display:none;max-height:100px;max-width:100%;border-radius:10px;object-fit:contain;">
+            </div>
+            <div style="margin-bottom:14px;padding:12px;background:#fff;border-radius:12px;border:1px solid #c9a84c;">
+                <label style="display:block;font-weight:700;color:var(--txt-title,#F0D878);margin-bottom:6px;">📷 لوگوی ثبت‌نام</label>
+                <input type="file" id="galleryRegisterLogo" accept="image/*" style="width:100%;padding:10px;margin-bottom:8px;">
+                <img id="previewRegisterLogo" alt="" style="display:none;max-height:100px;max-width:100%;border-radius:10px;object-fit:contain;">
+            </div>
+            <div style="margin-bottom:14px;padding:12px;background:#fff;border-radius:12px;border:1px solid #c9a84c;">
+                <label style="display:block;font-weight:700;color:var(--txt-title,#F0D878);margin-bottom:6px;">📷 تصویر اسپلش</label>
+                <input type="file" id="gallerySplash" accept="image/*" style="width:100%;padding:10px;margin-bottom:8px;">
+                <img id="previewSplash" alt="" style="display:none;max-height:140px;max-width:100%;border-radius:10px;object-fit:cover;">
+            </div>
+            <div style="margin-bottom:14px;padding:12px;background:#fff;border-radius:12px;border:1px solid #c9a84c;">
+                <label style="display:block;font-weight:700;color:var(--txt-title,#F0D878);margin-bottom:6px;">📷 پس‌زمینه اصلی اپ</label>
+                <input type="file" id="galleryAppBg" accept="image/*" style="width:100%;padding:10px;margin-bottom:8px;">
+                <img id="previewAppBg" alt="" style="display:none;max-height:140px;max-width:100%;border-radius:10px;object-fit:cover;">
+            </div>
+            
+            <div style="margin-bottom:14px;padding:12px;background:#fff;border-radius:12px;border:2px solid #c9a84c;">
+                <label style="display:block;font-weight:700;color:var(--txt-title,#F0D878);margin-bottom:6px;">📱 آیکون اصلی اپ (صفحه گوشی / PWA)</label>
+                <p style="font-size:0.75rem;color:var(--txt-hint,#C8C0B0);margin-bottom:8px;line-height:1.6;">این تصویر بعد از «افزودن به صفحه اصلی» به‌عنوان آیکون اپ نمایش داده می‌شود. مربع ۱۲۸×۱۲۸ یا ۱۹۲×۱۹۲ پیشنهاد می‌شود.</p>
+                <input type="file" id="galleryAppIcon" accept="image/*" style="width:100%;padding:10px;margin-bottom:8px;">
+                <img id="previewAppIcon" alt="" style="display:none;max-height:96px;max-width:96px;border-radius:18px;object-fit:cover;border:1px solid #ddd;">
+                <button type="button" id="applyAppIconBtn" onclick="(async function(){var st=document.getElementById('appIconSaveStatus');var s={};try{s=JSON.parse(localStorage.getItem('cafeSettings')||'{}')}catch(e){}var i=s.appIcon||localStorage.getItem('cafeAppIcon');if(!i){if(st)st.textContent='ابتدا یک تصویر انتخاب کنید.';else alert('ابتدا یک تصویر انتخاب کنید.');return;}if(st)st.textContent='در حال ذخیره و بررسی اتصال سرور…';try{if(typeof saveAndApplyAllMediaImages!=='function')throw new Error('ماژول ذخیره تصاویر بارگذاری نشده است؛ صفحه را کامل تازه‌سازی کنید.');var r=await saveAndApplyAllMediaImages();if(st)st.textContent=r&&r.cloudOk?(r.permanentImages>0?'ذخیره تنظیمات سرور موفق بود؛ تصویر دارای لینک دائمی است.':'تنظیمات ذخیره شد، اما آپلود تصویر تأیید نشد.'):'ذخیره در سرور ناموفق بود؛ تصویر فقط محلی است.'+(r&&r.error?' علت: '+r.error:'');}catch(e){if(st)st.textContent='خطا: '+(e.message||e);else alert('خطا: '+(e.message||e));}})()" style="margin-top:8px;width:100%;">📱 اعمال و ذخیره آیکون</button>
+            <div id="appIconSaveStatus" role="status" aria-live="polite" style="margin-top:8px;padding:8px;border-radius:8px;color:var(--txt-body,#F5F0E4);font-size:.8rem;line-height:1.5;overflow-wrap:anywhere;">پس از انتخاب تصویر، دکمهٔ ذخیره را بزنید؛ نتیجه اینجا نمایش داده می‌شود.</div>
+                <p style="font-size:0.72rem;color:var(--txt-hint,#C8C0B0);margin-top:6px;line-height:1.5;">آیکون تب مرورگر عوض می‌شود. آیکون میانبر صفحهٔ گوشی فقط بعد از نصب دوباره از آدرس HTTPS هاست به‌روز می‌شود.</p>
+            </div>
+
+<div class="admin-row" style="flex-direction:column;align-items:stretch;gap:4px;margin-top:8px;">
+                <label style="color:var(--txt-body,#F5F0E4);font-size:0.8rem;">شماره تماس مدیریت:</label>
+                <input type="text" id="mediaManagerPhone" placeholder="09392979200">
+            </div>
+            <div class="admin-row" style="flex-direction:column;align-items:stretch;gap:4px;margin-top:8px;">
+                <label style="color:var(--txt-body,#F5F0E4);font-size:0.8rem;">ساعات پاسخگویی:</label>
+                <input type="text" id="mediaManagerHours" placeholder="ساعات تماس">
+            </div>
+            <div class="admin-row" style="margin-top:12px;gap:8px;flex-wrap:wrap;">
+                <button type="button" onclick="saveMediaSettings()">💾 ذخیره تماس</button>
+                <button type="button" class="danger" onclick="clearGalleryImages()">🗑️ پاک کردن تصاویر</button>
+            </div>
+            <input type="hidden" id="mediaHeaderLogo" value="">
+            <input type="hidden" id="mediaRegisterLogo" value="">
+            <input type="hidden" id="mediaSplashBg" value="">
+            <button type="button" id="saveAllMediaImagesBtn" onclick="saveAndApplyAllMediaImages()" style="width:100%;margin-top:10px;padding:13px;border:none;border-radius:12px;background:#8B4513;color:#fff;font-family:inherit;font-weight:800;cursor:pointer;">💾 ذخیره و اعمال همه تصاویر</button>
+            <div style="font-size:.72rem;color:var(--txt-hint,#C8C0B0);text-align:center;margin-top:5px;">لوگو، ثبت‌نام، اسپلش، پس‌زمینه اپ و آیکون</div>
+        </div>
+    </div>
+
+    <div class="admin-content" id="adminDalilImages" style="display:none;">
+        <div class="admin-card">
+            <h4>🖼️ تصاویر دلیل الحیران</h4>
+            <p style="font-size:.8rem;color:var(--txt-body,#F5F0E4);line-height:1.8;">برای هر یک از ۹ مرتبه آقایان، ۹ مرتبه خانم‌ها و ۹ مرتبه اطفال، دو تصویر مستقل ذخیره می‌شود. تصاویر فعلاً در حافظه محلی دستگاه نگهداری می‌شوند.</p>
+            <div id="dalilImagesAdmin"></div>
+        </div>
+    </div>
+
+    <div class="admin-content" id="adminSettings">
+        <div class="admin-card">
+            <h4>⚙️ تنظیمات مدیریت</h4>
+            <p style="font-size:0.82rem;line-height:1.8;color:var(--txt-body,#F5F0E4);margin:0 0 12px;">
+                ورود مدیر فقط از طریق <b>OTP تلگرام</b> و نقش <code>admin</code> در Supabase انجام می‌شود.
+                رمز عبور ثابت در اپ ذخیره نمی‌شود.
+            </p>
+            <div class="admin-row" style="flex-direction:column;align-items:stretch;gap:8px;">
+                <label style="color:var(--txt-body,#F5F0E4);font-size:0.8rem;">💳 شماره کارت مقصد (برای نمایش به خریدار)</label>
+                <input type="text" id="paymentCardNumber" placeholder="6037-XXXX-XXXX-XXXX" dir="ltr" style="width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;font-family:monospace;letter-spacing:1px;box-sizing:border-box;">
+                <label style="color:var(--txt-body,#F5F0E4);font-size:0.8rem;">🏦 شماره شبا (اختیاری)</label>
+                <input type="text" id="paymentSheba" placeholder="IR00-XXXX-XXXX-XXXX-XXXX-XXXX-XX" dir="ltr" style="width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;font-family:monospace;letter-spacing:1px;box-sizing:border-box;">
+                <label style="color:var(--txt-body,#F5F0E4);font-size:0.8rem;">👤 به نام</label>
+                <input type="text" id="paymentCardOwner" placeholder="نام صاحب حساب" style="width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;box-sizing:border-box;">
+                <label style="color:var(--txt-body,#F5F0E4);font-size:0.8rem;">📝 راهنمای پرداخت (اختیاری)</label>
+                <textarea id="paymentGuide" rows="2" placeholder="مثال: پس از واریز، فیش را در همین فرم آپلود کنید." style="width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;font-family:inherit;box-sizing:border-box;"></textarea>
+            </div>
+            <button type="button" onclick="saveAdminSettings()" style="margin-top:12px;">💾 ذخیره تنظیمات پرداخت</button>
+        </div>
+        <div class="admin-card">
+            <h4>📊 پشتیبان‌گیری</h4>
+            <div class="admin-row">
+                <button onclick="exportData()">📤 خروجی گرفتن از داده‌ها</button>
+                <button onclick="document.getElementById('importFileInput').click()">📥 وارد کردن داده‌ها</button>
+                <input type="file" id="importFileInput" accept=".json" style="display:none;" onchange="importData(event)">
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+
+<!-- ===== پنل اشتراک و سفارشات کاربر ===== -->
+<div id="subOrdersPanel" style="display:none;position:fixed;inset:0;z-index:5600;background:rgba(5,7,13,0.72);">
+  <div class="sub-orders-sheet" style="position:absolute;bottom:0;left:0;right:0;max-height:90vh;overflow:auto;background:#FFFCF5;border-radius:22px 22px 0 0;padding:16px;border:2px solid #c9a84c;border-bottom:none;color:#1A1A1A;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <strong style="color:#6B5210;font-size:1.1rem;">⭐ خرید</strong>
+      <button type="button" onclick="closeSubOrdersPanel()" style="border:1px solid #c9a84c;background:#fff;color:#1A1A1A;border-radius:8px;padding:6px 12px;">✕</button>
+    </div>
+    <div id="subOrdersStatusBox" style="padding:14px;background:linear-gradient(135deg,#fff8e7,#ffe9a8);border-radius:14px;border:1px solid #c9a84c;margin-bottom:14px;color:#1A1A1A;">
+      <div style="font-weight:800;color:#6B5210;margin-bottom:6px;">وضعیت اشتراک</div>
+      <div id="subOrdersStatusText" style="color:#1A1A1A;font-size:0.9rem;line-height:1.7;">در حال بررسی...</div>
+      <button type="button" class="btn" style="width:100%;margin-top:10px;padding:12px;" onclick="openSubscriptionPurchase();closeSubOrdersPanel();">⭐ خرید اشتراک</button>
+    </div>
+    <div style="margin-bottom:10px;font-weight:700;color:#6B5210;">📦 خریدهای محصول من</div>
+    <div id="subOrdersList" style="min-height:60px;color:#1A1A1A;"></div>
+  </div>
+</div>
+
+<!-- ===== TOAST ===== -->
+<div id="notification"></div>        
+        <!-- ===== MODAL: جزئیات محصول (اینستاگرام) ===== -->
+        
+<div class="modal-glass" id="vefqModal">
+  <div class="modal-glass-content" style="max-width:560px;">
+    <div class="modal-glass-header">
+      <div class="modal-glass-logo">🧿</div>
+      <div class="modal-glass-title">طلسم‌ساز — بخش ۱ و ۲</div>
+      <button class="modal-glass-close" onclick="closeModalGlass('vefqModal')">✕</button>
+    </div>
+    <div class="modal-glass-body">
+      <div class="v8-talisman-tabs">
+        <button type="button" class="v8-talisman-tab active" data-tab="t1" onclick="switchTalismanPart('t1')">بخش ۱ · شناسایی و ختم</button>
+        <button type="button" class="v8-talisman-tab" data-tab="t2" onclick="switchTalismanPart('t2')">بخش ۲ · وفق مثلث و موکلین</button>
+      </div>
+
+      <section id="talismanPart1" class="v8-talisman-part active">
+        <div class="modal-guide">🔮 اطلاعات شخص، حاجت، برج، سوره، آیه و روش ختم در این بخش محاسبه می‌شود.</div>
+        <div class="input-group"><label>👤 نام شما</label><input type="text" id="t1UserName" placeholder="مثال: میعاد"></div>
+        <div class="input-group"><label>👩 نام مادر شما</label><input type="text" id="t1MotherName" placeholder="مثال: فاطمه"></div>
+        <div class="input-group"><label>📅 تاریخ تولد (اختیاری)</label><input type="date" id="t1BirthDate"></div>
+        <div class="input-group"><label>🎯 موضوع حاجت</label>
+          <select id="t1HajatSubject">
+            <option value="">— بدون حاجت (فقط شناسایی) —</option>
+            <option value="رزق">💰 رزق و روزی</option><option value="وظیفة">💼 شغل و کار</option><option value="زواج">💍 ازدواج</option>
+            <option value="محبة">❤️ محبت</option><option value="شفاء">🩺 شفا و درمان</option><option value="علم">📚 علم و دانش</option>
+            <option value="مال">🏦 ثروت و سرمایه</option><option value="صحة">🌿 سلامتی</option><option value="ولد">👶 فرزند</option>
+            <option value="سکینة">🕊️ آرامش</option><option value="دفع بلا">🛡️ دوری از بلا</option><option value="دفع عدو">⚔️ دفع دشمن</option>
+            <option value="قرض">💰 قرض و بدهکاری</option><option value="سفر">🧳 سفر</option>
+          </select>
+        </div>
+        <div class="input-group"><label>📝 توضیحات اضافی</label><input type="text" id="t1ExtraNote" placeholder="توضیح خاص..." autocomplete="off"></div>
+        <button class="btn" type="button" onclick="generateTalismanPart1()">✨ دریافت نتیجه بخش ۱</button>
+        <div id="talismanPart1Result" class="result-box" style="display:none;"></div>
+      </section>
+
+      <section id="talismanPart2" class="v8-talisman-part" style="display:none;">
+        <div class="modal-guide">🧿 وفق مثلث، موکلین علوی و سفلی، ملک حاکم و متن توکیل در این بخش تولید می‌شود.</div>
+        <div class="input-group"><label>👤 نام شخص (طالب)</label><input type="text" id="t2UserName" placeholder="مثال: میعاد"></div>
+        <div class="input-group"><label>👩 نام مادر شخص</label><input type="text" id="t2MotherName" placeholder="مثال: فاطمه"></div>
+        <div class="input-group"><label>🎯 موضوع حاجت</label>
+          <select id="t2HajatSubject">
+            <option value="رزق و روزی">💰 رزق و روزی</option><option value="ثروت">💎 ثروت و سرمایه</option><option value="محبت">❤️ محبت و الفت</option>
+            <option value="ازدواج">💍 ازدواج</option><option value="کار">💼 پیدا کردن کار</option><option value="شفا">🩺 شفا و درمان</option>
+            <option value="دفع بلا">🛡️ دفع بلا و دشمن</option><option value="علم">📚 علم و دانش</option><option value="آرامش">🕊️ آرامش و سکینه</option>
+          </select>
+        </div>
+        <div class="input-group"><label>📝 نام شخص موردنظر (در صورت نیاز)</label><input type="text" id="t2TargetName" placeholder="مثال: سارا"></div>
+        <button class="btn" type="button" onclick="generateTalismanPart2()">✨ تولید طلسم وفق مثلث</button>
+        <div id="talismanPart2Result" class="result-box" style="display:none;"></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<div class="modal-glass" id="productDetailModal">
+            <div class="modal-glass-content" style="max-width:420px;padding:0;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+                <div style="position:relative;background:linear-gradient(160deg,rgba(201,168,76,0.12),rgba(10,22,40,0.95));">
+                    <img class="ig-product-image" id="igProductImage" alt="محصول" style="display:none;" />
+                    <div class="ig-product-emoji-fallback" id="igProductEmoji">📦</div>
+                    <button class="modal-glass-close" onclick="closeProductDetail()" style="position:absolute;top:12px;left:12px;z-index:5;background:rgba(0,0,0,0.55);">✕</button>
+                </div>
+                <div class="ig-product-body">
+                    <div class="ig-product-title" id="igProductTitle">نام محصول</div>
+                    <div class="ig-product-price" id="igProductPrice">۰ تومان</div>
+                    <div class="ig-product-desc" id="igProductDesc">توضیحات</div>
+                    <div class="ig-buy-actions" id="igBuyActions">
+                        <button class="ig-buy-btn ig-buy-online" onclick="showOnlineOrderForm()">🛒 خرید آنلاین — تایید فیش و مشخصات کامل</button>
+                        <button class="ig-buy-btn ig-buy-call" onclick="showCallPurchaseInfo()">📞 تماس تلفنی</button>
+                    </div>
+                    <div class="ig-order-form" id="igOrderForm">
+                        <div class="modal-guide" style="margin-bottom:12px;"><i class="fas fa-shield-alt"></i> پس از واریز، فیش و مشخصات کامل را بفرستید تا پس از احراز هویت تایید شود.</div>
+                        <div style="font-size:0.72rem;color:var(--accent);font-weight:700;margin:6px 0;">📦 محصول</div>
+                        <div class="input-group">
+                            <label>نام محصول</label>
+                            <input type="text" id="orderProductName" readonly>
+                        </div>
+                        <div style="font-size:0.72rem;color:var(--accent);font-weight:700;margin:10px 0 4px;">👤 سفارش‌دهنده</div>
+                        <div class="input-group">
+                            <label>نام و نام خانوادگی *</label>
+                            <input type="text" id="orderName" placeholder="مثال: علی رضایی">
+                        </div>
+                        <div class="input-group">
+                            <label>نام مادر *</label>
+                            <input type="text" id="orderMotherName" placeholder="نام مادر">
+                        </div>
+                        <div class="input-group">
+                            <label>کد ملی *</label>
+                            <input type="text" id="orderNationalId" inputmode="numeric" maxlength="10" placeholder="۱۰ رقم">
+                        </div>
+                        <div class="input-group">
+                            <label>شماره تماس *</label>
+                            <input type="tel" id="orderPhone" placeholder="09xxxxxxxxx">
+                        </div>
+                        <div class="input-group">
+                            <label>آدرس کامل پستی *</label>
+                            <textarea id="orderAddress" rows="2" placeholder="استان، شهر، خیابان، پلاک، واحد"></textarea>
+                        </div>
+                        <div class="input-group">
+                            <label>کد پستی *</label>
+                            <input type="text" id="orderPostalCode" inputmode="numeric" maxlength="10" placeholder="۱۰ رقم">
+                        </div>
+                        <div style="font-size:0.72rem;color:var(--accent);font-weight:700;margin:10px 0 4px;">📬 تحویل‌گیرنده</div>
+                        <div class="input-group">
+                            <label>نام و نام خانوادگی تحویل‌گیرنده *</label>
+                            <input type="text" id="orderReceiverName" placeholder="نام تحویل‌گیرنده">
+                        </div>
+                        <div class="input-group">
+                            <label>شماره تماس تحویل‌گیرنده *</label>
+                            <input type="tel" id="orderReceiverPhone" placeholder="09xxxxxxxxx">
+                        </div>
+                        <div class="input-group">
+                            <label>آدرس پستی محل تحویل *</label>
+                            <textarea id="orderReceiverAddress" rows="2" placeholder="آدرس دقیق تحویل"></textarea>
+                        </div>
+                        <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;margin:4px 0 10px;cursor:pointer;color:var(--text-secondary);">
+                            <input type="checkbox" id="orderSameAddress" onchange="toggleSameAddress()"> آدرس تحویل = آدرس سفارش‌دهنده
+                        </label>
+                        <div style="font-size:0.72rem;color:var(--accent);font-weight:700;margin:10px 0 4px;">💳 اطلاعات واریز</div>
+                        <div id="paymentInfoBox" style="background:rgba(201,168,76,0.10);border:1px solid rgba(201,168,76,0.35);border-radius:14px;padding:14px;margin-bottom:12px;">
+                            <div style="font-size:0.75rem;color:var(--text-secondary);margin-bottom:6px;">مبلغ را به حساب زیر واریز کنید:</div>
+                            <div style="font-size:0.7rem;color:var(--text-secondary);">شماره کارت</div>
+                            <div id="orderPaymentCard" style="font-size:1.05rem;font-weight:800;color:var(--accent);letter-spacing:1px;direction:ltr;text-align:center;margin:4px 0 8px;font-family:monospace;">—</div>
+                            <div style="font-size:0.7rem;color:var(--text-secondary);">شبا</div>
+                            <div id="orderPaymentSheba" style="font-size:0.85rem;font-weight:700;color:#1A365D;letter-spacing:0.5px;direction:ltr;text-align:center;margin:4px 0 8px;font-family:monospace;">—</div>
+                            <div style="font-size:0.7rem;color:var(--text-secondary);">به نام</div>
+                            <div id="orderPaymentOwner" style="font-size:0.9rem;font-weight:700;color:#1A365D;text-align:center;margin:4px 0 8px;">—</div>
+                            <div id="orderPaymentGuide" style="font-size:0.72rem;color:var(--text-secondary);line-height:1.6;margin-top:6px;"></div>
+                            <button type="button" class="btn" onclick="copyPaymentCard()" style="width:100%;margin-top:10px;padding:10px;font-size:0.85rem;">📋 کپی شماره کارت</button>
+                        </div>
+                        <div style="font-size:0.72rem;color:var(--accent);font-weight:700;margin:10px 0 4px;">🧾 تایید پرداخت</div>
+                        <div class="input-group">
+                            <label>تصویر فیش واریزی * (حداکثر ۳ مگابایت)</label>
+                            <input type="file" id="orderReceipt" accept="image/*" onchange="previewReceipt(event)" style="padding:8px;font-size:0.8rem;">
+                            <img id="orderReceiptPreview" class="ig-receipt-preview" alt="فیش">
+                        </div>
+                        <div class="input-group">
+                            <label>توضیحات (اختیاری)</label>
+                            <textarea id="orderNote" rows="2" placeholder="کد تخفیف، ساعت هماهنگی و ..."></textarea>
+                        </div>
+                        <div style="display:flex;gap:8px;margin-top:8px;">
+                            <button class="btn" onclick="submitProductOrder()" style="flex:1;">✅ ثبت برای تایید</button>
+                            <button class="btn" onclick="hideOnlineOrderForm()" style="flex:0.45;background:transparent;border:1px solid rgba(201,168,76,0.4);color:#1A365D;box-shadow:none;">انصراف</button>
+                        </div>
+                        <p style="font-size:0.62rem;color:var(--text-secondary);margin-top:10px;line-height:1.5;">پس از بررسی فیش و احراز مشخصات، نتیجه از طریق تماس یا پیام اعلام می‌شود.</p>
+                    </div>
+                    <div class="ig-order-form" id="igCallInfo">
+                        <div class="modal-guide" style="margin-bottom:12px;"><i class="fas fa-phone-alt"></i> خرید غیرآنلاین — هماهنگی تلفنی</div>
+                        <div style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.28);border-radius:14px;padding:16px;text-align:center;">
+                            <div style="font-size:0.75rem;color:var(--text-secondary);">شماره تماس مدیریت</div>
+                            <div id="callAdminPhone" style="font-size:1.3rem;font-weight:800;color:var(--accent);letter-spacing:1px;direction:ltr;margin-top:6px;">—</div>
+                            <div style="margin-top:14px;font-size:0.75rem;color:var(--text-secondary);">ساعات پاسخ‌گویی</div>
+                            <div id="callAdminHours" style="font-size:1.05rem;font-weight:700;color:#1A365D;margin-top:4px;">۱۸:۰۰ تا ۲۱:۰۰</div>
+                            <div style="font-size:0.68rem;color:var(--text-secondary);margin-top:8px;">همه‌روزه (به‌جز تعطیلات رسمی)</div>
+                        </div>
+                        <p style="font-size:0.72rem;color:var(--text-secondary);text-align:center;margin-top:12px;line-height:1.6;">هنگام تماس نام محصول را بگویید تا سریع‌تر راهنمایی شوید.</p>
+                        <div style="display:flex;gap:8px;margin-top:14px;">
+                            <button class="btn" onclick="dialAdminPhone()" style="flex:1;">📞 تماس الان</button>
+                            <button class="btn" onclick="hideCallPurchaseInfo()" style="flex:0.45;background:transparent;border:1px solid rgba(201,168,76,0.4);color:#1A365D;box-shadow:none;">بازگشت</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- ===== MODAL: سبب القادم ===== -->
+        <div class="modal-glass" id="sababModal">
+            <div class="modal-glass-content">
+                <div class="modal-glass-header">
+                    <div class="modal-glass-logo">📜</div>
+                    <div class="modal-glass-title">🔮 سبب القادم</div>
+                    <button class="modal-glass-close" onclick="closeModalGlass('sababModal')">✕</button>
+                </div>
+                <div class="modal-glass-body">
+                    <div class="modal-guide"><i class="fas fa-info-circle"></i> نام و نام مادر را وارد کنید</div>
+                    <div class="input-group">
+                        <label>👤 اسم شما:</label>
+                        <input type="text" id="sababName" placeholder="مثال: محمد">
+                    </div>
+                    <div class="input-group">
+                        <label>👩 اسم مادر شما:</label>
+                        <input type="text" id="sababMother" placeholder="مثال: فاطمه">
+                    </div>
+                    <div class="input-group">
+                        <label>📅 اسم روز:</label>
+                        <select id="sababDay">
+                            <option value="السبت">السبت (شنبه)</option>
+                            <option value="الاحد">الاحد (یکشنبه)</option>
+                            <option value="الاثنین">الاثنین (دوشنبه)</option>
+                            <option value="الثلاث">الثلاث (سه‌شنبه)</option>
+                            <option value="الاربعا">الاربعا (چهارشنبه)</option>
+                            <option value="الخمیس">الخمیس (پنجشنبه)</option>
+                            <option value="الجمعه">الجمعه (جمعه)</option>
+                        </select>
+                    </div>
+                    <button class="btn" onclick="calculateSabab()">🧮 محاسبه دلیل آینده</button>
+                    <div class="calculation-box" id="sababCalcSteps" style="display:none;">
+                        <div class="calculation-step" id="sababStep1"></div>
+                        <div class="calculation-step" id="sababStep2"></div>
+                        <div class="calculation-step" id="sababStep3"></div>
+                        <div class="calculation-step" id="sababStep4"></div>
+                        <div class="calculation-step" id="sababStep5"></div>
+                    </div>
+                    <div class="result-box" id="sababResult" style="display:none;">
+                        <div class="result-value" id="sababNumber"></div>
+                        <div class="result-description" id="sababDescription"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== MODAL: محبت ===== -->
+        <div class="modal-glass" id="mohabbatModal">
+            <div class="modal-glass-content">
+                <div class="modal-glass-header">
+                    <div class="modal-glass-logo">📜</div>
+                    <div class="modal-glass-title">💖 محبت زن به مرد</div>
+                    <button class="modal-glass-close" onclick="closeModalGlass('mohabbatModal')">✕</button>
+                </div>
+                <div class="modal-glass-body">
+                    <div class="modal-guide"><i class="fas fa-info-circle"></i> نام زن و مرد را وارد کنید</div>
+                    <div class="input-group">
+                        <label>♀️ اسم زن:</label>
+                        <input type="text" id="womanName" placeholder="مثال: زهرا">
+                    </div>
+                    <div class="input-group">
+                        <label>♂️ اسم مرد:</label>
+                        <input type="text" id="manName" placeholder="مثال: علی">
+                    </div>
+                    <button class="btn" onclick="calculateMohabbat()">💓 محاسبه محبت</button>
+                    <div class="calculation-box" id="mohabbatCalcSteps" style="display:none;">
+                        <div class="calculation-step" id="mohabbatStep1"></div>
+                        <div class="calculation-step" id="mohabbatStep2"></div>
+                        <div class="calculation-step" id="mohabbatStep3"></div>
+                    </div>
+                    <div class="result-box" id="mohabbatResult" style="display:none;">
+                        <div class="result-value" id="mohabbatNumber"></div>
+                        <div class="result-description" id="mohabbatDescription"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== MODAL: راستگو و شفای بیمار ===== -->
+        <div class="modal-glass" id="rastegooModal">
+            <div class="modal-glass-content">
+                <div class="modal-glass-header">
+                    <div class="modal-glass-logo">📜</div>
+                    <div class="modal-glass-title">✅ راستگو و شفای بیمار</div>
+                    <button class="modal-glass-close" onclick="closeModalGlass('rastegooModal')">✕</button>
+                </div>
+                <div class="modal-glass-body">
+                    <div class="tab-buttons">
+                        <button class="tab-btn active" onclick="changeTab('rastegoo','rastegooTab',event)">راستگویی</button>
+                        <button class="tab-btn" onclick="changeTab('rastegoo','behboodTab',event)">شفای بیمار</button>
+                    </div>
+                    <div class="tab-content active" id="rastegooTab">
+                        <div class="input-group">
+                            <label>👤 اسم گوینده:</label>
+                            <input type="text" id="rastegooName" placeholder="مثال: احمد">
+                        </div>
+                        <div class="input-group">
+                            <label>📅 روز:</label>
+                            <select id="rastegooDay">
+                                <option value="السبت">السبت (شنبه)</option>
+                                <option value="الاحد">الاحد (یکشنبه)</option>
+                                <option value="الاثنین">الاثنین (دوشنبه)</option>
+                                <option value="الثلاث">الثلاث (سه‌شنبه)</option>
+                                <option value="الاربعا">الاربعا (چهارشنبه)</option>
+                                <option value="الخمیس">الخمیس (پنجشنبه)</option>
+                                <option value="الجمعه">الجمعه (جمعه)</option>
+                            </select>
+                        </div>
+                        <button class="btn" onclick="calculateRastegoo()">💬 تشخیص</button>
+                        <div class="result-box" id="rastegooResult" style="display:none;">
+                            <div class="result-value" id="rastegooValue"></div>
+                            <div class="result-description" id="rastegooDescription"></div>
+                        </div>
+                    </div>
+                    <div class="tab-content" id="behboodTab">
+                        <div class="input-group">
+                            <label>🤒 اسم بیمار:</label>
+                            <input type="text" id="behboodName" placeholder="مثال: مریم">
+                        </div>
+                        <div class="input-group">
+                            <label>👩 اسم مادر بیمار:</label>
+                            <input type="text" id="behboodMother" placeholder="مثال: سکینه">
+                        </div>
+                        <button class="btn" onclick="calculateBehbood()">💓 تشخیص</button>
+                        <div class="result-box" id="behboodResult" style="display:none;">
+                            <div class="result-value" id="behboodValue"></div>
+                            <div class="result-description" id="behboodDescription"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== MODAL: دوست.دشمنی.تجاری ===== -->
+        <div class="modal-glass" id="dostDoshmaniModal">
+            <div class="modal-glass-content">
+                <div class="modal-glass-header">
+                    <div class="modal-glass-logo">📜</div>
+                    <div class="modal-glass-title">🤝 دوست.دشمنی.تجاری</div>
+                    <button class="modal-glass-close" onclick="closeModalGlass('dostDoshmaniModal')">✕</button>
+                </div>
+                <div class="modal-glass-body">
+                    <div class="tab-buttons">
+                        <button class="tab-btn active" onclick="changeTab('dostDoshmani','sherkatTab',event)">شراکت تجاری</button>
+                        <button class="tab-btn" onclick="changeTab('dostDoshmani','dostTab',event)">دوست/دشمن</button>
+                    </div>
+                    <div class="tab-content active" id="sherkatTab">
+                        <div class="input-group">
+                            <label>👨‍💼 اسم شریک اول:</label>
+                            <input type="text" id="sharik1" placeholder="مثال: حسن">
+                        </div>
+                        <div class="input-group">
+                            <label>👨‍💼 اسم شریک دوم:</label>
+                            <input type="text" id="sharik2" placeholder="مثال: حسین">
+                        </div>
+                        <button class="btn" onclick="calculateSherkat()">📈 محاسبه</button>
+                        <div class="result-box" id="sherkatResult" style="display:none;">
+                            <div class="result-value" id="sherkatValue"></div>
+                            <div class="result-description" id="sherkatDescription"></div>
+                        </div>
+                    </div>
+                    <div class="tab-content" id="dostTab">
+                        <div class="input-group">
+                            <label>📅 روز:</label>
+                            <select id="dostDay">
+                                <option value="السبت">السبت (شنبه)</option>
+                                <option value="الاحد">الاحد (یکشنبه)</option>
+                                <option value="الاثنین">الاثنین (دوشنبه)</option>
+                                <option value="الثلاث">الثلاث (سه‌شنبه)</option>
+                                <option value="الاربعا">الاربعا (چهارشنبه)</option>
+                                <option value="الخمیس">الخمیس (پنجشنبه)</option>
+                                <option value="الجمعه">الجمعه (جمعه)</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>👤 اسم شخص:</label>
+                            <input type="text" id="dostName" placeholder="مثال: رضا">
+                        </div>
+                        <div class="input-group">
+                            <label>👩 اسم مادر شخص:</label>
+                            <input type="text" id="dostMother" placeholder="مثال: زینب">
+                        </div>
+                        <button class="btn" onclick="calculateDost()">👥 تشخیص</button>
+                        <div class="result-box" id="dostResult" style="display:none;">
+                            <div class="result-value" id="dostValue"></div>
+                            <div class="result-description" id="dostDescription"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== MODAL: علت بیماری ۱۲تایی ===== -->
+        <div class="modal-glass" id="elateBimari12Modal">
+            <div class="modal-glass-content">
+                <div class="modal-glass-header">
+                    <div class="modal-glass-logo">📜</div>
+                    <div class="modal-glass-title">🩺 علت بیماری ۱۲تایی</div>
+                    <button class="modal-glass-close" onclick="closeModalGlass('elateBimari12Modal')">✕</button>
+                </div>
+                <div class="modal-glass-body">
+                    <div class="modal-guide"><i class="fas fa-info-circle"></i> نام بیمار، مادر و روز را وارد کنید</div>
+                    <div class="input-group">
+                        <label>🤒 اسم بیمار:</label>
+                        <input type="text" id="bimari12Name" placeholder="مثال: اکبر">
+                    </div>
+                    <div class="input-group">
+                        <label>👩 اسم مادر بیمار:</label>
+                        <input type="text" id="bimari12Mother" placeholder="مثال: خدیجه">
+                    </div>
+                    <div class="input-group">
+                        <label>📅 روز سوال:</label>
+                        <select id="bimari12Day">
+                            <option value="السبت">السبت (شنبه)</option>
+                            <option value="الاحد">الاحد (یکشنبه)</option>
+                            <option value="الاثنین">الاثنین (دوشنبه)</option>
+                            <option value="الثلاث">الثلاث (سه‌شنبه)</option>
+                            <option value="الاربعا">الاربعا (چهارشنبه)</option>
+                            <option value="الخمیس">الخمیس (پنجشنبه)</option>
+                            <option value="الجمعه">الجمعه (جمعه)</option>
+                        </select>
+                    </div>
+                    <button class="btn" onclick="calculateBimari12()">🔍 تشخیص</button>
+                    <div class="result-box" id="bimari12Result" style="display:none;">
+                        <div class="result-value" id="bimari12Value"></div>
+                        <div class="result-description" id="bimari12Description"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== MODAL: آمدن غایب ===== -->
+        <div class="modal-glass" id="amadanModal">
+            <div class="modal-glass-content">
+                <div class="modal-glass-header">
+                    <div class="modal-glass-logo">📜</div>
+                    <div class="modal-glass-title">⏰ آمدن غایب</div>
+                    <button class="modal-glass-close" onclick="closeModalGlass('amadanModal')">✕</button>
+                </div>
+                <div class="modal-glass-body">
+                    <div class="modal-guide"><i class="fas fa-info-circle"></i> نام غایب، مادر و روز رفتن را وارد کنید</div>
+                    <div class="input-group">
+                        <label>👤 اسم شخص غایب:</label>
+                        <input type="text" id="ghaebName" placeholder="مثال: کریم">
+                    </div>
+                    <div class="input-group">
+                        <label>👩 اسم مادر غایب:</label>
+                        <input type="text" id="ghaebMother" placeholder="مثال: بتول">
+                    </div>
+                    <div class="input-group">
+                        <label>📅 روز رفتن:</label>
+                        <select id="ghaebDay">
+                            <option value="">انتخاب کنید</option>
+                            <option value="السبت">السبت (شنبه)</option>
+                            <option value="الاحد">الاحد (یکشنبه)</option>
+                            <option value="الاثنین">الاثنین (دوشنبه)</option>
+                            <option value="الثلاث">الثلاث (سه‌شنبه)</option>
+                            <option value="الاربعا">الاربعا (چهارشنبه)</option>
+                            <option value="الخمیس">الخمیس (پنجشنبه)</option>
+                            <option value="الجمعه">الجمعه (جمعه)</option>
+                        </select>
+                    </div>
+                    <button class="btn" onclick="calculateGhaeb()">🚶 تشخیص</button>
+                    <div class="result-box" id="ghaebResult" style="display:none;">
+                        <div class="result-value" id="ghaebValue"></div>
+                        <div class="result-description" id="ghaebDescription"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== MODAL: بخت و اقبال ===== -->
+        <div class="modal-glass" id="bahtModal">
+            <div class="modal-glass-content">
+                <div class="modal-glass-header">
+                    <div class="modal-glass-logo">📜</div>
+                    <div class="modal-glass-title">🍀 بخت و اقبال</div>
+                    <button class="modal-glass-close" onclick="closeModalGlass('bahtModal')">✕</button>
+                </div>
+                <div class="modal-glass-body">
+                    <div class="modal-guide"><i class="fas fa-info-circle"></i> نام و نام مادر را وارد کنید</div>
+                    <div class="input-group">
+                        <label>👤 اسم شخص:</label>
+                        <input type="text" id="bahtName" placeholder="مثال: عباس">
+                    </div>
+                    <div class="input-group">
+                        <label>👩 اسم مادر شخص:</label>
+                        <input type="text" id="bahtMother" placeholder="مثال: نرگس">
+                    </div>
+                    <button class="btn" onclick="calculateBaht()">👑 محاسبه</button>
+                    <div class="result-box" id="bahtResult" style="display:none;">
+                        <div class="result-value" id="bahtValue"></div>
+                        <div class="result-description" id="bahtDescription"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== MODAL: علت بیماری (عمومی) ===== -->
+        <div class="modal-glass" id="elateBimariModal">
+            <div class="modal-glass-content">
+                <div class="modal-glass-header">
+                    <div class="modal-glass-logo">📜</div>
+                    <div class="modal-glass-title">💊 علت بیماری</div>
+                    <button class="modal-glass-close" onclick="closeModalGlass('elateBimariModal')">✕</button>
+                </div>
+                <div class="modal-glass-body">
+                    <div class="modal-guide"><i class="fas fa-info-circle"></i> نام بیمار، مادر و روز را وارد کنید</div>
+                    <div class="input-group">
+                        <label>🤒 اسم شخص:</label>
+                        <input type="text" id="bimariName" placeholder="مثال: فرهاد">
+                    </div>
+                    <div class="input-group">
+                        <label>👩 اسم مادر شخص:</label>
+                        <input type="text" id="bimariMother" placeholder="مثال: لیلا">
+                    </div>
+                    <div class="input-group">
+                        <label>📅 روز:</label>
+                        <select id="bimariDay">
+                            <option value="السبت">السبت (شنبه)</option>
+                            <option value="الاحد">الاحد (یکشنبه)</option>
+                            <option value="الاثنین">الاثنین (دوشنبه)</option>
+                            <option value="الثلاث">الثلاث (سه‌شنبه)</option>
+                            <option value="الاربعا">الاربعا (چهارشنبه)</option>
+                            <option value="الخمیس">الخمیس (پنجشنبه)</option>
+                            <option value="الجمعه">الجمعه (جمعه)</option>
+                        </select>
+                    </div>
+                    <button class="btn" onclick="calculateBimari()">🔍 تشخیص</button>
+                    <div class="result-box" id="bimariResult" style="display:none;">
+                        <div class="result-value" id="bimariValue"></div>
+                        <div class="result-description" id="bimariDescription"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== MODAL: ستاره طالع ===== -->
+        <div class="modal-glass" id="setareModal">
+            <div class="modal-glass-content">
+                <div class="modal-glass-header">
+                    <div class="modal-glass-logo">📜</div>
+                    <div class="modal-glass-title">⭐ ستاره طالع</div>
+                    <button class="modal-glass-close" onclick="closeModalGlass('setareModal')">✕</button>
+                </div>
+                <div class="modal-glass-body">
+                    <div class="modal-guide"><i class="fas fa-info-circle"></i> نام و نام مادر را وارد کنید</div>
+                    <div class="input-group">
+                        <label>👤 اسم طالب:</label>
+                        <input type="text" id="setareName" placeholder="مثال: امیر">
+                    </div>
+                    <div class="input-group">
+                        <label>👩 اسم مادر طالب:</label>
+                        <input type="text" id="setareMother" placeholder="مثال: سمیرا">
+                    </div>
+                    <button class="btn" onclick="calculateSetare()">🌟 محاسبه</button>
+                    <div class="result-box" id="setareResult" data-alias="setareTaleResult" style="display:none;">
+                        <div class="result-value" id="setareValue"></div>
+                        <div class="result-description" id="setareDescription"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== MODAL: ماشین حساب + ابجد ===== -->
+        <div class="modal-glass" id="calculatorModal">
+            <div class="modal-glass-content">
+                <div class="modal-glass-header">
+                    <div class="modal-glass-logo">📜</div>
+                    <div class="modal-glass-title">🧮 ماشین حساب + ابجد</div>
+                    <button class="modal-glass-close" onclick="closeModalGlass('calculatorModal')">✕</button>
+                </div>
+                <div class="modal-glass-body">
+                    <div class="tab-buttons">
+                        <button class="tab-btn active" onclick="changeTab('calculator','abjadTabCalc',event)">ابجد</button>
+                        <button class="tab-btn" onclick="changeTab('calculator','simpleMathTab',event)">ساده</button>
+                        <button class="tab-btn" onclick="changeTab('calculator','advancedMathTab',event)">پیشرفته</button>
+                    </div>
+                    <div class="tab-content active" id="abjadTabCalc">
+                        <div class="input-group">
+                            <label>🔤 متن یا نام:</label>
+                            <input type="text" id="abjadText" placeholder="مثال: علی">
+                        </div>
+                        <div class="input-group">
+                            <label>📋 نوع حساب:</label>
+                            <select id="abjadType">
+                                <option value="kabir">ابجد کبیر</option>
+                                <option value="saghir">ابجد صغیر</option>
+                                <option value="vasit">ابجد وسیط</option>
+                            </select>
+                        </div>
+                        <button class="btn" onclick="calculateAbjadCalc()">🧮 محاسبه</button>
+                        <div class="result-box" id="abjadResult" style="display:none;">
+                            <div class="result-value" id="abjadValue"></div>
+                            <div class="result-description" id="abjadDescription"></div>
+                        </div>
+                    </div>
+                    <div class="tab-content" id="simpleMathTab">
+                        <div class="input-group">
+                            <label>🔢 عدد اول:</label>
+                            <input type="number" id="num1" placeholder="مثال: 125">
+                        </div>
+                        <div class="input-group">
+                            <label>🔢 عدد دوم:</label>
+                            <input type="number" id="num2" placeholder="مثال: 66">
+                        </div>
+                        <div class="input-group">
+                            <label>⚙️ عملیات:</label>
+                            <select id="operation">
+                                <option value="+">جمع (+)</option>
+                                <option value="-">تفریق (-)</option>
+                                <option value="*">ضرب (×)</option>
+                                <option value="/">تقسیم (÷)</option>
+                                <option value="%">باقیمانده (%)</option>
+                            </select>
+                        </div>
+                        <button class="btn" onclick="calculateMath()">= محاسبه</button>
+                        <div class="result-box" id="mathResult" style="display:none;">
+                            <div class="result-value" id="mathValue"></div>
+                        </div>
+                    </div>
+                    <div class="tab-content" id="advancedMathTab">
+                        <div class="input-group">
+                            <label>🧮 عبارت ریاضی:</label>
+                            <textarea id="mathExpression" rows="3" placeholder="مثال: 125 + 66 + 33"></textarea>
+                        </div>
+                        <button class="btn" onclick="calculateAdvancedMath()">= محاسبه</button>
+                        <div class="result-box" id="advancedMathResult" style="display:none;">
+                            <div class="result-value" id="advancedMathValue"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== MODAL: عاقبت ازدواج ===== -->
+        <div class="modal-glass" id="aghatModal">
+            <div class="modal-glass-content">
+                <div class="modal-glass-header">
+                    <div class="modal-glass-logo">📜</div>
+                    <div class="modal-glass-title">💍 عاقبت ازدواج</div>
+                    <button class="modal-glass-close" onclick="closeModalGlass('aghatModal')">✕</button>
+                </div>
+                <div class="modal-glass-body">
+                    <div class="modal-guide"><i class="fas fa-info-circle"></i> نام مرد و زن را وارد کنید</div>
+                    <div class="input-group">
+                        <label>♂️ اسم مرد:</label>
+                        <input type="text" id="ezdevajMan" placeholder="مثال: مهدی">
+                    </div>
+                    <div class="input-group">
+                        <label>♀️ اسم زن:</label>
+                        <input type="text" id="ezdevajWoman" placeholder="مثال: زهرا">
+                    </div>
+                    <button class="btn" onclick="calculateEzdevaj()">💕 محاسبه</button>
+                    <div class="result-box" id="ezdevajResult" style="display:none;">
+                        <div class="result-value" id="ezdevajValue"></div>
+                        <div class="result-description" id="ezdevajDescription"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== MODAL: دلیل الحیران ===== -->
+        <div class="modal-glass" id="dalilModal">
+            <div class="modal-glass-content">
+                <div class="modal-glass-header">
+                    <div class="modal-glass-logo">📜</div>
+                    <div class="modal-glass-title">❓ دلیل الحیران</div>
+                    <button class="modal-glass-close" onclick="closeModalGlass('dalilModal')">✕</button>
+                </div>
+                <div class="modal-glass-body">
+                    <div class="modal-guide"><i class="fas fa-info-circle"></i> نام، مادر، نوع و جنسیت را انتخاب کنید</div>
+                    <div class="input-group">
+                        <label>👤 نام شخص:</label>
+                        <input type="text" id="hayranName" placeholder="مثال: احمد">
+                    </div>
+                    <div class="input-group">
+                        <label>👩 نام مادر:</label>
+                        <input type="text" id="hayranMother" placeholder="مثال: فاطمه">
+                    </div>
+                    <div class="input-group">
+                        <label>👥 نوع محاسبه:</label>
+                        <div class="radio-group">
+                            <div class="radio-btn active" data-type="adult" onclick="selectType('adult')">👤 بزرگسال</div>
+                            <div class="radio-btn" data-type="child" onclick="selectType('child')">👶 کودک</div>
+                        </div>
+                    </div>
+                    <div id="genderSection" class="input-group">
+                        <label>⚧ جنسیت:</label>
+                        <div class="radio-group">
+                            <div class="radio-btn active" data-gender="male" onclick="selectGender('male')">♂️ مرد</div>
+                            <div class="radio-btn" data-gender="female" onclick="selectGender('female')">♀️ زن</div>
+                        </div>
+                    </div>
+                    <div id="daySection" class="input-group" style="display:none;">
+                        <label>📅 روز هفته:</label>
+                        <select id="hayranDay">
+                            <option value="السبت">السبت (شنبه)</option>
+                            <option value="الاحد">الاحد (یکشنبه)</option>
+                            <option value="الاثنین">الاثنین (دوشنبه)</option>
+                            <option value="الثلاث">الثلاث (سه شنبه)</option>
+                            <option value="الاربعا">الاربعا (چهارشنبه)</option>
+                            <option value="الخمیس">الخمیس (پنجشنبه)</option>
+                            <option value="الجمعه">الجمعه (جمعه)</option>
+                        </select>
+                    </div>
+                    <button class="btn" onclick="calculateHayran()">🧮 محاسبه</button>
+                    <div class="result-box" id="hayranResult" style="display:none;">
+                        <div class="result-value" id="hayranNumber"></div>
+                        <div class="result-description" id="hayranDescription"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== MODAL: رمل امام علی ===== -->
+        <div class="modal-glass" id="ramlModal">
+            <div class="modal-glass-content">
+                <div class="modal-glass-header">
+                    <div class="modal-glass-logo">📜</div>
+                    <div class="modal-glass-title">🎲 رمل امام علی (۴۶ سوال)</div>
+                    <button class="modal-glass-close" onclick="closeModalGlass('ramlModal')">✕</button>
+                </div>
+                <div class="modal-glass-body">
+                    <div class="modal-guide"><i class="fas fa-info-circle"></i> نام، مادر، روز، عدد و سوال را انتخاب کنید</div>
+                    <div class="input-group">
+                        <label>👤 نام طالب:</label>
+                        <input type="text" id="ramlName" placeholder="مثال: محسن">
+                    </div>
+                    <div class="input-group">
+                        <label>👩 نام مادر طالب:</label>
+                        <input type="text" id="ramlMother" placeholder="مثال: معصومه">
+                    </div>
+                    <div class="input-group">
+                        <label>📅 روز:</label>
+                        <select id="ramlDay">
+                            <option value="السبت">السبت (شنبه)</option>
+                            <option value="الاحد">الاحد (یکشنبه)</option>
+                            <option value="الاثنین">الاثنین (دوشنبه)</option>
+                            <option value="الثلاث">الثلاث (سه‌شنبه)</option>
+                            <option value="الاربعا">الاربعا (چهارشنبه)</option>
+                            <option value="الخمیس">الخمیس (پنجشنبه)</option>
+                            <option value="الجمعه">الجمعه (جمعه)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>🔢 عدد انتخابی (1-1000):</label>
+                        <input type="number" id="ramlNumber" placeholder="مثال: 123" min="1" max="1000">
+                    </div>
+                    <div class="input-group">
+                        <label>❓ انتخاب سوال (1-46):</label>
+                        <select id="ramlQuestion"></select>
+                    </div>
+                    <button class="btn" onclick="calculateRaml()">✨ گرفتن رمل</button>
+                    <div class="result-box" id="ramlResult" style="display:none;">
+                        <div class="result-title" id="ramlQuestionTitle"></div>
+                        <div class="result-description" id="ramlAnswer"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== MODAL: همزاد قرین ===== -->
+<div class="modal-glass" id="hamzadModal">
+  <div class="modal-glass-content">
+    <div class="modal-glass-header">
+      <div class="modal-glass-logo">📜</div>
+      <div class="modal-glass-title">👥 همزاد قرین (۲۸ نتیجه)</div>
+      <button class="modal-glass-close" onclick="closeModalGlass('hamzadModal')">✕</button>
+    </div>
+    <div class="modal-glass-body">
+      <div class="modal-guide"><i class="fas fa-info-circle"></i> نام، نام مادر و تاریخ تولد را وارد کنید</div>
+      <!-- نام شخص -->
+      <div class="form-group">
+        <label for="name"><i class="fas fa-user"></i> نام شخص</label>
+        <input 
+          id="name" 
+          type="text" 
+          placeholder="مثال: علی" 
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
+        />
+      </div>
+
+      <!-- نام مادر -->
+      <div class="form-group">
+        <label for="mother"><i class="fas fa-female"></i> نام مادر</label>
+        <input 
+          id="mother" 
+          type="text" 
+          placeholder="مثال: فاطمه" 
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
+        />
+      </div>
+
+      <!-- تاریخ تولد -->
+      <div class="form-group">
+        <div class="calendar-selector">
+          <label style="margin:0;"><i class="fas fa-calendar-alt"></i> تاریخ تولد</label>
+          <select id="calendar" style="width: auto; min-width: 100px;">
+            <option value="jalali">شمسی</option>
+            <option value="gregorian">میلادی</option>
+          </select>
+        </div>
+        
+        <div class="date-row">
+          <div class="date-input">
+            <input 
+              id="year" 
+              type="number" 
+              placeholder="سال" 
+              min="1300" 
+              max="1450"
+              inputmode="numeric"
+            />
+          </div>
+          <div class="date-input">
+            <input 
+              id="month" 
+              type="number" 
+              placeholder="ماه" 
+              min="1" 
+              max="12"
+              inputmode="numeric"
+            />
+          </div>
+          <div class="date-input">
+            <input 
+              id="day" 
+              type="number" 
+              placeholder="روز" 
+              min="1" 
+              max="31"
+              inputmode="numeric"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- دکمه‌های اقدام -->
+      <div class="actions">
+        <button class="primary" onclick="calculateHamzad()">
+          <i class="fas fa-calculator"></i> محاسبه
+        </button>
+        <button onclick="clearHamzadForm()">
+          <i class="fas fa-trash"></i> پاک کردن
+        </button>
+      </div>
+    </div>
+
+
+      <div class="result-box" id="hamzadResult" style="display:none;">
+        <div class="result-value" id="hamzadNumber"></div>
+        <div class="result-description" id="hamzadDescription"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: مکاشفه موکلین ===== -->
+        <div class="modal-glass" id="mokashefeModal">
+            <div class="modal-glass-content">
+                <div class="modal-glass-header">
+                    <div class="modal-glass-logo">📜</div>
+                    <div class="modal-glass-title">👁️ مکاشفه موکلین (۱۶ خانه)</div>
+                    <button class="modal-glass-close" onclick="closeModalGlass('mokashefeModal')">✕</button>
+                </div>
+                <div class="modal-glass-body">
+                    <div class="modal-guide"><i class="fas fa-info-circle"></i> نام، مادر، روز و عدد را وارد کنید</div>
+                    <div class="input-group">
+                        <label>👤 نام طالب:</label>
+                        <input type="text" id="mokashefeName" placeholder="مثال: مرتضی">
+                    </div>
+                    <div class="input-group">
+                        <label>👩 نام مادر:</label>
+                        <input type="text" id="mokashefeMother" placeholder="مثال: معصومه">
+                    </div>
+                    <div class="input-group">
+                        <label>📅 روز:</label>
+                        <select id="mokashefeDay">
+                            <option value="السبت">السبت (شنبه)</option>
+                            <option value="الاحد">الاحد (یکشنبه)</option>
+                            <option value="الاثنین">الاثنین (دوشنبه)</option>
+                            <option value="الثلاث">الثلاث (سه‌شنبه)</option>
+                            <option value="الاربعا">الاربعا (چهارشنبه)</option>
+                            <option value="الخمیس">الخمیس (پنجشنبه)</option>
+                            <option value="الجمعه">الجمعه (جمعه)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>🔢 عدد انتخابی (1-1000):</label>
+                        <input type="number" id="mokashefeNumber" placeholder="مثال: 256" min="1" max="1000">
+                    </div>
+                    <button class="btn" onclick="calculateMokashefe()">🔮 محاسبه</button>
+                    <div class="result-box" id="mokashefeResult" style="display:none;">
+                        <div class="result-title" id="mokashefeHouseName"></div>
+                        <div class="result-description" id="mokashefeDescription"></div>
+                        <div class="result-description" id="mokashefeArabicText"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== MODAL: ستاره چینی ===== -->
+        <div class="modal-glass" id="sotareChiniModal">
+            <div class="modal-glass-content">
+                <div class="modal-glass-header">
+                    <div class="modal-glass-logo">📜</div>
+                    <div class="modal-glass-title">⭐ ستاره چینی</div>
+                    <button class="modal-glass-close" onclick="closeModalGlass('sotareChiniModal')">✕</button>
+                </div>
+                <div class="modal-glass-body">
+                    <div class="modal-guide"><i class="fas fa-info-circle"></i> اطلاعات آقا و خانم را وارد کنید</div>
+                    <div class="input-group">
+                        <label>♂️ نام آقا:</label>
+                        <input type="text" id="sotareManName" placeholder="مثال: محمد">
+                    </div>
+                    <div class="input-group">
+                        <label>👩 نام مادر آقا:</label>
+                        <input type="text" id="sotareManMother" placeholder="مثال: مریم">
+                    </div>
+                    <div class="input-group">
+                        <label>♀️ نام خانم:</label>
+                        <input type="text" id="sotareWomanName" placeholder="مثال: فاطمه">
+                    </div>
+                    <div class="input-group">
+                        <label>👩 نام مادر خانم:</label>
+                        <input type="text" id="sotareWomanMother" placeholder="مثال: بتول">
+                    </div>
+                    <button class="btn" onclick="calculateSotareChini()">⭐ محاسبه سازگاری</button>
+                    <div class="result-box" id="sotareResult" data-alias="setareChiniResult" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== MODAL: استخراج موکل ===== -->
+        <div class="modal-glass" id="mokelModal">
+            <div class="modal-glass-content">
+                <div class="modal-glass-header">
+                    <div class="modal-glass-logo">📜</div>
+                    <div class="modal-glass-title">📿 استخراج موکل</div>
+                    <button class="modal-glass-close" onclick="closeModalGlass('mokelModal')">✕</button>
+                </div>
+                <div class="modal-glass-body">
+                    <div class="modal-guide"><i class="fas fa-info-circle"></i> نام شخص را وارد کنید</div>
+                    <div class="input-group">
+                        <label>👤 اسم شخص:</label>
+                        <input type="text" id="mokelName" placeholder="مثال: علی">
+                    </div>
+                    <button class="btn" onclick="calculateMokel()">📿 استخراج</button>
+                    <div class="result-box" id="mokelResult" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== MODAL: اسماء الحسنی ===== -->
+        <div class="modal-glass" id="asmaniModal">
+            <div class="modal-glass-content">
+                <div class="modal-glass-header">
+                    <div class="modal-glass-logo">📜</div>
+                    <div class="modal-glass-title">🌟 اسماء الحسنی</div>
+                    <button class="modal-glass-close" onclick="closeModalGlass('asmaniModal')">✕</button>
+                </div>
+                <div class="modal-glass-body">
+                    <div class="modal-guide"><i class="fas fa-info-circle"></i> عدد مورد نظر را وارد کنید</div>
+                    <div class="input-group">
+                        <label>🔢 عدد مورد نظر (1-1000):</label>
+                        <input type="number" id="asmaniNumber" placeholder="مثال: 110" min="1" max="1000">
+                    </div>
+                    <button class="btn" onclick="calculateAsmani()">🌟 جستجو</button>
+                    <div class="result-box" id="asmaniResult" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ===== MODAL: سن ازدواج ===== -->
+<div class="modal-glass" id="marriageAgeModal">
+  <div class="modal-glass-content">
+    <div class="modal-glass-header">
+      <div class="modal-glass-logo">💍</div>
+      <div class="modal-glass-title">سن ازدواج</div>
+      <button class="modal-glass-close" onclick="closeModalGlass('marriageAgeModal')">✕</button>
+    </div>
+    <div class="modal-glass-body">
+      <div class="modal-guide"><i class="fas fa-info-circle"></i> تاریخ تولد را وارد کنید. محاسبه در پس‌زمینه انجام می‌شود و نتیجه در سه عدد نمایش داده خواهد شد. این ابزار صرفاً راهنمای تقریبی است.</div>
+      <div class="marriage-date-grid-v55">
+        <div class="input-group"><label>📅 روز تولد</label><input type="number" id="birthDay" min="1" max="31" inputmode="numeric" placeholder="روز"></div>
+        <div class="input-group"><label>🗓️ ماه تولد</label><input type="number" id="birthMonth" min="1" max="12" inputmode="numeric" placeholder="ماه"></div>
+        <div class="input-group"><label>📆 سال تولد</label><input type="number" id="birthYear" min="1200" max="1450" inputmode="numeric" placeholder="مثلاً 1362"></div>
+      </div>
+      <button class="btn" type="button" onclick="calculateMarriageAge()">💍 محاسبه سن ازدواج</button>
+      <div class="marriage-three-result-v55" id="marriageThreeResult" style="display:none;margin-top:14px;padding:16px;border-radius:14px;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.35);text-align:center;">
+        <div class="marriage-three-label" style="font-weight:800;color:#F0D878;margin-bottom:8px;">نتیجه محاسبه</div>
+        <div class="marriage-three-numbers" style="font-size:1.6rem;font-weight:800;color:#F5F0E4;letter-spacing:2px;">
+          <span id="marriageOutYears">۰</span><span class="sep"> • </span><span id="marriageOutMonths">۰</span><span class="sep"> • </span><span id="marriageOutDays">۰</span>
+        </div>
+        <div class="marriage-three-caption" style="margin-top:6px;opacity:0.8;">سال • ماه • روز (شاخص تقریبی)</div>
+      </div>
+      <div class="result-box" id="marriageAgeResult" style="display:none;margin-top:12px;">
+        <div class="result-value" id="marriageAgeValue"></div>
+        <div class="result-description" id="marriageAgeDescription"></div>
+        <div class="result-description" id="marriageAgeAdvice" style="margin-top:10px;padding:12px;background:rgba(201,168,76,0.1);border-radius:8px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ===== MODAL: در حال توسعه ===== -->
+
+        <!-- ===== ابزارهای کمکی ===== -->
+        <div class="modal-glass" id="compassModal">
+          <div class="modal-glass-content">
+            <div class="modal-glass-header">
+              <div class="modal-glass-logo">🧭</div>
+              <div class="modal-glass-title">قطب‌نما</div>
+              <button class="modal-glass-close" onclick="closeModalGlass('compassModal')">✕</button>
+            </div>
+            <div class="modal-glass-body">
+              <div class="modal-guide">گوشی را افقی نگه دارید. در آیفون ممکن است اجازه دسترسی به حسگر لازم باشد.</div>
+              <div id="compassRose" style="position:relative;width:220px;height:220px;margin:18px auto;border-radius:50%;border:2px solid rgba(232,201,106,.5);background:radial-gradient(circle,#1a2230,#0a1018);box-shadow:0 0 30px rgba(201,168,76,.2)">
+                <div style="position:absolute;inset:10px;border-radius:50%;border:1px dashed rgba(232,201,106,.35)"></div>
+                <div style="position:absolute;top:8px;left:50%;transform:translateX(-50%);color:#F0D878;font-weight:800">N</div>
+                <div style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);color:#C8C0B0">S</div>
+                <div style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#C8C0B0">W</div>
+                <div style="position:absolute;right:10px;top:50%;transform:translateY(-50%);color:#C8C0B0">E</div>
+                <div id="compassNeedle" style="position:absolute;left:50%;top:50%;width:4px;height:90px;margin-left:-2px;margin-top:-90px;background:linear-gradient(#e74c3c,#F0D878);border-radius:2px;transform-origin:bottom center;transition:transform .2s linear"></div>
+              </div>
+              <div id="compassDeg" style="text-align:center;color:#F0D878;font-size:1.4rem;font-weight:800">—°</div>
+              <div id="compassStatus" style="text-align:center;color:#C8C0B0;margin:8px 0 14px">آماده</div>
+              <button class="btn" type="button" onclick="startCompass()">فعال‌سازی قطب‌نما</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-glass" id="adhanModal">
+          <div class="modal-glass-content">
+            <div class="modal-glass-header">
+              <div class="modal-glass-logo">🕌</div>
+              <div class="modal-glass-title">اوقات شرعی</div>
+              <button class="modal-glass-close" onclick="closeModalGlass('adhanModal')">✕</button>
+            </div>
+            <div class="modal-glass-body">
+              <div class="modal-guide">با موقعیت مکانی، اوقات تقریبی امروز محاسبه می‌شود. برای دقت شرعی به مرجع محلی مراجعه کنید.</div>
+              <div id="adhanStatus" style="color:#C8C0B0;margin-bottom:10px">آماده</div>
+              <button class="btn" type="button" onclick="calcAdhanTimes()">محاسبه اوقات امروز</button>
+              <div class="result-box" id="adhanResult" style="display:none"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-glass" id="hafezModal">
+          <div class="modal-glass-content">
+            <div class="modal-glass-header">
+              <div class="modal-glass-logo">📜</div>
+              <div class="modal-glass-title">فال حافظ</div>
+              <button class="modal-glass-close" onclick="closeModalGlass('hafezModal')">✕</button>
+            </div>
+            <div class="modal-glass-body">
+              <div class="modal-guide">نیت کنید، سپس فال بگیرید. هم بیت‌ها و هم تفسیر واضح پاسخ نمایش داده می‌شود.</div>
+              <button class="btn" type="button" onclick="drawHafezFal()">✨ انجام فال حافظ — نمایش شعر و تفسیر</button>
+              <div class="result-box" id="hafezResult" style="display:none"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-glass" id="falnamehModal">
+          <div class="modal-glass-content">
+            <div class="modal-glass-header">
+              <div class="modal-glass-logo">📖</div>
+              <div class="modal-glass-title">فالنامه</div>
+              <button class="modal-glass-close" onclick="closeModalGlass('falnamehModal')">✕</button>
+            </div>
+            <div class="modal-glass-body">
+              <div class="modal-guide">نیت کنید و برگ را بگشایید. نتیجه و توصیه به‌صورت واضح نشان داده می‌شود.</div>
+              <button class="btn" type="button" onclick="drawFalnameh()">✨ انجام فالنامه — نمایش نتیجه</button>
+              <div class="result-box" id="falnamehResult" style="display:none"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-glass" id="letterNumModal">
+          <div class="modal-glass-content">
+            <div class="modal-glass-header">
+              <div class="modal-glass-logo">🔢</div>
+              <div class="modal-glass-title">حروف و اعداد (ابجد)</div>
+              <button class="modal-glass-close" onclick="closeModalGlass('letterNumModal')">✕</button>
+            </div>
+            <div class="modal-glass-body">
+              <div class="modal-guide">متن به عدد ابجد، یا عدد به حروف ابجد.</div>
+              <div class="input-group">
+                <label>حالت</label>
+                <select id="lnMode">
+                  <option value="text2num">متن ← عدد</option>
+                  <option value="num2text">عدد ← حروف</option>
+                </select>
+              </div>
+              <div class="input-group">
+                <label>ورودی</label>
+                <input type="text" id="lnInput" placeholder="مثال: علی یا 110">
+              </div>
+              <button class="btn" type="button" onclick="convertLettersNumbers()">تبدیل</button>
+              <div class="result-box" id="lnResult" style="display:none"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-glass" id="quranModal">
+          <div class="modal-glass-content">
+            <div class="modal-glass-header">
+              <div class="modal-glass-logo">📗</div>
+              <div class="modal-glass-title">قرآن کریم</div>
+              <button class="modal-glass-close" onclick="closeModalGlass('quranModal')">✕</button>
+            </div>
+            <div class="modal-glass-body">
+              <div class="modal-guide">با اینترنت پایدار «دانلود و ذخیره» را بزنید. اگر یک منبع قطع بود خودکار از منبع دیگر تلاش می‌شود. بعداً آفلاین می‌خوانید.</div>
+              <div id="quranStatus" style="color:#C8C0B0;margin-bottom:10px">در حال بررسی ذخیره...</div>
+              <button class="btn" type="button" id="quranDownloadBtn" onclick="quranDownloadAll()">⬇️ دانلود کامل قرآن (۱۱۴ سوره) و ذخیره آفلاین</button>
+              <div class="input-group" style="margin-top:14px">
+                <label>انتخاب سوره</label>
+                <select id="quranSurahSelect"><option value="">انتخاب سوره...</option></select>
+              </div>
+              <button class="btn" type="button" onclick="quranShowSurah()">نمایش سوره</button>
+              <div class="result-box" id="quranResult" style="display:none;max-height:50vh;overflow:auto"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-glass" id="developingModal">
+  <div class="modal-glass-content">
+    <div class="modal-glass-header"><div class="modal-glass-logo">🚧</div><div class="modal-glass-title">در حال توسعه</div><button class="modal-glass-close" onclick="closeModalGlass('developingModal')">✕</button></div>
+    <div class="modal-glass-body"><div style="text-align:center;padding:30px 10px;"><div style="font-size:3rem;margin-bottom:14px;">🚧</div><h3 style="color:var(--txt-title,#F0D878);">این بخش در حال توسعه است</h3><p style="line-height:1.9;color:var(--txt-body,#F5F0E4);">این قابلیت در نسخه‌های بعدی تکمیل و فعال خواهد شد.</p></div></div>
+  </div>
+</div>
+
+<!-- ===== JAVASCRIPT ===== -->
+
+
+    <!-- fragments that originally sat between script blocks -->
+    <div id="appVersionBadge" style="position:fixed;bottom:72px;left:8px;z-index:9999;background:rgba(201,168,76,0.95);color:#0d0f1a;font-size:10px;font-weight:800;padding:4px 8px;border-radius:8px;pointer-events:none;font-family:sans-serif;">V700.7</div>
+    <div id="telegramOtpModal" role="dialog" aria-modal="true" aria-hidden="true" style="display:none;position:fixed;inset:0;z-index:2147483000;background:rgba(0,0,0,.68);align-items:center;justify-content:center;padding:16px;box-sizing:border-box;direction:rtl;overscroll-behavior:contain;touch-action:none;">
+<div id="telegramOtpCard" style="width:min(420px,96vw);max-height:calc(100dvh - 32px);overflow:auto;background:#fffaf2;border-radius:22px;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.45);font-family:Tahoma,Arial,sans-serif;box-sizing:border-box;color:#222;touch-action:auto;overscroll-behavior:contain;">
+<div style="text-align:center;font-size:24px;font-weight:800;color:#8B4513;">🔐 ورود مدیریت</div><div style="text-align:center;margin:10px 0 16px;color:#444;line-height:1.8;">کد ۶ رقمی ارسال‌شده به تلگرام مدیر را وارد کنید.</div>
+<input id="telegramOtpInput" type="tel" inputmode="numeric" maxlength="6" autocomplete="one-time-code" aria-label="کد شش رقمی مدیریت" style="display:block;width:100%;height:58px;box-sizing:border-box;text-align:center;font-size:28px;font-weight:800;letter-spacing:8px;direction:ltr;padding:10px;border:2px solid #d4af37;border-radius:14px;background:#FFFFFF;color:#111111;-webkit-text-fill-color:#111111;outline:none;">
+<div id="telegramOtpCountdown" style="text-align:center;margin:10px 0;color:#777;font-size:13px;min-height:20px;"></div><div style="display:flex;gap:8px;"><button type="button" id="telegramOtpVerifyBtn" style="flex:1;padding:13px;border:0;border-radius:12px;background:#8B4513;color:#FFFFFF;font-weight:800;">تأیید کد</button><button type="button" id="telegramOtpCancelBtn" style="flex:1;padding:13px;border:1px solid #ccc;border-radius:12px;background:#fff;color:#1A1A1A;font-weight:700;">انصراف</button></div>
+</div></div>
+    <div id="v8NetworkState" style="position:fixed;bottom:8px;left:8px;z-index:99999;font:700 10px sans-serif;padding:5px 8px;border-radius:12px;background:rgba(20,20,40,.88);color:#f5d76e;pointer-events:none">● آماده</div>
+
+    <!-- Startup visibility is controlled by main.js bootGate; duplicate inline gate removed to prevent screen races. -->
+    <script src="./data.js"></script>
+    <script src="./main.js"></script>
+    <script src="./tools-extra.js"></script>
+    <script src="./app.js"></script>
+    <script src="./ui-layer-fix.js"></script>
+    <script src="./ops-alerts.js"></script>
+    <script src="./offline-sync.js"></script>
+    <script src="./pwa-register.js?v=20261015-online-1"></script>
+    <script src="./ops-center.js?v=20261015-online-1"></script>
+    <script src="./session-recovery.js?v=20261015-online-1"></script>
+    <script src="./registration-recovery.js?v=20261015-online-1"></script>
+    <script src="./admin-entry-guard.js?v=20261015-online-3"></script>
 </body>
 </html>

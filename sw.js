@@ -1,6 +1,6 @@
-/* کافه سرکتاب میعاد — اگر اینترنت جهانی قطع باشد، پوستهٔ ذخیره‌شده فوراً باز می‌شود.
-   سوپابیس کش نمی‌شود؛ سفارش آفلاین جداگانه روی گوشی می‌ماند. */
-const CACHE_VERSION = 'kafe-miad-v700.7-rc25';
+/* کافه سرکتاب میعاد — نسخهٔ پوستهٔ استاتیک.
+   داده‌های سوپابیس کش نمی‌شوند؛ عملیات خرید و حساب باید با تأیید سرور انجام شوند. */
+const CACHE_VERSION = 'kafe-miad-v700.7-online-3';
 const SHELL_CACHE = 'shell-' + CACHE_VERSION;
 
 const PRECACHE_URLS = [
@@ -17,9 +17,12 @@ const PRECACHE_URLS = [
   './ops-center.js',
   './session-recovery.js',
   './registration-recovery.js',
+  './admin-entry-guard.js',
   './offline-sync.js',
   './theme-atelier.css',
   './theme-lock.css',
+  './button-feedback.css',
+  './assets/splash.jpg',
   './manifest.webmanifest',
   './icon-miad.svg',
   './icon192.png',
@@ -121,6 +124,28 @@ async function cacheFirst(req, fallbacks) {
   ]).then((res) => res || update);
 }
 
+// Navigation must prefer the live deployment. Cache-first HTML can keep an
+// old loader/app visible after a release while the background update silently
+// downloads a different version. Fall back to cached HTML only when offline.
+async function networkFirstNavigation(req) {
+  const cache = await caches.open(SHELL_CACHE);
+  try {
+    const res = await fetch(req, { cache: 'no-store' });
+    if (res && res.ok) {
+      await cache.put(req, res.clone()).catch(() => {});
+      await cache.put(new URL('./index.html', self.registration.scope).toString(), res.clone()).catch(() => {});
+      return res;
+    }
+    throw new Error('navigation_http_' + (res ? res.status : 'empty'));
+  } catch (e) {
+    const cached = await cache.match(req, { ignoreSearch: true })
+      || await cache.match(new URL('./index.html', self.registration.scope).toString())
+      || await cache.match(new URL('./', self.registration.scope).toString());
+    if (cached) return cached;
+    throw e;
+  }
+}
+
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
@@ -128,7 +153,7 @@ self.addEventListener('fetch', (event) => {
   if (isSupabaseOrApi(url)) return;
 
   if (req.mode === 'navigate' || ((req.headers.get('accept') || '').includes('text/html') && !isAppHost(url))) {
-    event.respondWith(cacheFirst(req, ['./index.html', './']));
+    event.respondWith(networkFirstNavigation(req));
     return;
   }
   if (isStaticAsset(url) || isAppHost(url)) {
