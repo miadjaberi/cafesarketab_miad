@@ -2536,7 +2536,11 @@ async function submitProductOrder() {
                     }
 
                     setPending(challengeId, expiresIn);
-                    pending = getPending();
+                    pending = getPending() || {
+                        challengeId: String(challengeId),
+                        createdAt: Date.now(),
+                        expiresIn: expiresIn
+                    };
 
                     showNotification('✅ کد ورود به تلگرام مدیر ارسال شد.');
                 } else {
@@ -2582,9 +2586,12 @@ async function submitProductOrder() {
                 const refreshToken = verify.data.refresh_token;
 
                 if (!accessToken || !refreshToken) {
+                    // The server has already consumed this OTP. Do not leave a
+                    // browser-side challenge that can only fail on the next attempt.
+                    clearPending();
                     console.warn('Verified OTP but no session returned:', verify.data);
                     showNotification(
-                        'کد صحیح است، اما نشست امن مدیریت از سرور دریافت نشد.',
+                        'کد تأیید شد، اما نشست امن مدیریت از سرور دریافت نشد. برای کد تازه دوباره تلاش کنید.',
                         'error'
                     );
                     return false;
@@ -2596,8 +2603,11 @@ async function submitProductOrder() {
                 });
 
                 if (sessionSet.error) {
+                    // A successful OTP verification consumes the code server-side.
+                    // If local session establishment fails, discard the consumed challenge.
+                    clearPending();
                     console.warn('setSession failed:', sessionSet.error);
-                    showNotification('برقراری نشست مدیریت انجام نشد.', 'error');
+                    showNotification('کد تأیید شد، اما برقراری نشست مدیریت انجام نشد. دوباره برای کد تازه تلاش کنید.', 'error');
                     return false;
                 }
 
