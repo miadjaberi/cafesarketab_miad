@@ -2295,7 +2295,15 @@ async function submitProductOrder() {
 
         // Telegram OTP admin login: no email/password is requested from the admin.
         function withTimeout(promise, ms, label) {
-            return Promise.race([promise, new Promise(function(_, reject){ setTimeout(function(){ reject(new Error(label || 'timeout')); }, ms); })]);
+            var timer;
+            return Promise.race([
+                Promise.resolve(promise),
+                new Promise(function(_, reject) {
+                    timer = setTimeout(function() { reject(new Error(label || 'timeout')); }, ms);
+                })
+            ]).finally(function() {
+                if (timer) clearTimeout(timer);
+            });
         }
         async function signInOrBootstrapAdmin() {
             if (!supabaseClient) {
@@ -2305,7 +2313,7 @@ async function submitProductOrder() {
 
             /*
              * V7 REAL ONLINE:
-             * The deployed server function is `admin-telegram-otp` version 1.
+             * The deployed server function is `admin-telegram-otp` version 3.
              * Contract:
              *   request -> { ok, challengeId, expiresIn }
              *   verify  -> { ok, access_token, refresh_token }
@@ -2506,9 +2514,9 @@ async function submitProductOrder() {
                     // Requesting an OTP creates server state and sends a Telegram message.
                     // Do not replay it automatically after a transport error: the first request
                     // may already have succeeded and the server enforces a 45-second cooldown.
-                    const request = await invokeAdminTelegram({
+                    const request = await withTimeout(invokeAdminTelegram({
                         action: 'request'
-                    }, 1);
+                    }, 1), 15000, 'telegram_otp_request_timeout');
 
                     if (request.error || !request.data || request.data.ok !== true) {
                         console.warn(
@@ -2557,11 +2565,11 @@ async function submitProductOrder() {
                 // OTP verification is a one-time, state-changing operation.
                 // Never replay the same code automatically after a transport/HTTP error:
                 // the server may already have consumed it, or counted the failed attempt.
-                const verify = await invokeAdminTelegram({
+                const verify = await withTimeout(invokeAdminTelegram({
                     action: 'verify',
                     challengeId: pending.challengeId,
                     code: code
-                }, 1);
+                }, 1), 15000, 'telegram_otp_verify_timeout');
 
                 if (verify.error || !verify.data || verify.data.ok !== true) {
                     console.warn(
@@ -2571,14 +2579,24 @@ async function submitProductOrder() {
                     );
 
                     const serverMessage = parseServerError(verify);
+                    const status = verify.error && verify.error.context && Number(verify.error.context.status);
+                    const ambiguousFailure = !!verify.error && (!Number.isFinite(status) || status === 0 || status >= 500);
 
-                    showNotification(
-                        serverMessage ||
-                        'تأیید کد توسط سرور انجام نشد.',
-                        'error'
-                    );
-
-                    // Keep the challenge so the user can retry while it is valid.
+                    if (ambiguousFailure) {
+                        // The server may have consumed the one-time code even if its response was lost.
+                        // Drop the browser challenge rather than trapping the next attempt on a used code.
+                        clearPending();
+                        showNotification(
+                            'پاسخ نهایی سرویس ورود دریافت نشد؛ کد قبلی کنار گذاشته شد. برای کد تازه، در صورت نمایش محدودیت، ۴۵ ثانیه صبر کنید.',
+                            'error'
+                        );
+                    } else {
+                        showNotification(
+                            serverMessage || 'تأیید کد توسط سرور انجام نشد.',
+                            'error'
+                        );
+                        // For an explicit invalid/expired code, keep the challenge while it remains valid.
+                    }
                     return false;
                 }
 
@@ -2623,11 +2641,19 @@ async function submitProductOrder() {
                 return true;
 
             } catch (e) {
+                clearPending();
                 console.warn('telegram admin auth:', e);
-                showNotification(
-                    'ارتباط با سامانه ورود تلگرامی برقرار نشد.',
-                    'error'
-                );
+                if (/timeout/i.test(String(e && e.message || e))) {
+                    showNotification(
+                        'پاسخ سرویس ورود بیش از ۱۵ ثانیه طول کشید؛ برای جلوگیری از تکرار کد مصرف‌شده، درخواست فعلی کنار گذاشته شد. اگر کد تازه محدود شد، ۴۵ ثانیه صبر کنید.',
+                        'error'
+                    );
+                } else {
+                    showNotification(
+                        'ارتباط با سامانه ورود تلگرامی برقرار نشد؛ وضعیت کد قبلی نامطمئن است و برای ادامه باید کد تازه درخواست شود.',
+                        'error'
+                    );
+                }
                 return false;
             }
         }
