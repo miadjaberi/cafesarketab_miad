@@ -90,3 +90,13 @@
 - Verified all five PWA PNG icon assets and `assets/splash.jpg` exist on the branch via base64 file fetch. `sw.js` precache paths include the expected local JS/CSS/image/manifest files; however, the PWA still contains older cache-busting labels (`rc21`, `rc25`) in icon/worker URLs while the shell cache is `online-3`. This is not proven to be the cause of login failures and has not been changed to avoid unnecessary icon/install behavior changes.
 - Remaining known architectural issue: phone-only registration is not verified ownership. New anonymous auth UIDs cannot safely recover an existing profile by phone alone. No schema, RLS, Edge Function, user, order, subscription, receipt, or production setting was changed.
 - Verification limits remain: static syntax and source checks only. No live-device end-to-end login was performed; do not report registration/admin login as fixed until a real browser/device test confirms it.
+
+
+## OTP response-timeout hardening — 2026-10-16
+- Added a 15-second client-side bound to both Telegram admin OTP request and verification calls on `online-only-hardening`. A slow/hung edge-function response can no longer keep the admin flow waiting indefinitely.
+- When verification ends in an ambiguous transport/timeout/server failure, the browser now discards the pending challenge rather than risking a retry of a code that the server may already have consumed. Explicit server rejection (such as an incorrect/expired code returned as HTTP 401) still keeps the challenge while its local TTL remains valid.
+- Updated the client comment to identify the deployed `admin-telegram-otp` v3 contract. No Edge Function, database schema, secrets, Auth users, RLS, or production deployment was changed.
+- Commit: `dade6fe6328783299e2d5f759403978568d961aa`; latest `main.js` blob: `d9a4c1c0c8569d207ea7d4cbe2c9db5ce888b448`.
+- Static JavaScript parse checks passed for all eight branch files: `main.js`, `sw.js`, `registration-recovery.js`, `offline-sync.js`, `ops-center.js`, `session-recovery.js`, `pwa-register.js`, and `admin-entry-guard.js`.
+- Read-only Supabase Auth logs from the last 24 hours showed 51 successful `/user` requests, two successful `refresh_token` requests, one successful `/signup`, and two HTTP 401 calls to `admin-telegram-otp`. The logs do not identify the specific user or prove whether the 401s were mistyped, expired, or reused codes; no sensitive values were retrieved.
+- This narrows a possible indefinite-wait/stale-challenge failure mode but is not proof that admin login or registration is fixed. Real-device end-to-end tests remain required. Keep PR #3 unmerged and production untouched.
