@@ -2547,11 +2547,14 @@ async function submitProductOrder() {
 
                 if (code === null) return false;
 
+                // OTP verification is a one-time, state-changing operation.
+                // Never replay the same code automatically after a transport/HTTP error:
+                // the server may already have consumed it, or counted the failed attempt.
                 const verify = await invokeAdminTelegram({
                     action: 'verify',
                     challengeId: pending.challengeId,
                     code: code
-                });
+                }, 1);
 
                 if (verify.error || !verify.data || verify.data.ok !== true) {
                     console.warn(
