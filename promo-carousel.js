@@ -25,7 +25,7 @@
       try { saved = JSON.parse(localStorage.getItem('promoCards') || 'null'); } catch (e) {}
       if (!Array.isArray(saved)) saved = defaultCards;
       return saved.filter(function(card) { return card && card.active !== false && String(card.title || '').trim() && String(card.sub || '').trim(); }).slice(0, 6).map(function(card, i) {
-        return { title: String(card.title).slice(0,90), sub: String(card.sub).slice(0,180), icon: String(card.icon || (i ? '✨' : '📚')).slice(0,8), url: String(card.url || '').trim() };
+        return { title: String(card.title).slice(0,90), sub: String(card.sub).slice(0,180), icon: String(card.icon || (i ? '✨' : '📚')).slice(0,8), url: String(card.url || '').trim(), action: i === 0 ? 'products' : 'discover' };
       });
     }
     function runCardAction(slide) {
@@ -110,10 +110,10 @@
 
     banner.addEventListener('click', function () {
       if (current !== 0) return;
-      slides[0].action();
+      if (typeof window.getDiscountText === 'function' && typeof window.showNotification === 'function') window.showNotification('🔥 ' + window.getDiscountText());
     });
     banner.addEventListener('keydown', function (event) {
-      if ((event.key === 'Enter' || event.key === ' ') && current === 0) { event.preventDefault(); slides[0].action(); }
+      if ((event.key === 'Enter' || event.key === ' ') && current === 0) { event.preventDefault(); if (typeof window.getDiscountText === 'function' && typeof window.showNotification === 'function') window.showNotification('🔥 ' + window.getDiscountText()); }
     });
     renderMiadPromoCarousel();
   }
