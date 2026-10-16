@@ -90,6 +90,9 @@
       if (current !== 0) return;
       slides[0].action();
     });
+    banner.addEventListener('keydown', function (event) {
+      if ((event.key === 'Enter' || event.key === ' ') && current === 0) { event.preventDefault(); slides[0].action(); }
+    });
     show(0);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initMiadPromoCarousel, { once: true });
