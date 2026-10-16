@@ -3175,3 +3175,8 @@ header .header-notifications .header-btn.kafe-notif-clear i { color:#fff !import
 #adminDiscount .miad-promo-preview strong, #adminDiscount .miad-promo-preview small { display:block; line-height:1.7; }
 #adminDiscount .miad-promo-preview small { color:#e1d8fa; }
 #adminDiscount .miad-promo-admin hr { border:0; border-top:1px solid rgba(201,168,76,.25); margin:18px 0; }
+
+#adminDiscount .miad-promo-admin .miad-promo-preview[hidden] { display:none!important; }
+#adminDiscount .miad-promo-admin .miad-promo-preview:not([hidden]) { font-size:.8rem; }
+#pageShop .miad-promo-extra { display:flex; align-items:center; text-align:right; cursor:pointer; font:inherit; }
+#pageShop .miad-promo-card-image { width:76px; height:76px; flex:0 0 76px; object-fit:cover; border-radius:13px; border:1px solid rgba(240,216,120,.55); }
