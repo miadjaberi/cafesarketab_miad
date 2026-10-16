@@ -4179,27 +4179,14 @@ async function submitProductOrder() {
         // ثبت نام
         // ============================================================
         function registerUser() {
-            var name = document.getElementById('regName').value.trim();
-            var phone = document.getElementById('regPhone').value.trim();
-            if (!name || !phone) {
-                showNotification('لطفاً نام و شماره تماس را وارد کنید', 'error');
-                return;
+            // Fail closed if the server-confirmed registration module did not load.
+            if (typeof window.registerUser === 'function' && window.registerUser !== registerUser) {
+                return window.registerUser.apply(this, arguments);
             }
-            if (!/^09[0-9]{9}$/.test(phone)) {
-                showNotification('شماره تماس نامعتبر است', 'error');
-                return;
+            if (typeof showNotification === 'function') {
+                showNotification('ثبت‌نام امن آنلاین بارگذاری نشده است؛ صفحه را تازه‌سازی کنید.', 'error');
             }
-            var user = { name: name, phone: phone, registeredAt: new Date().toISOString() };
-            localStorage.setItem('cafeUser', JSON.stringify(user));
-            var users = JSON.parse(localStorage.getItem('cafeUsers') || '[]');
-            if (!users.find(function(u) { return u.phone === phone; })) {
-                users.push(user);
-                localStorage.setItem('cafeUsers', JSON.stringify(users));
-            }
-            document.getElementById('registerScreen').style.display = 'none';
-            document.getElementById('app').style.display = 'block';
-            updateUserDisplay(user);
-            showNotification('✅ خوش آمدید ' + name);
+            return false;
         }
 
         function updateUserDisplay(user) {
@@ -5756,40 +5743,7 @@ async function submitProductOrder() {
 
   /* window.renderAdminOrders (localStorage) removed — superseded by server version in 18-final-production.js */
 
-  /* ---------- user entry: real Supabase session + profile ---------- */
-  var originalRegisterUser=window.registerUser;
-  window.registerUser=async function(){
-    var nameEl=document.getElementById('regName'),phoneEl=document.getElementById('regPhone');
-    var name=nameEl?(nameEl.value||'').trim():'',phone=phoneEl?(phoneEl.value||'').replace(/\s/g,'').trim():'';
-    if(!name||!phone){
-      showNotification('لطفاً نام و شماره تماس را وارد کنید','error');
-      return;
-    }
-    if(!/^09[0-9]{9}$/.test(phone)){
-      showNotification('شماره تماس نامعتبر است','error');
-      return;
-    }
-    if(!supabaseClient){showNotification('❌ اتصال آنلاین در دسترس نیست','error');return;}
-    try{
-      var sr=await supabaseClient.auth.getSession();
-      var session=sr&&sr.data&&sr.data.session;
-      if(!session||!session.user){
-        if(!supabaseClient.auth.signInAnonymously) throw new Error('ورود کاربر در این پروژه فعال نیست.');
-        var ar=await supabaseClient.auth.signInAnonymously();
-        if(ar.error||!ar.data||!ar.data.session) throw (ar.error||new Error('ایجاد نشست کاربر ناموفق بود.'));
-        session=ar.data.session;
-      }
-      var user=session.user;
-      var registeredAt=new Date().toISOString();
-      var profilePayload={id:user.id,name:name,phone:phone,registered_at:registeredAt};
-      var pr=await supabaseClient.from('profiles').upsert(profilePayload,{onConflict:'id'}).select().single();
-      if(pr.error) throw pr.error;
-      try{localStorage.setItem('cafeUser',JSON.stringify({name:name,phone:phone,registeredAt:registeredAt,user_id:user.id}));}catch(e){}
-      var rs=document.getElementById('registerScreen'),app=document.getElementById('app');if(rs)rs.style.display='none';if(app)app.style.display='block';
-      if(typeof updateUserDisplay==='function')await updateUserDisplay(user);
-      if(typeof showNotification==='function')showNotification('✅ ورود کاربر انجام شد و حساب روی سرور ثبت شد.');
-    }catch(e){console.error('user entry',e);showNotification('❌ ورود کاربر انجام نشد: '+(e.message||e),'error');}
-  };
+  /* Registration is owned by registration-recovery.js; do not duplicate auth writes here. */
 
   /* ---------- local safety on order deletion ---------- */
   var originalDeleteOrderAdmin=window.deleteOrderAdmin;
