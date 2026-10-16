@@ -98,6 +98,35 @@
     var arrows = controls.querySelectorAll('.miad-promo-arrow');
     arrows[0].addEventListener('click', function () { show(current - 1); });
     arrows[1].addEventListener('click', function () { show(current + 1); });
+    var autoRotate = null;
+    var rotationPaused = false;
+    function startAutoRotate() {
+      if (autoRotate || cards.length < 2 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      autoRotate = window.setInterval(function() {
+        if (!rotationPaused && !document.hidden) show(current + 1);
+      }, 6500);
+    }
+    function stopAutoRotate() {
+      if (autoRotate) window.clearInterval(autoRotate);
+      autoRotate = null;
+    }
+    wrap.addEventListener('mouseenter', function() { rotationPaused = true; });
+    wrap.addEventListener('mouseleave', function() { rotationPaused = false; });
+    wrap.addEventListener('focusin', function() { rotationPaused = true; });
+    wrap.addEventListener('focusout', function(event) {
+      if (!wrap.contains(event.relatedTarget)) rotationPaused = false;
+    });
+    document.addEventListener('visibilitychange', function() {
+      if (document.hidden) rotationPaused = true;
+      else rotationPaused = false;
+    });
+    var previousRender = renderMiadPromoCarousel;
+    renderMiadPromoCarousel = function() {
+      previousRender();
+      if (cards.length < 2) stopAutoRotate();
+      else startAutoRotate();
+    };
+    window.renderMiadPromoCarousel = renderMiadPromoCarousel;
     var startX = null;
     wrap.addEventListener('touchstart', function (event) {
       if (event.touches && event.touches.length === 1) startX = event.touches[0].clientX;
