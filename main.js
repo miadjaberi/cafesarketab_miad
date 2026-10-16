@@ -2923,7 +2923,7 @@ async function submitProductOrder() {
             [1,2].forEach(function(n) {
                 var val = function(id) { var el=document.getElementById('promoCard'+n+id); return el ? String(el.value||'').trim() : ''; };
                 var active = document.getElementById('promoCard'+n+'Active');
-                cards.push({ title:val('Title'), sub:val('Sub'), icon:val('Icon') || (n===1?'📚':'✨'), url:val('Url'), active:!!(active&&active.checked) });
+                cards.push({ title:val('Title'), sub:val('Sub'), icon:val('Icon') || (n===1?'📚':'✨'), url:val('Url'), image:val('Image'), active:!!(active&&active.checked) });
             });
             return cards;
         }
@@ -2931,7 +2931,7 @@ async function submitProductOrder() {
             [1,2].forEach(function(n) {
                 var set=function(id,value){var el=document.getElementById('promoCard'+n+'Preview'+id);if(el)el.textContent=value;};
                 var get=function(id){var el=document.getElementById('promoCard'+n+id);return el?el.value:'';};
-                set('Icon',get('Icon') || (n===1?'📚':'✨')); set('Title',get('Title')); set('Sub',get('Sub'));
+                set('Icon',get('Icon') || (n===1?'📚':'✨')); set('Title',get('Title')); set('Sub',get('Sub')); var image=document.getElementById('promoCard'+n+'Image'), preview=document.getElementById('promoCard'+n+'PreviewImage'); if(preview){preview.hidden=!(image&&/^https:\/\//i.test(image.value)); preview.textContent=preview.hidden?'':'تصویر کارت تنظیم شد';}
             });
         }
         function loadPromoCardsSettings() {
@@ -2945,7 +2945,7 @@ async function submitProductOrder() {
             saved=defaults.map(function(d,i){return Object.assign({},d,(saved[i]&&typeof saved[i]==='object')?saved[i]:{});});
             saved.forEach(function(card,i) {
                 var n=i+1;
-                ['Title','Sub','Icon','Url'].forEach(function(suffix) {
+                ['Title','Sub','Icon','Url','Image'].forEach(function(suffix) {
                     var el=document.getElementById('promoCard'+n+suffix), key=suffix.toLowerCase();
                     if(el)el.value=card[key]||'';
                 });
@@ -2958,7 +2958,7 @@ async function submitProductOrder() {
             if(typeof verifyOnlineAdmin!=='function'||!(await verifyOnlineAdmin())) { showNotification('❌ ورود امن مدیر لازم است.','error'); return false; }
             var cards=readPromoCardsFromForm();
             if(cards.some(function(c){return !c.title||!c.sub;})) { showNotification('عنوان و توضیح هر دو کارت را کامل کن.','error'); return false; }
-            if(cards.some(function(c){return c.url && !/^https:\/\//i.test(c.url);})) { showNotification('پیوندها باید با https:// شروع شوند.','error'); return false; }
+            if(cards.some(function(c){return (c.url && !/^https:\/\//i.test(c.url)) || (c.image && !/^https:\/\//i.test(c.image));})) { showNotification('پیوند و تصویر باید با https:// شروع شوند.','error'); return false; }
             try {
                 if(!(await cloudSaveAdminSetting('promoCards',cards))) throw new Error('تأیید ذخیره از سرور دریافت نشد.');
                 localStorage.setItem('promoCards',JSON.stringify(cards));
