@@ -3124,3 +3124,36 @@ header .header-notifications .header-btn.kafe-notif-clear i { color:#fff !import
 @media (prefers-reduced-motion:reduce) {
   #splashScreen .splash-bg-img { transform:none !important; }
 }
+
+
+/* === Royal interactive promotional banner — isolated visual enhancement === */
+#pageShop .featured-banner {
+  position:relative; isolation:isolate; overflow:hidden; min-height:112px;
+  padding:20px 22px; margin:10px 0 20px; gap:14px;
+  color:#fff7df; text-align:right;
+  background:linear-gradient(115deg,#090f29 0%,#20134c 48%,#351b5d 72%,#11152f 100%);
+  border:1px solid rgba(240,216,120,.72); border-radius:22px;
+  box-shadow:0 10px 32px rgba(8,7,35,.42), inset 0 0 24px rgba(139,92,246,.12), 0 0 18px rgba(201,168,76,.14);
+  transition:transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+}
+#pageShop .featured-banner::before {
+  content:""; position:absolute; z-index:-1; inset:-45% auto -45% -35%; width:48%;
+  transform:rotate(18deg); background:linear-gradient(90deg,transparent,rgba(255,231,163,.17),transparent);
+  animation:miadPromoShimmer 7s ease-in-out infinite; pointer-events:none;
+}
+#pageShop .featured-banner::after {
+  content:"✦  ·     ✧       ·  ✦"; position:absolute; z-index:-1; left:12px; top:12px;
+  color:rgba(255,220,128,.56); letter-spacing:9px; font-size:15px;
+  animation:miadPromoTwinkle 4s ease-in-out infinite alternate; pointer-events:none;
+}
+#pageShop .featured-banner:active { transform:scale(.99); }
+#pageShop .featured-banner:hover { border-color:#ffe8a3; box-shadow:0 12px 36px rgba(8,7,35,.5),0 0 24px rgba(201,168,76,.22); }
+#pageShop .featured-banner-content { position:relative; z-index:1; gap:14px; min-width:0; }
+#pageShop .featured-banner-icon { color:#f6d778; font-size:2.2rem; filter:drop-shadow(0 0 9px rgba(255,210,94,.35)); }
+#pageShop .featured-banner-text { color:#fff4d2; font-size:1rem; line-height:1.65; text-shadow:0 1px 8px rgba(0,0,0,.22); }
+#pageShop .featured-banner-text small { margin-top:3px; color:#e1d8fa; font-size:.78rem; line-height:1.7; opacity:.96; }
+#pageShop .featured-banner-arrow { position:relative; z-index:1; flex:0 0 auto; display:grid; place-items:center; width:36px; height:36px; border:1px solid rgba(240,216,120,.5); border-radius:50%; color:#ffe7a1; background:rgba(255,255,255,.045); }
+@keyframes miadPromoShimmer { 0%,20% { left:-55%; opacity:0; } 35% { opacity:1; } 65%,100% { left:130%; opacity:0; } }
+@keyframes miadPromoTwinkle { from { opacity:.38; transform:translateY(0); } to { opacity:.9; transform:translateY(3px); } }
+@media (max-width:480px) { #pageShop .featured-banner { min-height:100px; padding:16px 14px; border-radius:18px; } #pageShop .featured-banner-text { font-size:.92rem; } #pageShop .featured-banner-icon { font-size:1.8rem; } }
+@media (prefers-reduced-motion:reduce) { #pageShop .featured-banner::before, #pageShop .featured-banner::after { animation:none; } #pageShop .featured-banner { transition:none; } }
