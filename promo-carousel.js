@@ -25,7 +25,7 @@
       try { saved = JSON.parse(localStorage.getItem('promoCards') || 'null'); } catch (e) {}
       if (!Array.isArray(saved)) saved = defaultCards;
       return saved.filter(function(card) { return card && card.active !== false && String(card.title || '').trim() && String(card.sub || '').trim(); }).slice(0, 6).map(function(card, i) {
-        return { title: String(card.title).slice(0,90), sub: String(card.sub).slice(0,180), icon: String(card.icon || (i ? '✨' : '📚')).slice(0,8), url: String(card.url || '').trim(), action: i === 0 ? 'products' : 'discover' };
+        return { title: String(card.title).slice(0,90), sub: String(card.sub).slice(0,180), icon: String(card.icon || (i ? '✨' : '📚')).slice(0,8), url: String(card.url || '').trim(), image: String(card.image || '').trim(), action: i === 0 ? 'products' : 'discover' };
       });
     }
     function runCardAction(slide) {
@@ -75,6 +75,7 @@
         card.querySelector('.featured-banner-icon').textContent = slide.icon;
         card.querySelector('.miad-promo-title').textContent = slide.title;
         card.querySelector('.miad-promo-sub').textContent = slide.sub;
+        if (slide.image && /^https:\/\//i.test(slide.image)) { var img=document.createElement('img'); img.className='miad-promo-card-image'; img.src=slide.image; img.alt=''; img.loading='lazy'; img.referrerPolicy='no-referrer'; card.insertBefore(img, card.firstChild); }
         card.addEventListener('click', function() { runCardAction(slide); });
         card.hidden = true;
         wrap.insertBefore(card, controls);
