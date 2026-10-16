@@ -2931,7 +2931,7 @@ async function submitProductOrder() {
             [1,2].forEach(function(n) {
                 var set=function(id,value){var el=document.getElementById('promoCard'+n+'Preview'+id);if(el)el.textContent=value;};
                 var get=function(id){var el=document.getElementById('promoCard'+n+id);return el?el.value:'';};
-                set('Icon',get('Icon') || (n===1?'📚':'✨')); set('Title',get('Title')); set('Sub',get('Sub')); var image=document.getElementById('promoCard'+n+'Image'), preview=document.getElementById('promoCard'+n+'PreviewImage'); if(preview){preview.hidden=!(image&&/^https:\/\//i.test(image.value)); preview.textContent=preview.hidden?'':'تصویر کارت تنظیم شد';}
+                set('Icon',get('Icon') || (n===1?'📚':'✨')); set('Title',get('Title')); set('Sub',get('Sub')); var image=document.getElementById('promoCard'+n+'Image'), preview=document.getElementById('promoCard'+n+'PreviewImage'); if(preview){preview.innerHTML=''; var src=image?String(image.value||'').trim():''; preview.hidden=!/^https:\/\//i.test(src); if(!preview.hidden){var pic=document.createElement('img');pic.src=src;pic.alt='پیش‌نمایش تصویر کارت';pic.loading='lazy';pic.referrerPolicy='no-referrer';pic.style.cssText='width:100%;max-height:130px;object-fit:cover;border-radius:8px';preview.appendChild(pic);}}
             });
         }
         function loadPromoCardsSettings() {
