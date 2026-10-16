@@ -592,6 +592,32 @@
                 </div>
             </div>
             <button onclick="saveDiscount()">💾 ذخیره تخفیف</button>
+            <div class="miad-promo-admin">
+              <h4>✨ مدیریت کارت‌های تبلیغاتی</h4>
+              <p>متن و پیوند دو کارت بعدی را ویرایش کن. ذخیره فقط با تأیید سرور انجام می‌شود.</p>
+              <label for="promoCard1Title">عنوان کارت اول</label>
+              <input id="promoCard1Title" type="text" maxlength="90" value="محصولات منتخب کافه میعاد" oninput="updatePromoCardsPreview()">
+              <label for="promoCard1Sub">توضیح کارت اول</label>
+              <input id="promoCard1Sub" type="text" maxlength="180" value="برای دیدن محصولات موجود، به بخش فروشگاه بروید" oninput="updatePromoCardsPreview()">
+              <div class="admin-row">
+                <div class="miad-promo-field"><label for="promoCard1Icon">نماد</label><input id="promoCard1Icon" type="text" maxlength="8" value="📚" oninput="updatePromoCardsPreview()"></div>
+                <div class="miad-promo-field"><label for="promoCard1Url">پیوند اختیاری</label><input id="promoCard1Url" type="url" placeholder="https://..." oninput="updatePromoCardsPreview()"></div>
+              </div>
+              <label class="miad-promo-check"><input id="promoCard1Active" type="checkbox" checked> نمایش کارت اول</label>
+              <div class="miad-promo-preview" id="promoCard1Preview"><span id="promoCard1PreviewIcon">📚</span><span><strong id="promoCard1PreviewTitle">محصولات منتخب کافه میعاد</strong><small id="promoCard1PreviewSub">برای دیدن محصولات موجود، به بخش فروشگاه بروید</small></span></div>
+              <hr>
+              <label for="promoCard2Title">عنوان کارت دوم</label>
+              <input id="promoCard2Title" type="text" maxlength="90" value="دنیای کافه سرکتاب میعاد" oninput="updatePromoCardsPreview()">
+              <label for="promoCard2Sub">توضیح کارت دوم</label>
+              <input id="promoCard2Sub" type="text" maxlength="180" value="ابزارها و بخش‌های موجود اپ را از منوی اصلی کشف کنید" oninput="updatePromoCardsPreview()">
+              <div class="admin-row">
+                <div class="miad-promo-field"><label for="promoCard2Icon">نماد</label><input id="promoCard2Icon" type="text" maxlength="8" value="✨" oninput="updatePromoCardsPreview()"></div>
+                <div class="miad-promo-field"><label for="promoCard2Url">پیوند اختیاری</label><input id="promoCard2Url" type="url" placeholder="https://..." oninput="updatePromoCardsPreview()"></div>
+              </div>
+              <label class="miad-promo-check"><input id="promoCard2Active" type="checkbox" checked> نمایش کارت دوم</label>
+              <div class="miad-promo-preview" id="promoCard2Preview"><span id="promoCard2PreviewIcon">✨</span><span><strong id="promoCard2PreviewTitle">دنیای کافه سرکتاب میعاد</strong><small id="promoCard2PreviewSub">ابزارها و بخش‌های موجود اپ را از منوی اصلی کشف کنید</small></span></div>
+              <button type="button" onclick="savePromoCardsSettings()">💾 ذخیره کارت‌های تبلیغاتی روی سرور</button>
+            </div>
         </div>
 </div>
 
