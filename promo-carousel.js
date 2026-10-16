@@ -117,6 +117,30 @@
       if ((event.key === 'Enter' || event.key === ' ') && current === 0) { event.preventDefault(); if (typeof window.getDiscountText === 'function' && typeof window.showNotification === 'function') window.showNotification('🔥 ' + window.getDiscountText()); }
     });
     renderMiadPromoCarousel();
+    async function loadPublicPromoCards() {
+      var client = window.supabaseClient;
+      if (!client) return;
+      try {
+        var result = await client.from('app_settings').select('value').eq('key', 'admin:promoCards').maybeSingle();
+        if (result.error || !result.data || !Array.isArray(result.data.value)) return;
+        var safeCards = result.data.value.filter(function(card) {
+          return card && typeof card === 'object' && String(card.title || '').trim() && String(card.sub || '').trim();
+        }).slice(0, 6).map(function(card) {
+          return {
+            title: String(card.title).slice(0,90), sub: String(card.sub).slice(0,180),
+            icon: String(card.icon || '✨').slice(0,8),
+            url: /^https:\/\//i.test(String(card.url || '')) ? String(card.url) : '',
+            image: /^https:\/\//i.test(String(card.image || '')) ? String(card.image) : '',
+            active: card.active !== false
+          };
+        });
+        localStorage.setItem('promoCards', JSON.stringify(safeCards));
+        renderMiadPromoCarousel();
+      } catch (e) {
+        // Keep the current safe defaults/cache when public read is not permitted.
+      }
+    }
+    loadPublicPromoCards();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initMiadPromoCarousel, { once: true });
   else initMiadPromoCarousel();
