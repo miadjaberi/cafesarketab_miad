@@ -262,7 +262,7 @@
                     <span class="page-subtitle">به فروشگاه کافه سرکتاب خوش آمدید</span>
                 </div>
 
-                <div class="featured-banner" id="discountBanner" onclick="showNotification('🔥 ' + getDiscountText())">
+                <div class="featured-banner" id="discountBanner" role="button" tabindex="0" aria-label="مشاهده پیشنهاد ویژه">
                     <div class="featured-banner-content">
                         <span class="featured-banner-icon" id="discountIcon">🔥</span>
                         <div class="featured-banner-text">
@@ -1966,6 +1966,7 @@
     <!-- Startup visibility is controlled by main.js bootGate; duplicate inline gate removed to prevent screen races. -->
     <script src="./data.js"></script>
     <script src="./main.js"></script>
+    <script src="./promo-carousel.js?v=20261016-1"></script>
     <script src="./tools-extra.js"></script>
     <script src="./app.js"></script>
     <script src="./ui-layer-fix.js"></script>
