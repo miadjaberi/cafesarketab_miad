@@ -127,6 +127,7 @@
       else startAutoRotate();
     };
     window.renderMiadPromoCarousel = renderMiadPromoCarousel;
+    startAutoRotate();
     var startX = null;
     wrap.addEventListener('touchstart', function (event) {
       if (event.touches && event.touches.length === 1) startX = event.touches[0].clientX;
