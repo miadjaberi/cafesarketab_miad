@@ -3161,3 +3161,17 @@ header .header-notifications .header-btn.kafe-notif-clear i { color:#fff !import
 #pageShop .miad-promo-dot.is-active { width:22px; border-radius:8px; background:#f0d878; }
 #pageShop .miad-promo-arrow:focus-visible, #pageShop .miad-promo-dot:focus-visible, #pageShop .miad-promo-extra:focus-visible { outline:2px solid #ffe7a1; outline-offset:3px; }
 @media (prefers-reduced-motion:reduce) { #pageShop .miad-promo-dot { transition:none; } }
+
+/* Admin editor for server-backed promotional cards */
+#adminDiscount .miad-promo-admin { margin-top:18px; padding:16px; border:1px solid rgba(201,168,76,.38); border-radius:16px; background:rgba(27,22,57,.45); }
+#adminDiscount .miad-promo-admin h4 { margin:0 0 8px; color:#f6d778; }
+#adminDiscount .miad-promo-admin p { font-size:.82rem; line-height:1.7; opacity:.85; }
+#adminDiscount .miad-promo-admin label { display:block; margin:10px 0 5px; font-size:.84rem; }
+#adminDiscount .miad-promo-admin input:not([type=checkbox]) { box-sizing:border-box; width:100%; min-width:0; padding:10px; border:1px solid rgba(201,168,76,.38); border-radius:9px; background:rgba(9,15,41,.85); color:#fff4d2; font:inherit; }
+#adminDiscount .miad-promo-admin .miad-promo-field { flex:1; min-width:0; }
+#adminDiscount .miad-promo-check { display:flex!important; align-items:center; gap:8px; }
+#adminDiscount .miad-promo-preview { display:flex; align-items:center; gap:12px; padding:12px; margin:10px 0; border:1px solid rgba(240,216,120,.35); border-radius:12px; color:#fff4d2; background:linear-gradient(115deg,#090f29,#351b5d); }
+#adminDiscount .miad-promo-preview > span:first-child { font-size:1.7rem; }
+#adminDiscount .miad-promo-preview strong, #adminDiscount .miad-promo-preview small { display:block; line-height:1.7; }
+#adminDiscount .miad-promo-preview small { color:#e1d8fa; }
+#adminDiscount .miad-promo-admin hr { border:0; border-top:1px solid rgba(201,168,76,.25); margin:18px 0; }
