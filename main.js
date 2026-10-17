@@ -6102,15 +6102,33 @@ document.addEventListener('DOMContentLoaded',function(){try{window.applyGalleryI
       next();
     }, ms);
   }
+  var acceptingTerms = false;
   window.acceptTermsAndContinue = function(){
+    if (acceptingTerms) return;
+    acceptingTerms = true;
+    var btn = document.querySelector('.terms-agree-btn');
     try { localStorage.setItem(TERMS_KEY, '1'); } catch (e) {}
     hideEl('termsScreen');
-    if (savedUser()) {
-      bootGate();
-      return;
+    try {
+      if (savedUser()) { bootGate(); return; }
+      showSplashThen(function(){ hideEl('splashScreen'); bootGate(); }, 700);
+    } catch (e) {
+      console.error('Accept Terms failed:', e);
+      acceptingTerms = false;
+      if (btn) btn.disabled = false;
+      showEl('termsScreen', 'flex');
+      if (window.location.search.indexOf('debug=1') !== -1) window.dispatchEvent(new ErrorEvent('error', {message:'Accept Terms failed: '+(e.message||e)}));
     }
-    showSplashThen(function(){ hideEl('splashScreen'); bootGate(); }, 700);
   };
+  document.addEventListener('click', function(e){
+    var btn = e.target && e.target.closest && e.target.closest('.terms-agree-btn');
+    if (!btn || typeof window.acceptTermsAndContinue === 'function') return;
+    e.preventDefault();
+    console.error('Accept Terms handler unavailable; using guarded fallback');
+    try { localStorage.setItem(TERMS_KEY, '1'); } catch (err) {}
+    hideEl('termsScreen');
+    showSplashThen(function(){ hideEl('splashScreen'); bootGate(); }, 700);
+  }, true);
   function startupRequestTimeout(promise, ms, label){
     return Promise.race([promise, new Promise(function(_, reject){
       setTimeout(function(){ reject(new Error(label + ' timeout')); }, ms);
