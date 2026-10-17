@@ -87,6 +87,7 @@
     <link rel="stylesheet" href="./button-feedback.css?v=20261015-online-1">
     <link rel="stylesheet" href="./royal-data-ui.css?v=20261017-1">
     <link rel="stylesheet" href="./shop-ui-fix.css?v=20261017-1">
+    <link rel="stylesheet" href="./spiritual-admin-fix.css?v=20261017-1">
 
 </head>
 <body>
@@ -302,11 +303,7 @@
 
             <!-- صفحه ۰: فروشگاه (صفحه اصلی هنگام باز شدن) -->
             <div class="page-swipe" id="pageShop">
-                <div class="page-header">
-                    <h2>🏪 فروشگاه کافه سرکتاب</h2>
-                </div>
-
-                <div class="shop-glass-welcome" style="margin-top:12px;background:rgba(255,255,255,0.05);backdrop-filter:blur(12px);border:1px solid rgba(255,215,0,0.15);border-radius:16px;padding:24px 20px;text-align:center;">
+                                <div class="shop-glass-welcome" style="margin-top:12px;background:rgba(255,255,255,0.05);backdrop-filter:blur(12px);border:1px solid rgba(255,215,0,0.15);border-radius:16px;padding:24px 20px;text-align:center;">
                     <h3 style="color:var(--txt-title,#F0D878);font-size:1.15rem;font-weight:800;margin-bottom:12px;">کافه سرکتاب میعاد</h3>
                     <p style="color:var(--txt-body,#F5F0E4);line-height:1.85;text-align:justify;font-size:0.9rem;margin-bottom:10px;">
                         <strong style="color:var(--txt-title,#F0D878);">بسم الله الرحمن الرحیم</strong><br><br>
@@ -326,8 +323,8 @@
                     <div class="featured-banner-content">
                         <span class="featured-banner-icon" id="discountIcon">🔥</span>
                         <div class="featured-banner-text">
-                            <span id="discountTitle">تخفیف ویژه تابستانه</span>
-                            <small id="discountSub">تا ۵۰٪ تخفیف برای همه محصولات</small>
+                            <span id="discountTitle">هدیه ویژه تابستانه</span>
+                            <small id="discountSub">هدیه پیشنهادی برای محصولات منتخب</small>
                         </div>
                     </div>
                     <span class="featured-banner-arrow">←</span>
@@ -617,8 +614,8 @@
         <div class="admin-card">
             <h4>🏷️ مدیریت بنر تخفیف</h4>
             <div class="admin-row">
-                <input type="text" id="discountTitleInput" placeholder="عنوان تخفیف" value="تخفیف ویژه تابستانه" oninput="updateDiscountPreview()">
-                <input type="text" id="discountSubInput" placeholder="زیرنویس تخفیف" value="تا ۵۰٪ تخفیف برای همه محصولات" oninput="updateDiscountPreview()">
+                <input type="text" id="discountTitleInput" placeholder="عنوان تخفیف" value="هدیه ویژه تابستانه" oninput="updateDiscountPreview()">
+                <input type="text" id="discountSubInput" placeholder="زیرنویس تخفیف" value="هدیه پیشنهادی برای محصولات منتخب" oninput="updateDiscountPreview()">
             </div>
             <div class="admin-row">
                 <input type="text" id="discountIconInput" placeholder="آیکون (مثل 🔥)" value="🔥" oninput="updateDiscountPreview()">
@@ -633,8 +630,8 @@
             <div style="margin:12px 0;padding:12px 16px;background:linear-gradient(135deg,#a8872a,#c9a84c,#e8d5a3);border-radius:12px;display:flex;align-items:center;gap:12px;">
                 <span id="discountPreviewIcon" style="font-size:1.5rem;">🔥</span>
                 <div style="color:#0a1628;">
-                    <div id="discountPreviewTitle" style="font-weight:700;font-size:0.85rem;">تخفیف ویژه تابستانه</div>
-                    <small id="discountPreviewSub" style="opacity:0.75;font-size:0.7rem;">تا ۵۰٪ تخفیف برای همه محصولات</small>
+                    <div id="discountPreviewTitle" style="font-weight:700;font-size:0.85rem;">هدیه ویژه تابستانه</div>
+                    <small id="discountPreviewSub" style="opacity:0.75;font-size:0.7rem;">هدیه پیشنهادی برای محصولات منتخب</small>
                 </div>
             </div>
             <button onclick="saveDiscount()">💾 ذخیره تخفیف</button>
@@ -648,7 +645,7 @@
             <input type="hidden" id="editProductId" value="">
             <div class="admin-row" style="flex-direction:column;align-items:stretch;gap:8px;">
                 <input type="text" id="newProductTitle" placeholder="عنوان محصول *" style="width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;box-sizing:border-box;">
-                <input type="number" id="newProductPrice" placeholder="قیمت (تومان) *" style="width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;box-sizing:border-box;">
+                <input type="number" id="newProductPrice" placeholder="هدیه پیشنهادی (تومان) *" style="width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;box-sizing:border-box;">
                 <div style="display:flex;gap:8px;">
                     <input type="text" id="newProductImage" placeholder="ایموجی" value="📚" style="width:90px;padding:12px;border-radius:10px;border:1px solid #ccc;">
                     <input type="text" id="newProductBadge" placeholder="برچسب (جدید/ویژه/محبوب)" style="flex:1;padding:12px;border-radius:10px;border:1px solid #ccc;">
@@ -884,7 +881,7 @@
     <div id="subOrdersStatusBox" style="padding:14px;background:linear-gradient(135deg,#fff8e7,#ffe9a8);border-radius:14px;border:1px solid #c9a84c;margin-bottom:14px;color:#1A1A1A;">
       <div style="font-weight:800;color:#6B5210;margin-bottom:6px;">وضعیت اشتراک</div>
       <div id="subOrdersStatusText" style="color:#1A1A1A;font-size:0.9rem;line-height:1.7;">در حال بررسی...</div>
-      <button type="button" class="btn" style="width:100%;margin-top:10px;padding:12px;" onclick="openSubscriptionPurchase();closeSubOrdersPanel();">⭐ خرید اشتراک</button>
+      <button type="button" class="btn" style="width:100%;margin-top:10px;padding:12px;" onclick="openSubscriptionPurchase();closeSubOrdersPanel();">⭐ فعال‌سازی دسترسی</button>
     </div>
     <div style="margin-bottom:10px;font-weight:700;color:#6B5210;">📦 خریدهای محصول من</div>
     <div id="subOrdersList" style="min-height:60px;color:#1A1A1A;"></div>

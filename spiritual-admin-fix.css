@@ -1,0 +1,55 @@
+/* Kafe Miad — spiritual identity / admin readability
+   Scoped visual-only overrides. No data, order, payment, or Supabase logic changes. */
+#adminPanel .admin-card,
+#adminPanel .admin-item,
+#adminPanel [id*="SubscriptionRequestsList"] > *,
+#adminPanel [id*="SubscriptionsList"] > *,
+#adminPanel [id*="ConversationCard"],
+#adminPanel [id*="MessageList"] > *,
+#adminPanel [id*="Message"] .message,
+#adminPanel [class*="request-card"],
+#adminPanel [class*="subscription-card"],
+#adminPanel [class*="message-card"],
+#adminPanel [class*="conversation-card"] {
+  background-color: #111827 !important;
+  color: #F3E8CF !important;
+  border-color: rgba(201,168,76,.38) !important;
+}
+#adminPanel .admin-card h1,
+#adminPanel .admin-card h2,
+#adminPanel .admin-card h3,
+#adminPanel .admin-card h4,
+#adminPanel .admin-card h5,
+#adminPanel .admin-card label,
+#adminPanel [id*="SubscriptionRequestsList"] *,
+#adminPanel [id*="SubscriptionsList"] *,
+#adminPanel [id*="ConversationCard"] *,
+#adminPanel [id*="MessageList"] *,
+#adminPanel [class*="request-card"] *,
+#adminPanel [class*="subscription-card"] *,
+#adminPanel [class*="message-card"] *,
+#adminPanel [class*="conversation-card"] * {
+  text-shadow: none;
+}
+#adminPanel .admin-card p,
+#adminPanel .admin-card span,
+#adminPanel .admin-card small,
+#adminPanel .admin-item,
+#adminPanel [id*="SubscriptionRequestsList"] *,
+#adminPanel [id*="SubscriptionsList"] *,
+#adminPanel [id*="ConversationCard"] *,
+#adminPanel [id*="MessageList"] * {
+  color: #F3E8CF;
+}
+#adminPanel .admin-card input,
+#adminPanel .admin-card select,
+#adminPanel .admin-card textarea {
+  background: #090E18 !important;
+  color: #FFF4D8 !important;
+  border-color: rgba(201,168,76,.45) !important;
+}
+#adminPanel .admin-card input::placeholder,
+#adminPanel .admin-card textarea::placeholder {
+  color: #B9B0A0 !important;
+  opacity: 1;
+}
