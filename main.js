@@ -5405,8 +5405,35 @@ async function submitProductOrder() {
             if (!dataUrl || dataUrl.indexOf('data:image/') !== 0) return null;
             if (!supabaseClient) {
                 console.warn('uploadProductDataUrl: Supabase client missing');
+                if (typeof showNotification === 'function') showNotification('لطفاً دوباره وارد شوید', 'error');
+                var appRoot = document.getElementById('app');
+                var loginRoot = document.getElementById('registerScreen');
+                if (appRoot) appRoot.style.display = 'none';
+                if (loginRoot) loginRoot.style.display = 'flex';
                 return null;
             }
+
+            // تأیید نشست و نقش مدیر پیش از هر درخواست آپلود
+            try {
+                var uploadSessionOk = typeof verifyOnlineAdmin === 'function' && await verifyOnlineAdmin();
+                if (!uploadSessionOk) {
+                    if (typeof showNotification === 'function') showNotification('لطفاً دوباره وارد شوید', 'error');
+                    var appRoot = document.getElementById('app');
+                    var loginRoot = document.getElementById('registerScreen');
+                    if (appRoot) appRoot.style.display = 'none';
+                    if (loginRoot) loginRoot.style.display = 'flex';
+                    return null;
+                }
+            } catch (sessionCheckError) {
+                console.warn('Product image upload session validation failed', sessionCheckError);
+                if (typeof showNotification === 'function') showNotification('لطفاً دوباره وارد شوید', 'error');
+                var appRoot = document.getElementById('app');
+                var loginRoot = document.getElementById('registerScreen');
+                if (appRoot) appRoot.style.display = 'none';
+                if (loginRoot) loginRoot.style.display = 'flex';
+                return null;
+            }
+
             try {
                 var a=dataUrl.split(','), mime=(a[0].match(/data:([^;]+);base64/)||[,'image/jpeg'])[1];
                 var bin=atob(a[1]), bytes=new Uint8Array(bin.length);
