@@ -5823,7 +5823,9 @@ for(var si=0;si<2;si++){
 var iconSize=si===0?192:512;
 var iconPng=await resizeInstallIcon(originalAppIcon,iconSize);
 var iconUrl=await upload(iconPng,'appIcon'+iconSize);
-if(!iconUrl||String(iconUrl).indexOf('http')!==0)throw new Error('ساخت یا ذخیره آیکون نصب '+iconSize+'×'+iconSize ناموفق بود؛ تنظیمات قبلی حفظ شد.');
+if (!iconUrl || String(iconUrl).indexOf("http") !== 0) {
+  throw new Error("ساخت یا ذخیره آیکون نصب " + iconSize + "x" + iconSize + " ناموفق بود؛ تنظیمات قبلی حفظ شد.");
+}
 s['appIcon'+iconSize]=iconUrl;
 }
 }
