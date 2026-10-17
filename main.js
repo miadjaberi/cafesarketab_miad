@@ -5407,6 +5407,32 @@ async function submitProductOrder() {
                 console.warn('uploadProductDataUrl: Supabase client missing');
                 return null;
             }
+
+            // قبل از آپلود، اعتبار نشست را از سرور بررسی کن؛ در صورت نیاز یک بار تازه‌سازی.
+            try {
+                var sessionCheck = await supabaseClient.auth.getSession();
+                var activeSession = sessionCheck && sessionCheck.data && sessionCheck.data.session;
+                if (activeSession) {
+                    var expiryMs = activeSession.expires_at ? activeSession.expires_at * 1000 : 0;
+                    if (expiryMs && expiryMs <= Date.now() + 30000) {
+                        var refreshed = await supabaseClient.auth.refreshSession();
+                        activeSession = refreshed && refreshed.data && refreshed.data.session;
+                    }
+                }
+                var verifiedUser = await supabaseClient.auth.getUser();
+                var validUser = verifiedUser && verifiedUser.data && verifiedUser.data.user;
+                if (!activeSession || !validUser || verifiedUser.error || validUser.is_anonymous) {
+                    if (typeof showNotification === 'function') showNotification('لطفاً دوباره وارد شوید', 'error');
+                    if (typeof alert === 'function') alert('لطفاً دوباره وارد شوید');
+                    return null;
+                }
+            } catch (sessionError) {
+                console.warn('uploadProductDataUrl session check failed', sessionError);
+                if (typeof showNotification === 'function') showNotification('لطفاً دوباره وارد شوید', 'error');
+                if (typeof alert === 'function') alert('لطفاً دوباره وارد شوید');
+                return null;
+            }
+
             try {
                 var a=dataUrl.split(','), mime=(a[0].match(/data:([^;]+);base64/)||[,'image/jpeg'])[1];
                 var bin=atob(a[1]), bytes=new Uint8Array(bin.length);
