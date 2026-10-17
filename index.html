@@ -515,11 +515,6 @@
 
     <div class="settings-divider"></div>
 
-    <div class="settings-section" id="uploadDiagnosticSection">
-        <button type="button" class="btn" id="uploadDiagnosticButton" onclick="(async function(){var out=document.getElementById('uploadDiagnosticResult');var sb=window.supabaseClient;var path=null;var uploaded=false;function show(t){if(out)out.textContent=t;}if(!sb){show('ناموفق: اتصال Supabase در دسترس نیست.');return;}try{var sr=await sb.auth.getSession();if(sr.error)throw sr.error;if(!sr.data||!sr.data.session)throw new Error('نشست معتبر کاربر پیدا نشد.');var bytes=new TextEncoder().encode('Kafe Miad upload diagnostic');var file=new Blob([bytes],{type:'text/plain'});path='products/diagnostic-'+Date.now()+'-'+Math.random().toString(36).slice(2)+'.txt';show('در حال آزمایش آپلود…');var ur=await sb.storage.from('public-assets').upload(path,file,{contentType:'text/plain',upsert:false});if(ur.error)throw ur.error;uploaded=true;show('آپلود موفق شد؛ در حال پاک‌کردن فایل آزمایشی…');var dr=await sb.storage.from('public-assets').remove([path]);if(dr.error){show('آپلود موفق شد؛ حذف فایل ناموفق بود.\\nمسیر فایل باقی‌مانده: '+path+'\\nخطای حذف: '+dr.error.message);return;}show('موفق: آپلود و حذف فایل آزمایشی هر دو انجام شدند.');}catch(e){var status=e&& (e.statusCode||e.status)||'نامشخص';show('ناموفق: آپلود یا بررسی نشست خطا داد.\\nکد خطا: '+status+'\\nمتن خطا: '+(e&&e.message||String(e))+(uploaded&&path?'\\nمسیر فایل: '+path:''));}})()">🧪 تست آپلود تصویر</button>
-        <div id="uploadDiagnosticResult" role="status" aria-live="polite" style="margin-top:8px;white-space:pre-wrap;overflow-wrap:anywhere;"></div>
-    </div>
-
     <div class="settings-section" id="logoutSection">
         <h4>🚪 حساب کاربری</h4>
         <button type="button" class="settings-logout-btn" onclick="logoutUser()">🚪 خروج از حساب کاربری</button>
