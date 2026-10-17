@@ -4,7 +4,7 @@
 (function () {
   'use strict';
   var STYLE_ID = 'km-modal-ux-style';
-  var EXCLUDED = { developingModal: true };
+  var EXCLUDED = { developingModal: true, productDetailModal: true };
   var GUIDE_COPY = [
     { test: /سن ازدواج|عاقبت ازدواج|محبت|ستاره چین|ازدواج/i, text: 'راهنما: اطلاعات خواسته‌شده را کامل وارد کنید و دکمه محاسبه را بزنید. نتیجه را به‌عنوان برداشت احتمالی بخوانید، نه پیش‌بینی قطعی.' },
     { test: /رمل|دلیل الحیران|سبب القادم|همزاد|مکاشفه|موکل|طلسم|وفق/i, text: 'راهنما: فیلدهای همین بخش را به‌ترتیب تکمیل کنید، سؤال یا گزینهٔ مناسب را انتخاب کنید و سپس دکمهٔ محاسبه/استخراج را بزنید. برای نتیجهٔ تازه از «پاک کردن و شروع دوباره» استفاده کنید.' },
@@ -99,8 +99,30 @@
     var first = modal.querySelector('input:not([type="hidden"]):not([type="button"]):not([type="submit"]):not([disabled]),textarea:not([disabled]),select:not([disabled])');
     if (first) { try { first.focus({ preventScroll: true }); } catch (e) { try { first.focus(); } catch (ignore) {} } }
   }
+  function enhanceProductBackButton() {
+    var modal = document.getElementById('productDetailModal');
+    if (!modal) return;
+    var content = modal.querySelector('.modal-glass-content');
+    if (!content || content.querySelector('.km-product-back-row')) return;
+    var row = document.createElement('div');
+    row.className = 'km-product-back-row';
+    row.style.cssText = 'position:sticky;top:0;z-index:30;display:flex;justify-content:flex-start;align-items:center;padding:8px 12px;background:rgba(10,14,25,.97);border-bottom:1px solid rgba(255,215,0,.22);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);';
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'km-product-back-button';
+    button.textContent = '← بازگشت به فروشگاه';
+    button.setAttribute('aria-label', 'بستن جزئیات محصول و بازگشت به فروشگاه');
+    button.style.cssText = 'min-height:42px;padding:9px 16px;border-radius:12px;border:1px solid rgba(255,215,0,.35);background:linear-gradient(135deg,rgba(161,107,35,.28),rgba(255,255,255,.07));color:#F0D878;font:700 14px/1.5 Vazirmatn,Tahoma,sans-serif;cursor:pointer;touch-action:manipulation;';
+    button.addEventListener('click', function () {
+      if (typeof window.closeProductDetail === 'function') window.closeProductDetail();
+      else modal.classList.remove('active');
+    });
+    row.appendChild(button);
+    content.insertBefore(row, content.firstChild);
+  }
   function enhance() {
     addStyle();
+    enhanceProductBackButton();
     document.querySelectorAll('.modal-glass').forEach(function (modal) {
       if (EXCLUDED[modal.id]) return;
       var body = modal.querySelector('.modal-glass-body') || modal.querySelector('.modal-glass-content');
@@ -124,6 +146,10 @@
         if (header && header.parentNode === body) header.insertAdjacentElement('afterend', guide);
         else body.insertBefore(guide, body.firstChild);
       }
+      /* راهنمای قدیمی را حذف کن؛ فقط کادر جدید شیشه‌ای باقی بماند. */
+      modal.querySelectorAll('.modal-guide').forEach(function (oldGuide) {
+        if (!oldGuide.classList.contains('km-modal-ux-guide')) oldGuide.remove();
+      });
       if (!modal.querySelector('.km-modal-ux-reset')) {
         var actions = document.createElement('div');
         actions.className = 'km-modal-ux-actions';
