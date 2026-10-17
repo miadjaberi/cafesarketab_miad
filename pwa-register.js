@@ -265,6 +265,26 @@
     }
   }
 
+  function clearLiveAppIcon() {
+    try {
+      localStorage.removeItem('cafeAppIcon');
+      var settings = JSON.parse(localStorage.getItem('cafeSettings') || '{}');
+      delete settings.appIcon;
+      localStorage.setItem('cafeSettings', JSON.stringify(settings));
+    } catch (e) {}
+    var fallback = './icon-miad.svg?v=20261017-pwa-media-1';
+    document.querySelectorAll('link[rel="icon"],link[rel="apple-touch-icon"],link[rel="shortcut icon"]').forEach(function (link) {
+      link.href = fallback;
+      if (link.rel === 'icon' || link.rel === 'shortcut icon') link.type = 'image/svg+xml';
+    });
+    var bannerIcon = document.querySelector('#kafe-install-banner .kafe-install-icon');
+    if (bannerIcon) bannerIcon.src = fallback;
+    var manifestLink = document.querySelector('link[rel="manifest"]');
+    if (manifestLink) {
+      manifestLink.href = MEDIA_PROJECT_URL + '/functions/v1/app-manifest?v=20261017-pwa-media-1&t=' + Date.now();
+    }
+  }
+
   async function syncLivePwaMedia(force) {
     var now = Date.now();
     if (!force && now - lastMediaSyncAt < 15000) return;
@@ -305,6 +325,8 @@
           });
           if (typeof window.syncKafeInstallIcon === 'function') window.syncKafeInstallIcon();
         }
+      } else {
+        clearLiveAppIcon();
       }
     } catch (e) {
       // Never block startup or overwrite the last-known appearance on a network failure.
