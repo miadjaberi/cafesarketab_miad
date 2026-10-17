@@ -6099,7 +6099,7 @@ document.addEventListener('DOMContentLoaded',function(){try{window.applyGalleryI
             returningClient.auth.getSession(), 5000, 'returning session recovery'
           );
           var returningSession = returningSessionResult && returningSessionResult.data && returningSessionResult.data.session;
-          if (returningSession && returningSession.user && returningSession.user.id && !returningSession.user.is_anonymous) {
+          if (returningSession && returningSession.user && returningSession.user.id) {
             var returningProfileResult = await startupRequestTimeout(
               returningClient.from('profiles')
                 .select('id,name,phone,role,registered_at')
