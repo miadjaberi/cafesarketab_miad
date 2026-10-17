@@ -272,7 +272,7 @@
       delete settings.appIcon;
       localStorage.setItem('cafeSettings', JSON.stringify(settings));
     } catch (e) {}
-    var fallback = './icon-miad.svg?v=20261017-pwa-media-1';
+    var fallback = './icon-miad.svg?v=20261017-dynamic-icon-1';
     document.querySelectorAll('link[rel="icon"],link[rel="apple-touch-icon"],link[rel="shortcut icon"]').forEach(function (link) {
       link.href = fallback;
       if (link.rel === 'icon' || link.rel === 'shortcut icon') link.type = 'image/svg+xml';
@@ -281,7 +281,7 @@
     if (bannerIcon) bannerIcon.src = fallback;
     var manifestLink = document.querySelector('link[rel="manifest"]');
     if (manifestLink) {
-      manifestLink.href = MEDIA_PROJECT_URL + '/functions/v1/app-manifest?v=20261017-pwa-media-1&t=' + Date.now();
+      manifestLink.href = MEDIA_PROJECT_URL + '/functions/v1/app-manifest?v=20261017-dynamic-icon-1&t=' + Date.now();
     }
   }
 
@@ -292,7 +292,7 @@
     try {
       var endpoint = new URL(MEDIA_PROJECT_URL + '/rest/v1/app_settings');
       // JSON-path projection returns only the two public media URLs, not the full settings value.
-      endpoint.searchParams.set('select', 'appBg:value->>appBg,appIcon:value->>appIcon');
+      endpoint.searchParams.set('select', 'appBg:value->>appBg,appIcon:value->>appIcon,appIcon192:value->>appIcon192,appIcon512:value->>appIcon512');
       endpoint.searchParams.set('key', 'eq.admin:cafeSettings');
       endpoint.searchParams.set('limit', '1');
       var response = await fetch(endpoint.toString(), {
@@ -381,7 +381,7 @@
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
       navigator.serviceWorker
-        .register('./sw.js?v=20261017-pwa-media-1', { scope: './' })
+        .register('./sw.js?v=20261017-dynamic-icon-1', { scope: './' })
         .then(function (reg) {
           if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
             console.log('✅ Service Worker ثبت شد', reg.scope);
