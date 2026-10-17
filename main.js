@@ -2902,7 +2902,7 @@ async function submitProductOrder() {
         // مدیریت تخفیف
         // ============================================================
         function loadDiscountSettings() {
-            var discount = JSON.parse(localStorage.getItem('discountSettings') || '{"title":"تخفیف ویژه تابستانه","sub":"تا ۵۰٪ تخفیف برای همه محصولات","icon":"🔥","active":true}');
+            var discount = JSON.parse(localStorage.getItem('discountSettings') || '{"title":"هدیه ویژه تابستانه","sub":"هدیه پیشنهادی برای محصولات منتخب","icon":"🔥","active":true}');
             document.getElementById('discountTitleInput').value = discount.title;
             document.getElementById('discountSubInput').value = discount.sub;
             document.getElementById('discountIconInput').value = discount.icon;
@@ -2976,7 +2976,7 @@ async function submitProductOrder() {
         }
 
         function applyDiscountToBanner() {
-            var discount = JSON.parse(localStorage.getItem('discountSettings') || '{"title":"تخفیف ویژه تابستانه","sub":"تا ۵۰٪ تخفیف برای همه محصولات","icon":"🔥","active":true}');
+            var discount = JSON.parse(localStorage.getItem('discountSettings') || '{"title":"هدیه ویژه تابستانه","sub":"هدیه پیشنهادی برای محصولات منتخب","icon":"🔥","active":true}');
             var banner = document.getElementById('discountBanner');
             var icon = document.getElementById('discountIcon');
             var title = document.getElementById('discountTitle');
@@ -2993,7 +2993,7 @@ async function submitProductOrder() {
         }
 
         function getDiscountText() {
-            var discount = JSON.parse(localStorage.getItem('discountSettings') || '{"title":"تخفیف ویژه تابستانه","sub":"تا ۵۰٪ تخفیف برای همه محصولات","icon":"🔥","active":true}');
+            var discount = JSON.parse(localStorage.getItem('discountSettings') || '{"title":"هدیه ویژه تابستانه","sub":"هدیه پیشنهادی برای محصولات منتخب","icon":"🔥","active":true}');
             return discount.active ? discount.icon + ' ' + discount.title + ' - ' + discount.sub : 'تخفیف غیرفعال است';
         }
 
@@ -3118,7 +3118,7 @@ async function submitProductOrder() {
                     return;
                 }
                 if (isNaN(price) || price < 0) {
-                    if (typeof showNotification === 'function') showNotification('❌ قیمت معتبر وارد کنید', 'error');
+                    if (typeof showNotification === 'function') showNotification('❌ هدیه پیشنهادی معتبر وارد کنید', 'error');
                     else alert('قیمت معتبر وارد کنید');
                     return;
                 }
@@ -4894,7 +4894,7 @@ async function submitProductOrder() {
             box.innerHTML=
               '<div style="background:linear-gradient(165deg,#12101c 0%,#0c1424 45%,#15102a 100%);width:100%;max-width:430px;border-radius:22px 22px 0 0;padding:18px;max-height:92vh;overflow:auto;color:#F0E6D3;border:2px solid #c9a84c;box-sizing:border-box;">'+
               '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">'+
-                '<strong style="color:#E8D5A3;font-size:1.1rem;">⭐ خرید اشتراک VIP</strong>'+
+                '<strong style="color:#E8D5A3;font-size:1.1rem;">⭐ فعال‌سازی دسترسی VIP</strong>'+
                 '<button type="button" onclick="document.getElementById(\'subscriptionModalBox\').remove()" style="border:0;background:rgba(201,168,76,0.2);border-radius:9px;padding:7px 12px;font-size:1rem;cursor:pointer;color:#E8D5A3;">✕</button>'+
               '</div>'+
               '<div style="margin-bottom:12px;line-height:1.85;color:#C9C2B6;font-size:0.88rem;">اشتراک پس از بررسی فیش و تأیید مدیریت فعال می‌شود. اطلاعات درخواست در سرور ذخیره می‌شود.</div>'+
@@ -6697,7 +6697,7 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){lo
     var title=p.querySelector('strong');
     if(title)title.textContent='⭐ خرید';
     var buyBtn=p.querySelector('button[onclick*="openSubscriptionPurchase"]');
-    if(buyBtn)buyBtn.textContent='⭐ خرید اشتراک';
+    if(buyBtn)buyBtn.textContent='⭐ فعال‌سازی دسترسی';
     var headings=p.querySelectorAll('div');
     headings.forEach(function(el){
       if((el.textContent||'').trim()==='📦 وضعیت و سفارش‌های محصولات')el.textContent='📦 خریدهای محصول من';
