@@ -1,55 +1,132 @@
-/* Kafe Miad — spiritual identity / admin readability
-   Scoped visual-only overrides. No data, order, payment, or Supabase logic changes. */
+/* KAFE MIAD — admin readability overrides
+   Visual-only. No data, authentication, order, payment, or Supabase logic. */
+
+#adminPanel { color: #F3E8CF; }
+
 #adminPanel .admin-card,
 #adminPanel .admin-item,
-#adminPanel [id*="SubscriptionRequestsList"] > *,
-#adminPanel [id*="SubscriptionsList"] > *,
-#adminPanel [id*="ConversationCard"],
-#adminPanel [id*="MessageList"] > *,
-#adminPanel [id*="Message"] .message,
+#adminPanel .admin-content,
+#adminPanel .admin-content > div,
 #adminPanel [class*="request-card"],
 #adminPanel [class*="subscription-card"],
 #adminPanel [class*="message-card"],
-#adminPanel [class*="conversation-card"] {
+#adminPanel [class*="conversation-card"],
+#adminPanel [class*="pending"],
+#adminPanel [class*="request-item"],
+#adminPanel [class*="subscription-item"],
+#adminPanel [class*="message-item"] {
   background-color: #111827 !important;
   color: #F3E8CF !important;
-  border-color: rgba(201,168,76,.38) !important;
+  border-color: rgba(201, 168, 76, .45) !important;
 }
+
+/* Common white/light utility classes inside admin only */
+#adminPanel .bg-white,
+#adminPanel .bg-light,
+#adminPanel [class~="bg-white"],
+#adminPanel [class~="bg-light"],
+#adminPanel [class*="white-card"],
+#adminPanel [class*="light-card"] {
+  background-color: #111827 !important;
+  color: #F3E8CF !important;
+  border-color: rgba(201, 168, 76, .45) !important;
+}
+
+/* Inline white surfaces from dynamically rendered cards */
+#adminPanel [style*="background:#fff"],
+#adminPanel [style*="background: #fff"],
+#adminPanel [style*="background-color:#fff"],
+#adminPanel [style*="background-color: #fff"],
+#adminPanel [style*="background:white"],
+#adminPanel [style*="background: white"],
+#adminPanel [style*="background-color:white"],
+#adminPanel [style*="background-color: white"],
+#adminPanel [style*="rgb(255, 255, 255)"] {
+  background-color: #111827 !important;
+  color: #F3E8CF !important;
+  border-color: rgba(201, 168, 76, .45) !important;
+}
+
+/* Subscription requests and subscription management */
+#adminPanel [id*="Subscription"],
+#adminPanel [id*="subscription"],
+#adminPanel [id*="Subscription"] > *,
+#adminPanel [id*="subscription"] > * {
+  color: #F3E8CF;
+}
+#adminPanel [id*="Subscription"] > *,
+#adminPanel [id*="subscription"] > * {
+  background-color: #111827 !important;
+  border-color: rgba(201, 168, 76, .4) !important;
+}
+
+/* User messages and conversations */
+#adminPanel [id*="Message"],
+#adminPanel [id*="message"],
+#adminPanel [id*="Conversation"],
+#adminPanel [id*="conversation"] {
+  color: #F3E8CF;
+}
+#adminPanel [id*="Message"] > *,
+#adminPanel [id*="message"] > *,
+#adminPanel [id*="Conversation"] > *,
+#adminPanel [id*="conversation"] > * {
+  background-color: #111827 !important;
+  color: #F3E8CF !important;
+  border-color: rgba(201, 168, 76, .4) !important;
+}
+
+/* Dalil al-Hayran image management */
+#adminPanel #adminDalilImages,
+#adminPanel #dalilImagesAdmin,
+#adminPanel #adminDalilImages > *,
+#adminPanel #dalilImagesAdmin > * {
+  background-color: #111827 !important;
+  color: #F3E8CF !important;
+  border-color: rgba(201, 168, 76, .4) !important;
+}
+#adminPanel #adminDalilImages img,
+#adminPanel #dalilImagesAdmin img {
+  max-width: 100%;
+  object-fit: contain;
+}
+
+/* Text contrast, excluding buttons so their intended status colors remain */
 #adminPanel .admin-card h1,
 #adminPanel .admin-card h2,
 #adminPanel .admin-card h3,
 #adminPanel .admin-card h4,
 #adminPanel .admin-card h5,
-#adminPanel .admin-card label,
-#adminPanel [id*="SubscriptionRequestsList"] *,
-#adminPanel [id*="SubscriptionsList"] *,
-#adminPanel [id*="ConversationCard"] *,
-#adminPanel [id*="MessageList"] *,
-#adminPanel [class*="request-card"] *,
-#adminPanel [class*="subscription-card"] *,
-#adminPanel [class*="message-card"] *,
-#adminPanel [class*="conversation-card"] * {
-  text-shadow: none;
-}
 #adminPanel .admin-card p,
 #adminPanel .admin-card span,
+#adminPanel .admin-card label,
 #adminPanel .admin-card small,
-#adminPanel .admin-item,
-#adminPanel [id*="SubscriptionRequestsList"] *,
-#adminPanel [id*="SubscriptionsList"] *,
-#adminPanel [id*="ConversationCard"] *,
-#adminPanel [id*="MessageList"] * {
+#adminPanel [id*="Subscription"] p,
+#adminPanel [id*="Subscription"] span,
+#adminPanel [id*="Message"] p,
+#adminPanel [id*="Message"] span,
+#adminPanel [id*="Conversation"] p,
+#adminPanel [id*="Conversation"] span {
   color: #F3E8CF;
 }
-#adminPanel .admin-card input,
-#adminPanel .admin-card select,
-#adminPanel .admin-card textarea {
-  background: #090E18 !important;
+
+/* Inputs */
+#adminPanel input,
+#adminPanel select,
+#adminPanel textarea {
+  background-color: #090E18 !important;
   color: #FFF4D8 !important;
-  border-color: rgba(201,168,76,.45) !important;
+  border-color: rgba(201, 168, 76, .55) !important;
 }
-#adminPanel .admin-card input::placeholder,
-#adminPanel .admin-card textarea::placeholder {
+#adminPanel input::placeholder,
+#adminPanel textarea::placeholder {
   color: #B9B0A0 !important;
   opacity: 1;
+}
+#adminPanel a { color: #E6C878; }
+#adminPanel input:focus,
+#adminPanel select:focus,
+#adminPanel textarea:focus {
+  outline: 2px solid #C9A84C;
+  outline-offset: 1px;
 }
