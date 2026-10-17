@@ -255,20 +255,19 @@
             if (__refreshOnlineInFlight) return __refreshOnlineInFlight;
             __refreshOnlineInFlight = (async function(){
                 try {
-                    // صبر کوتاه تا supabaseClient از app.js آماده شود
-                    var tries = 0;
-                    while (!supabaseClient && tries < 25) {
-                        await new Promise(function(r){ setTimeout(r, 100); });
-                        tries++;
-                        if (!supabaseClient && window.supabaseClient) supabaseClient = window.supabaseClient;
-                    }
+                    // main.js creates the sole Supabase client synchronously before this function.
+                    // Do not poll for a client that is already initialized.
+                    if (!supabaseClient && window.supabaseClient) supabaseClient = window.supabaseClient;
                     if (!supabaseClient) return;
                     var products = await sbGet('products');
-                    if (products && products.length) {
+                    // An empty array is a valid server result: clear stale cached products too.
+                    // null means the read failed, so leave the last-known cache untouched.
+                    if (Array.isArray(products)) {
                         var mapped = products.map(function(r) {
-                            return { id: (r.local_id != null ? Number(r.local_id) : r.id), cloudId: r.id, title: r.title || '', price: Number(r.price) || 0, image: r.image || '📦', imageUrl: r.image_url || '', badge: r.badge || '', desc: r.desc || '' };
+                            return { id: (r.local_id != null ? Number(r.local_id) : r.id), cloudId: r.id, title: r.title || r.name || '', price: Number(r.price) || 0, image: r.image || '📦', imageUrl: r.image_url || '', badge: r.badge || '', desc: r.desc || r.description || '' };
                         });
-                        localStorage.setItem('cafeProducts', JSON.stringify(mapped)); window.__productsCloudSynced = true;
+                        localStorage.setItem('cafeProducts', JSON.stringify(mapped));
+                        window.__productsCloudSynced = true;
                     }
                 } catch(e) { console.warn('online product refresh', e); }
                 finally { __refreshOnlineInFlight = null; }
