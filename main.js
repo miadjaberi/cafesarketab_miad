@@ -5783,6 +5783,23 @@ window.installKafeApp = function() {
 (function(){
 function settings(){try{return JSON.parse(localStorage.getItem('cafeSettings')||'{}')}catch(e){return {}}}
 function put(s){try{localStorage.setItem('cafeSettings',JSON.stringify(s));return true}catch(e){console.warn(e);return false}}
+async function resizeInstallIcon(dataUrl,size){
+return new Promise(function(resolve,reject){
+var img=new Image();
+img.onload=function(){
+try{
+var canvas=document.createElement('canvas');canvas.width=size;canvas.height=size;
+var ctx=canvas.getContext('2d');if(!ctx)throw new Error('Canvas برای ساخت آیکون نصب در دسترس نیست.');
+var scale=Math.max(size/img.width,size/img.height),sw=size/scale,sh=size/scale;
+ctx.clearRect(0,0,size,size);
+ctx.drawImage(img,(img.width-sw)/2,(img.height-sh)/2,sw,sh,0,0,size,size);
+resolve(canvas.toDataURL('image/png'));
+}catch(e){reject(e)}
+};
+img.onerror=function(){reject(new Error('تصویر آیکون برای ساخت اندازه نصب خوانده نشد.'))};
+img.src=dataUrl;
+});
+}
 async function upload(data,key){/* V22.9-RC1: شکست Storage = null، نه Base64 */if(!data||String(data).indexOf('data:image/')!==0)return null;if(!supabaseClient){console.warn('media upload: no client');return null;}try{var a=data.split(','),mime=(a[0].match(/data:([^;]+);base64/)||[,'image/jpeg'])[1],bin=atob(a[1]),b=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)b[i]=bin.charCodeAt(i);var blob=new Blob([b],{type:mime}),ext=(mime.split('/')[1]||'jpg').replace(/[^a-z0-9]/gi,'')||'jpg',path='app-media/'+key+'-'+Date.now()+'-'+Math.random().toString(36).slice(2)+'.'+ext,r=await supabaseClient.storage.from('public-assets').upload(path,blob,{upsert:true,contentType:mime});if(r.error)throw r.error;var u=supabaseClient.storage.from('public-assets').getPublicUrl(path);var url=u.data&&u.data.publicUrl?u.data.publicUrl:null;if(!url)throw new Error('publicUrl empty');return url}catch(e){console.warn('media upload',key,e);return null}}
 function apply(s){if(!s)return;if(s.headerLogo){var h=document.getElementById('headerLogoImg');if(h)h.src=s.headerLogo}if(s.registerLogo){var r=document.getElementById('registerLogoImg')||document.querySelector('#registerScreen img');if(r)r.src=s.registerLogo}if(s.splashBg){var spImg=document.getElementById('splashBgImg');if(spImg){spImg.src=s.splashBg;spImg.style.display='block';spImg.style.opacity='1';}var sp=document.getElementById('splashScreen');if(sp){sp.style.backgroundImage='url(\"'+s.splashBg+'\")';sp.style.backgroundSize='cover';sp.style.backgroundPosition='center';}}if(s.appBg){try{document.documentElement.style.setProperty('--app-user-bg','url(\"'+s.appBg+'\")');document.body.style.setProperty('background-image','url(\"'+s.appBg+'\")','important');document.body.style.setProperty('background-size','cover','important');document.body.style.setProperty('background-attachment','fixed','important');document.body.style.setProperty('background-position','center','important');var app=document.getElementById('app');if(app){app.style.setProperty('background-image','url(\"'+s.appBg+'\")','important');app.style.setProperty('background-size','cover','important');app.style.setProperty('background-position','center','important');}}catch(e){console.warn('appBg',e)}}if(s.appIcon){try{localStorage.setItem('cafeAppIcon',s.appIcon)}catch(e){}if(typeof applyAppIcon==='function')applyAppIcon(s.appIcon);else{document.querySelectorAll('link[rel=\"icon\"],link[rel=\"apple-touch-icon\"],link[rel=\"shortcut icon\"]').forEach(function(l){l.href=s.appIcon})}}}
 window.saveAndApplyAllMediaImages=async function(){
@@ -5790,13 +5807,24 @@ var b=document.getElementById('saveAllMediaImagesBtn'),oldText=b?b.textContent:'
 if(b){b.disabled=true;b.textContent='⏳ در حال ذخیره روی سرور...'}
 try{
 if(!supabaseClient||typeof cloudSaveAdminSetting!=='function'||typeof verifyOnlineAdmin!=='function'||!(await verifyOnlineAdmin()))throw new Error('اتصال سرور یا ورود امن مدیر در دسترس نیست.');
-var previous=settings(),s=Object.assign({},previous),keys=['headerLogo','registerLogo','splashBg','appBg','appIcon'];
+var previous=settings(),s=Object.assign({},previous),originalAppIcon=s.appIcon,keys=['headerLogo','registerLogo','splashBg','appBg','appIcon'];
 for(var i=0;i<keys.length;i++){
 var key=keys[i];
 if(s[key]&&String(s[key]).indexOf('data:image/')===0){
 var upUrl=await upload(s[key],key);
 if(!upUrl||String(upUrl).indexOf('http')!==0)throw new Error('بارگذاری تصویر «'+key+'» روی سرور ناموفق بود؛ تنظیمات قبلی حفظ شد.');
 s[key]=upUrl;
+}
+}
+// Generate real PNG files at the exact PWA install sizes from the newly selected source image.
+// These are stored in Supabase Storage; GitHub's static icon files and the manifest stay intact.
+if(originalAppIcon&&String(originalAppIcon).indexOf('data:image/')===0){
+for(var si=0;si<2;si++){
+var iconSize=si===0?192:512;
+var iconPng=await resizeInstallIcon(originalAppIcon,iconSize);
+var iconUrl=await upload(iconPng,'appIcon'+iconSize);
+if(!iconUrl||String(iconUrl).indexOf('http')!==0)throw new Error('ساخت یا ذخیره آیکون نصب '+iconSize+'×'+iconSize ناموفق بود؛ تنظیمات قبلی حفظ شد.');
+s['appIcon'+iconSize]=iconUrl;
 }
 }
 var cloudOk=await cloudSaveAdminSetting('cafeSettings',s);
@@ -5811,7 +5839,7 @@ if(typeof showNotification==='function')showNotification('❌ '+(e.message||'ذ�
 }finally{if(b){b.disabled=false;b.textContent=oldText||'💾 ذخیره و اعمال همه تصاویر'}}
 }
 window.applyGalleryImagesToUI=function(){var s=settings();apply(s);[['headerLogo','previewHeaderLogo'],['registerLogo','previewRegisterLogo'],['splashBg','previewSplash'],['appBg','previewAppBg'],['appIcon','previewAppIcon']].forEach(function(x){var e=document.getElementById(x[1]);if(e&&s[x[0]]){e.src=s[x[0]];e.style.display='block'}})};
-window.clearGalleryImages=async function(){if(!confirm('همه تصاویر گالری از تنظیمات سرور پاک شوند؟'))return;if(!supabaseClient||typeof verifyOnlineAdmin!=='function'||!(await verifyOnlineAdmin())){if(typeof showNotification==='function')showNotification('❌ اتصال سرور یا ورود امن مدیر در دسترس نیست؛ تصاویر حذف نشدند.','error');return;}var s=settings();['headerLogo','registerLogo','splashBg','appBg','appIcon'].forEach(function(k){delete s[k]});try{var ok=await cloudSaveAdminSetting('cafeSettings',s);if(!ok)throw new Error('سرور حذف تصاویر را تأیید نکرد.');put(s);document.body.style.backgroundImage='';if(typeof applyGalleryImagesToUI==='function')applyGalleryImagesToUI();if(typeof showNotification==='function')showNotification('✅ تصاویر از تنظیمات سرور حذف شدند.');}catch(e){if(typeof showNotification==='function')showNotification('❌ تصاویر حذف نشدند؛ '+(e.message||''),'error');}};
+window.clearGalleryImages=async function(){if(!confirm('همه تصاویر گالری از تنظیمات سرور پاک شوند؟'))return;if(!supabaseClient||typeof verifyOnlineAdmin!=='function'||!(await verifyOnlineAdmin())){if(typeof showNotification==='function')showNotification('❌ اتصال سرور یا ورود امن مدیر در دسترس نیست؛ تصاویر حذف نشدند.','error');return;}var s=settings();['headerLogo','registerLogo','splashBg','appBg','appIcon','appIcon192','appIcon512'].forEach(function(k){delete s[k]});try{var ok=await cloudSaveAdminSetting('cafeSettings',s);if(!ok)throw new Error('سرور حذف تصاویر را تأیید نکرد.');put(s);document.body.style.backgroundImage='';if(typeof applyGalleryImagesToUI==='function')applyGalleryImagesToUI();if(typeof showNotification==='function')showNotification('✅ تصاویر از تنظیمات سرور حذف شدند.');}catch(e){if(typeof showNotification==='function')showNotification('❌ تصاویر حذف نشدند؛ '+(e.message||''),'error');}};
 function read(file,mb,cb){if(!file)return;if(file.size>mb*1024*1024){alert('حداکثر '+mb+' مگابایت');return}var r=new FileReader();r.onload=function(){cb(r.result)};r.readAsDataURL(file)}
 document.addEventListener('change',function(ev){var t=ev.target;if(!t||!t.id)return;var c={galleryHeaderLogo:['headerLogo','previewHeaderLogo',1.5],galleryRegisterLogo:['registerLogo','previewRegisterLogo',1.5],gallerySplash:['splashBg','previewSplash',2],galleryAppBg:['appBg','previewAppBg',2],galleryAppIcon:['appIcon','previewAppIcon',1.2]}[t.id];if(!c)return;var f=t.files&&t.files[0];if(!f)return;read(f,c[2],function(data){var s=settings();s[c[0]]=data;put(s);var p=document.getElementById(c[1]);if(p){p.src=data;p.style.display='block'}apply(s);if(typeof showNotification==='function')showNotification('🖼️ تصویر انتخاب شد؛ برای ذخیره دائمی «ذخیره و اعمال همه تصاویر» را بزنید')})});
 document.addEventListener('DOMContentLoaded',function(){try{window.applyGalleryImagesToUI()}catch(e){}});setTimeout(function(){try{window.applyGalleryImagesToUI()}catch(e){}},500);setTimeout(function(){try{window.applyGalleryImagesToUI()}catch(e){}},1500);setTimeout(function(){try{window.applyGalleryImagesToUI()}catch(e){}},3500);
