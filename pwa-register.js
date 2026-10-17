@@ -242,6 +242,29 @@
     }
   }
 
+  function clearLiveAppBackground() {
+    try {
+      document.documentElement.style.removeProperty('--app-user-bg');
+      document.body.style.removeProperty('background-image');
+      document.body.style.removeProperty('background-size');
+      document.body.style.removeProperty('background-attachment');
+      document.body.style.removeProperty('background-position');
+      var app = document.getElementById('app');
+      if (app) {
+        app.style.removeProperty('background-image');
+        app.style.removeProperty('background-size');
+        app.style.removeProperty('background-position');
+      }
+      try {
+        var settings = JSON.parse(localStorage.getItem('cafeSettings') || '{}');
+        delete settings.appBg;
+        localStorage.setItem('cafeSettings', JSON.stringify(settings));
+      } catch (e) {}
+    } catch (e) {
+      console.warn('Could not clear removed PWA background', e);
+    }
+  }
+
   async function syncLivePwaMedia(force) {
     var now = Date.now();
     if (!force && now - lastMediaSyncAt < 15000) return;
@@ -266,7 +289,12 @@
       var media = rows && rows[0] ? rows[0] : null;
       if (!media) return;
 
-      if (isPublicAppMediaUrl(media.appBg)) applyLiveAppBackground(media.appBg);
+      if (isPublicAppMediaUrl(media.appBg)) {
+        applyLiveAppBackground(media.appBg);
+      } else {
+        // An empty server value means the administrator removed the custom background.
+        clearLiveAppBackground();
+      }
       if (isPublicAppMediaUrl(media.appIcon)) {
         // Reuse the app's existing icon updater and manifest cache-buster.
         if (typeof window.applyAppIcon === 'function') {
