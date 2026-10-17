@@ -6088,6 +6088,46 @@ document.addEventListener('DOMContentLoaded',function(){try{window.applyGalleryI
     hideEl('app');
 
     if (!accepted) {
+      // Returning users can open the same origin from a different browser
+      // context where cafeUser localStorage is missing while Supabase's
+      // persisted session is still available. Verify the session/profile
+      // first; only skip the terms screen for an existing server profile.
+      try {
+        var returningClient = window.supabaseClient;
+        if (navigator.onLine !== false && returningClient && returningClient.auth) {
+          var returningSessionResult = await startupRequestTimeout(
+            returningClient.auth.getSession(), 5000, 'returning session recovery'
+          );
+          var returningSession = returningSessionResult && returningSessionResult.data && returningSessionResult.data.session;
+          if (returningSession && returningSession.user && returningSession.user.id && !returningSession.user.is_anonymous) {
+            var returningProfileResult = await startupRequestTimeout(
+              returningClient.from('profiles')
+                .select('id,name,phone,role,registered_at')
+                .eq('id', returningSession.user.id)
+                .maybeSingle(),
+              5000, 'returning profile recovery'
+            );
+            var returningProfile = returningProfileResult && returningProfileResult.data;
+            if (!returningProfileResult.error && returningProfile && returningProfile.id === returningSession.user.id) {
+              user = {
+                name: returningProfile.name || '',
+                phone: returningProfile.phone || '',
+                registeredAt: returningProfile.registered_at || '',
+                user_id: returningProfile.id,
+                role: returningProfile.role || 'user'
+              };
+              try {
+                localStorage.setItem('cafeUser', JSON.stringify(user));
+                localStorage.setItem(TERMS_KEY, '1');
+              } catch (e) {}
+              openApp(user);
+              return;
+            }
+          }
+        }
+      } catch (recoveryError) {
+        console.warn('Returning session recovery before terms gate:', recoveryError);
+      }
       hideEl('registerScreen');
       showEl('termsScreen', 'flex');
       return;
