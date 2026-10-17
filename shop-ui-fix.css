@@ -1,0 +1,44 @@
+/* KAFE MIAD — Shop welcome and featured discount visual correction.
+   Scoped to the shop page; does not alter data or application logic. */
+#pageShop #discountBanner.featured-banner {
+  background:
+    radial-gradient(ellipse at 12% 0%, rgba(157, 108, 230, .36), transparent 46%),
+    radial-gradient(ellipse at 92% 100%, rgba(246, 211, 116, .20), transparent 48%),
+    linear-gradient(118deg, rgba(88, 54, 143, .84) 0%, rgba(39, 34, 77, .78) 48%, rgba(176, 132, 43, .58) 100%) !important;
+  background-color: rgba(35, 26, 61, .72) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(145%) !important;
+  backdrop-filter: blur(18px) saturate(145%) !important;
+  border: 1px solid rgba(245, 213, 126, .88) !important;
+  box-shadow: 0 12px 30px rgba(6, 9, 24, .26), inset 0 1px 0 rgba(255,255,255,.24), 0 0 20px rgba(207, 164, 69, .13) !important;
+}
+#pageShop #discountBanner.featured-banner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(125deg, rgba(255,255,255,.13), transparent 34%, transparent 68%, rgba(255,226,153,.10));
+}
+#pageShop #discountBanner.featured-banner::after {
+  background: linear-gradient(90deg, transparent, rgba(255,245,210,.22), transparent) !important;
+}
+#pageShop #discountBanner.featured-banner,
+#pageShop #discountBanner.featured-banner .featured-banner-text,
+#pageShop #discountBanner.featured-banner .featured-banner-text span,
+#pageShop #discountBanner.featured-banner .featured-banner-text small,
+#pageShop #discountBanner.featured-banner .featured-banner-arrow {
+  color: #fff2c8 !important;
+  -webkit-text-fill-color: #fff2c8 !important;
+}
+#pageShop #discountBanner.featured-banner .featured-banner-text {
+  text-shadow: 0 1px 8px rgba(8, 5, 25, .45);
+}
+#pageShop .shop-glass-welcome {
+  margin-top: 12px !important;
+  margin-bottom: 18px !important;
+  background: linear-gradient(135deg, rgba(255,255,255,.09), rgba(226,190,91,.07)) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(125%);
+  backdrop-filter: blur(16px) saturate(125%);
+  border: 1px solid rgba(245,213,126,.36) !important;
+  box-shadow: 0 12px 28px rgba(0,0,0,.16), inset 0 1px rgba(255,255,255,.10);
+}
