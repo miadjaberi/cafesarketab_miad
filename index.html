@@ -1796,37 +1796,111 @@
 
     </div>
 
-    <!-- ===== MODAL: سن ازدواج ===== -->
+    <!-- ===== MODAL: سن ازدواج — نتیجه سه سن احتمالی ===== -->
 <div class="modal-glass" id="marriageAgeModal">
   <div class="modal-glass-content">
     <div class="modal-glass-header">
       <div class="modal-glass-logo">💍</div>
-      <div class="modal-glass-title">سن ازدواج</div>
-      <button class="modal-glass-close" onclick="closeModalGlass('marriageAgeModal')">✕</button>
+      <div class="modal-glass-title">سن ازدواج در آینهٔ اعداد</div>
+      <button class="modal-glass-close" type="button" onclick="closeModalGlass('marriageAgeModal')" aria-label="بستن">✕</button>
     </div>
-    <div class="modal-glass-body">
-      <div class="modal-guide"><i class="fas fa-info-circle"></i> تاریخ تولد را وارد کنید. محاسبه در پس‌زمینه انجام می‌شود و نتیجه در سه عدد نمایش داده خواهد شد. این ابزار صرفاً راهنمای تقریبی است.</div>
-      <div class="marriage-date-grid-v55">
-        <div class="input-group"><label>📅 روز تولد</label><input type="number" id="birthDay" min="1" max="31" inputmode="numeric" placeholder="روز"></div>
-        <div class="input-group"><label>🗓️ ماه تولد</label><input type="number" id="birthMonth" min="1" max="12" inputmode="numeric" placeholder="ماه"></div>
-        <div class="input-group"><label>📆 سال تولد</label><input type="number" id="birthYear" min="1200" max="1450" inputmode="numeric" placeholder="مثلاً 1362"></div>
-      </div>
-      <button class="btn" type="button" onclick="calculateMarriageAge()">💍 محاسبه سن ازدواج</button>
-      <div class="marriage-three-result-v55" id="marriageThreeResult" style="display:none;margin-top:14px;padding:16px;border-radius:14px;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.35);text-align:center;">
-        <div class="marriage-three-label" style="font-weight:800;color:#F0D878;margin-bottom:8px;">نتیجه محاسبه</div>
-        <div class="marriage-three-numbers" style="font-size:1.6rem;font-weight:800;color:#F5F0E4;letter-spacing:2px;">
-          <span id="marriageOutYears">۰</span><span class="sep"> • </span><span id="marriageOutMonths">۰</span><span class="sep"> • </span><span id="marriageOutDays">۰</span>
+    <div class="modal-glass-body marriage-age-modal-v2">
+      <p class="marriage-age-subtitle">تاریخ تولد را وارد کنید تا سه سن احتمالی بر پایهٔ روش عددی این ابزار نمایش داده شود.</p>
+      <div class="marriage-age-card-v2">
+        <div class="marriage-age-fields-v2">
+          <div class="marriage-age-field-v2"><label for="marriageDayV2">روز تولد</label><input type="number" id="marriageDayV2" min="1" max="31" inputmode="numeric" placeholder="۵"></div>
+          <div class="marriage-age-field-v2"><label for="marriageMonthV2">ماه تولد</label><input type="number" id="marriageMonthV2" min="1" max="12" inputmode="numeric" placeholder="۸"></div>
+          <div class="marriage-age-field-v2"><label for="marriageYearV2">سال تولد</label><input type="number" id="marriageYearV2" min="1200" max="1450" inputmode="numeric" placeholder="۱۳۷۳"></div>
         </div>
-        <div class="marriage-three-caption" style="margin-top:6px;opacity:0.8;">سال • ماه • روز (شاخص تقریبی)</div>
+        <button class="btn marriage-age-calc-v2" type="button" id="marriageCalcBtnV2">💍 محاسبه سن ازدواج</button>
+        <div class="marriage-age-error-v2" id="marriageErrorV2" role="alert" aria-live="polite"></div>
       </div>
-      <div class="result-box" id="marriageAgeResult" style="display:none;margin-top:12px;">
-        <div class="result-value" id="marriageAgeValue"></div>
-        <div class="result-description" id="marriageAgeDescription"></div>
-        <div class="result-description" id="marriageAgeAdvice" style="margin-top:10px;padding:12px;background:rgba(201,168,76,0.1);border-radius:8px;"></div>
+      <div class="marriage-age-result-v2" id="marriageResultV2" style="display:none" aria-live="polite">
+        <div class="marriage-age-result-title-v2">سه نقطهٔ روشن در مسیر عمر</div>
+        <div class="marriage-age-constellation-v2" id="marriageConstellationV2"></div>
+        <div class="marriage-age-disclaimer-v2">
+          <p>این اعداد صرفاً نتیجهٔ یک روش عددی سنتی هستند و پیش‌بینی قطعی زمان ازدواج نیستند. علم و قطعیت نزد خداوند است؛ الله اعلم بالصواب.</p>
+          <p class="marriage-age-invite-v2">می‌توانید این روش را در جمع خانواده و دوستان نیز امتحان کنید ✦</p>
+        </div>
       </div>
     </div>
   </div>
 </div>
+<style>
+.marriage-age-modal-v2{color:#ede4d3}
+.marriage-age-subtitle{margin:0 0 16px;text-align:center;line-height:1.9;color:#cfc3a5;font-size:13px}
+.marriage-age-card-v2{padding:18px;border:1px solid rgba(201,162,39,.28);border-radius:16px;background:linear-gradient(180deg,rgba(237,228,211,.06),rgba(237,228,211,.02));}
+.marriage-age-fields-v2{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.marriage-age-field-v2{display:flex;min-width:0;flex-direction:column;gap:7px}
+.marriage-age-field-v2 label{font-size:12px;color:#e8c65a}
+.marriage-age-field-v2 input{width:100%;min-width:0;box-sizing:border-box;background:rgba(13,10,28,.72);border:1px solid rgba(201,162,39,.3);border-radius:10px;color:#ede4d3;font:600 17px 'Vazirmatn',sans-serif;text-align:center;padding:12px 4px}
+.marriage-age-field-v2 input:focus{outline:2px solid rgba(232,198,90,.65);outline-offset:1px}
+.marriage-age-calc-v2{width:100%;margin-top:15px}
+.marriage-age-error-v2{min-height:20px;margin-top:8px;text-align:center;color:#ff9292;font-size:12px}
+.marriage-age-result-v2{margin-top:22px;padding:16px;border:1px solid rgba(201,162,39,.3);border-radius:16px;background:linear-gradient(180deg,rgba(107,30,63,.2),rgba(74,58,107,.18))}
+.marriage-age-result-v2.show{display:block!important;animation:marriageAgeFadeUpV2 .45s ease}
+.marriage-age-result-title-v2{text-align:center;font-size:13px;color:#cfc3a5;margin-bottom:15px}
+.marriage-age-constellation-v2{display:flex;justify-content:center;align-items:flex-end;gap:clamp(10px,4vw,22px);padding:8px 0 22px}
+.marriage-age-star-v2{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0}
+.marriage-age-star-v2 .dot{width:13px;height:13px;border-radius:50%;background:#4a3a6b;border:1px solid rgba(201,162,39,.4)}
+.marriage-age-star-v2.peak .dot{width:19px;height:19px;background:#e8c65a;box-shadow:0 0 18px rgba(232,198,90,.65)}
+.marriage-age-star-v2 .age{font-size:clamp(24px,7vw,31px);font-weight:800;color:#cfc3a5}
+.marriage-age-star-v2.peak .age{font-size:clamp(34px,9vw,43px);color:#e8c65a}
+.marriage-age-star-v2 .label{font-size:11px;color:#cfc3a5}
+.marriage-age-disclaimer-v2{padding:14px;border:1px solid rgba(201,162,39,.18);border-radius:12px;background:rgba(13,10,28,.48);text-align:center;font-size:12px;line-height:2;color:#cfc3a5}
+.marriage-age-disclaimer-v2 p{margin:0 0 8px}.marriage-age-disclaimer-v2 p:last-child{margin-bottom:0}
+.marriage-age-invite-v2{color:#e8c65a;font-weight:700}
+@keyframes marriageAgeFadeUpV2{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:380px){.marriage-age-card-v2{padding:12px}.marriage-age-fields-v2{gap:6px}.marriage-age-field-v2 label{font-size:11px}.marriage-age-field-v2 input{font-size:15px;padding:11px 2px}}
+</style>
+<script>
+(function(){
+  var digitsFa='۰۱۲۳۴۵۶۷۸۹';
+  function toFa(n){return String(n).replace(/[0-9]/g,function(d){return digitsFa[Number(d)]});}
+  function calculateMarriageAgeV2(){
+    var dayEl=document.getElementById('marriageDayV2');
+    var monthEl=document.getElementById('marriageMonthV2');
+    var yearEl=document.getElementById('marriageYearV2');
+    var errorEl=document.getElementById('marriageErrorV2');
+    var boxEl=document.getElementById('marriageResultV2');
+    var constellationEl=document.getElementById('marriageConstellationV2');
+    if(!dayEl||!monthEl||!yearEl||!errorEl||!boxEl||!constellationEl)return;
+    var day=parseInt(dayEl.value,10),month=parseInt(monthEl.value,10),year=parseInt(yearEl.value,10);
+    errorEl.textContent='';
+    boxEl.classList.remove('show');
+    boxEl.style.display='none';
+    if(!Number.isInteger(day)||!Number.isInteger(month)||!Number.isInteger(year)||day<1||day>31||month<1||month>12||year<1200||year>1450){
+      errorEl.textContent='لطفاً روز (۱ تا ۳۱)، ماه (۱ تا ۱۲) و سال (۱۲۰۰ تا ۱۴۵۰) را درست وارد کنید.';
+      return;
+    }
+    var dm=String(day).padStart(2,'0')+String(month).padStart(2,'0');
+    var product=parseInt(dm,10)*year;
+    var digits=String(product).split('').map(Number);
+    var maxDigit=Math.max.apply(null,digits);
+    var primaryIndex=digits.indexOf(maxDigit);
+    var ages=[17+primaryIndex,25+primaryIndex,33+primaryIndex];
+    var labels=['نخست','دوم','سوم'];
+    constellationEl.textContent='';
+    ages.forEach(function(age,i){
+      var point=document.createElement('div');
+      point.className='marriage-age-star-v2'+(i===0?' peak':'');
+      var ageEl=document.createElement('div');ageEl.className='age';ageEl.textContent=toFa(age);
+      var dot=document.createElement('div');dot.className='dot';
+      var labelEl=document.createElement('div');labelEl.className='label';labelEl.textContent=labels[i];
+      point.appendChild(ageEl);point.appendChild(dot);point.appendChild(labelEl);constellationEl.appendChild(point);
+    });
+    boxEl.style.display='block';
+    requestAnimationFrame(function(){boxEl.classList.add('show');});
+    try{if(typeof window.v8ServerFirstSave==='function')window.v8ServerFirstSave('marriage_age',{day:day,month:month,year:year,product:product,primaryIndex:primaryIndex,ages:ages});}catch(e){}
+  }
+  function init(){
+    var btn=document.getElementById('marriageCalcBtnV2');
+    if(btn&&!btn.dataset.marriageAgeBound){btn.dataset.marriageAgeBound='1';btn.addEventListener('click',calculateMarriageAgeV2);}
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+  window.calculateMarriageAgeV2=calculateMarriageAgeV2;
+})();
+</script>
 <!-- ===== MODAL: در حال توسعه ===== -->
 
         <!-- ===== ابزارهای کمکی ===== -->
