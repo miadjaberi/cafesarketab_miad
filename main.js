@@ -1012,7 +1012,7 @@
                 var safeImg = esc(p.image || '📦');
                 var safeUrl = esc(p.imageUrl || '');
                 if (p.imageUrl) {
-                    media = '<div class="product-img-wrap"><img class="product-img" src="' + safeUrl + '" alt="" loading="lazy" onerror="this.onerror=null;this.style.display=\\'none\\';if(this.nextElementSibling){this.nextElementSibling.style.display=\\'flex\\';}"><div class="product-icon product-image-fallback" style="display:none">' + safeImg + '</div></div>';
+                    media = '<div class="product-img-wrap"><img class="product-img" src="' + safeUrl + '" alt="" loading="lazy" onerror="this.onerror=null;this.style.display=\'none\';if(this.nextElementSibling){this.nextElementSibling.style.display=\'flex\';}"><div class="product-icon product-image-fallback" style="display:none">' + safeImg + '</div></div>';
                 } else {
                     media = '<div class="product-img-wrap"><div class="product-icon">' + safeImg + '</div></div>';
                 }
