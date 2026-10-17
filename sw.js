@@ -1,6 +1,6 @@
 /* کافه سرکتاب میعاد — نسخهٔ پوستهٔ استاتیک.
    داده‌های سوپابیس کش نمی‌شوند؛ عملیات خرید و حساب باید با تأیید سرور انجام شوند. */
-const CACHE_VERSION = 'kafe-miad-v700.7-online-3';
+const CACHE_VERSION = 'kafe-miad-v700.7-pwa-media-1';
 const SHELL_CACHE = 'shell-' + CACHE_VERSION;
 
 const PRECACHE_URLS = [
