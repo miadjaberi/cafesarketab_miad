@@ -5429,8 +5429,8 @@ async function submitProductOrder() {
                     'error: ' + (e && e.error || '—'),
                     'details: ' + (e && e.details || '—'),
                     'hint: ' + (e && e.hint || '—')
-                ].join('\\n');
-                var uploadErrorMessage = '❌ آپلود تصویر ناموفق بود\\n' + uploadErrorDetails;
+                ].join('\n');
+                var uploadErrorMessage = '❌ آپلود تصویر ناموفق بود\n' + uploadErrorDetails;
                 if (typeof showNotification === 'function') {
                     showNotification('❌ آپلود تصویر محصول ناموفق بود؛ جزئیات خطا را در پنجره ببینید', 'error');
                 }
