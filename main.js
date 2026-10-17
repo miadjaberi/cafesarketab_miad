@@ -5754,7 +5754,7 @@ async function submitProductOrder() {
     }
   };
 
-  refreshOnlineData().catch(function(e){ console.warn('online sync', e); });
+  // Initial product sync is owned by the single DOMContentLoaded startup path below.
   console.log('✅ Kafe Miad Stage 2 online connection loaded');
 })();
 
