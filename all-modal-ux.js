@@ -32,7 +32,7 @@
     if (document.getElementById(STYLE_ID)) return;
     var style = document.createElement('style');
     style.id = STYLE_ID;
-    style.textContent = '.km-modal-ux-guide{margin:0 0 12px;padding:15px 16px;border:1px solid rgba(255,221,110,.48);border-radius:16px;background:rgba(255,255,255,.12);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 8px 24px rgba(0,0,0,.08);color:#FFF9E8!important;font:600 14px/2 Vazirmatn,Tahoma,sans-serif;text-shadow:none;opacity:1}.km-modal-ux-guide *{color:#FFF9E8!important;opacity:1;text-shadow:none}.km-modal-ux-guide strong,.km-modal-ux-guide b{color:#FFE27A!important;font-weight:800}.km-modal-ux-actions{display:flex;justify-content:flex-start;margin:10px 0 14px}.km-modal-ux-reset{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:42px;padding:9px 14px;border:1px solid rgba(255,215,0,.25);border-radius:12px;background:rgba(255,255,255,.055);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:var(--txt-title,#F0D878);font:700 13px/1.6 Vazirmatn,Tahoma,sans-serif;cursor:pointer;touch-action:manipulation}.km-modal-ux-reset:active{transform:scale(.98)}.km-modal-ux-reset:focus-visible{outline:2px solid #e8c65a;outline-offset:2px}@media(max-width:420px){.km-modal-ux-actions{width:100%}.km-modal-ux-reset{width:100%}}';
+    style.textContent = '.km-modal-ux-guide{margin:0 0 12px;padding:24px 20px;border:1px solid rgba(255,215,0,.15);border-radius:16px;background:rgba(255,255,255,.05);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:none;color:var(--txt-body,#F5F0E4)!important;font:500 14px/1.95 Vazirmatn,Tahoma,sans-serif;text-align:justify;text-shadow:none;opacity:1}.km-modal-ux-guide *{color:var(--txt-body,#F5F0E4)!important;opacity:1;text-shadow:none}.km-modal-ux-guide strong,.km-modal-ux-guide b{color:var(--txt-title,#F0D878)!important;font-weight:800}.km-modal-ux-actions{display:flex;justify-content:flex-start;margin:10px 0 14px}.km-modal-ux-reset{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:42px;padding:9px 14px;border:1px solid rgba(255,215,0,.25);border-radius:12px;background:rgba(255,255,255,.055);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:var(--txt-title,#F0D878);font:700 13px/1.6 Vazirmatn,Tahoma,sans-serif;cursor:pointer;touch-action:manipulation}.km-modal-ux-reset:active{transform:scale(.98)}.km-modal-ux-reset:focus-visible{outline:2px solid #e8c65a;outline-offset:2px}@media(max-width:420px){.km-modal-ux-actions{width:100%}.km-modal-ux-reset{width:100%}}';
     document.head.appendChild(style);
   }
   function clearResultNodes(modal) {
@@ -84,7 +84,16 @@
         var guide = document.createElement('div');
         guide.className = 'km-modal-ux-guide';
         guide.setAttribute('role', 'note');
-        guide.textContent = guideFor(modal);
+        var guideText = guideFor(modal);
+        guide.textContent = '';
+        if (guideText.indexOf('راهنما:') === 0) {
+          var lead = document.createElement('strong');
+          lead.textContent = 'راهنما:';
+          guide.appendChild(lead);
+          guide.appendChild(document.createTextNode(guideText.slice('راهنما:'.length)));
+        } else {
+          guide.textContent = guideText;
+        }
         var header = body.querySelector('.modal-guide');
         if (header && header.parentNode === body) header.insertAdjacentElement('afterend', guide);
         else body.insertBefore(guide, body.firstChild);
