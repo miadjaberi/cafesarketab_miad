@@ -4,7 +4,7 @@
 (function () {
   'use strict';
   var STYLE_ID = 'km-modal-ux-style';
-  var EXCLUDED = { productDetailModal: true, developingModal: true };
+  var EXCLUDED = { developingModal: true };
   var GUIDE_COPY = [
     { test: /سن ازدواج|عاقبت ازدواج|محبت|ستاره چین|ازدواج/i, text: 'راهنما: اطلاعات خواسته‌شده را کامل وارد کنید و دکمه محاسبه را بزنید. نتیجه را به‌عنوان برداشت احتمالی بخوانید، نه پیش‌بینی قطعی.' },
     { test: /رمل|دلیل الحیران|سبب القادم|همزاد|مکاشفه|موکل|طلسم|وفق/i, text: 'راهنما: فیلدهای همین بخش را به‌ترتیب تکمیل کنید، سؤال یا گزینهٔ مناسب را انتخاب کنید و سپس دکمهٔ محاسبه/استخراج را بزنید. برای نتیجهٔ تازه از «پاک کردن و شروع دوباره» استفاده کنید.' },
@@ -52,7 +52,7 @@
   }
   function resetModal(modal) {
     modal.querySelectorAll('input,textarea,select').forEach(function (field) {
-      if (field.disabled || field.dataset.keepOnModalReset === 'true') return;
+      if (field.disabled || field.dataset.keepOnModalReset === 'true' || field.id === 'orderProductName') return;
       var type = (field.type || '').toLowerCase();
       if (type === 'button' || type === 'submit' || type === 'reset') return;
       if (type === 'checkbox' || type === 'radio') field.checked = false;
