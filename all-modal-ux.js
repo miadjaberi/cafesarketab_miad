@@ -35,6 +35,31 @@
     style.textContent = '.km-modal-ux-guide{margin:0 0 12px;padding:24px 20px;border:1px solid rgba(255,215,0,.15);border-radius:16px;background:rgba(255,255,255,.05);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:none;color:var(--txt-body,#F5F0E4)!important;font:500 14px/1.95 Vazirmatn,Tahoma,sans-serif;text-align:justify;text-shadow:none;opacity:1}.km-modal-ux-guide *{color:var(--txt-body,#F5F0E4)!important;opacity:1;text-shadow:none}.km-modal-ux-guide strong,.km-modal-ux-guide b{color:var(--txt-title,#F0D878)!important;font-weight:800}.km-modal-ux-actions{display:flex;justify-content:flex-start;margin:10px 0 14px}.km-modal-ux-reset{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:42px;padding:9px 14px;border:1px solid rgba(255,215,0,.25);border-radius:12px;background:rgba(255,255,255,.055);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:var(--txt-title,#F0D878);font:700 13px/1.6 Vazirmatn,Tahoma,sans-serif;cursor:pointer;touch-action:manipulation}.km-modal-ux-reset:active{transform:scale(.98)}.km-modal-ux-reset:focus-visible{outline:2px solid #e8c65a;outline-offset:2px}@media(max-width:420px){.km-modal-ux-actions{width:100%}.km-modal-ux-reset{width:100%}}';
     document.head.appendChild(style);
   }
+  function applyWelcomeGlass(guide) {
+    var styles = {
+      'display':'block','box-sizing':'border-box','width':'100%',
+      'margin':'0 0 12px','padding':'24px 20px',
+      'background':'rgba(255,255,255,0.05)','backdrop-filter':'blur(12px)',
+      '-webkit-backdrop-filter':'blur(12px)',
+      'border':'1px solid rgba(255,215,0,0.15)','border-radius':'16px',
+      'text-align':'justify','color':'#F5F0E4',
+      'font-family':'Vazirmatn,Tahoma,sans-serif','font-size':'14px',
+      'font-weight':'500','line-height':'1.95','opacity':'1','text-shadow':'none'
+    };
+    Object.keys(styles).forEach(function (key) {
+      guide.style.setProperty(key, styles[key], 'important');
+    });
+    guide.querySelectorAll('*').forEach(function (node) {
+      node.style.setProperty('opacity','1','important');
+      node.style.setProperty('text-shadow','none','important');
+      if (node.tagName === 'STRONG' || node.tagName === 'B') {
+        node.style.setProperty('color','#F0D878','important');
+        node.style.setProperty('font-weight','800','important');
+      } else {
+        node.style.setProperty('color','#F5F0E4','important');
+      }
+    });
+  }
   function clearResultNodes(modal) {
     var selectors = '.result-box,.modal-result,.calculation-result,.result-container,[id$="Result"],[id$="result"],[id*="Output"],[id*="output"]';
     modal.querySelectorAll(selectors).forEach(function (node) {
@@ -94,6 +119,7 @@
         } else {
           guide.textContent = guideText;
         }
+        applyWelcomeGlass(guide);
         var header = body.querySelector('.modal-guide');
         if (header && header.parentNode === body) header.insertAdjacentElement('afterend', guide);
         else body.insertBefore(guide, body.firstChild);
