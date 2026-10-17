@@ -7,6 +7,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=5.0, viewport-fit=cover" />
     <title>کافه سرکتاب میعاد — V700.7</title>
     <meta name="description" content="کافه سرکتاب میعاد — آموزش، محتوا و فروش محصولات علوم حروف، ابجد، رمل و مشاوره تخصصی">
+    <!-- TEMPORARY DEBUG OVERLAY: branch-only; remove after mobile diagnosis. -->
+    <script>
+    (function () {
+      "use strict";
+      var box;
+      function showDebugError(kind, message, source, line, column, stack) {
+        try {
+          if (!box) {
+            box = document.createElement("section");
+            box.id = "km-mobile-debug-errors";
+            box.setAttribute("role", "alert");
+            box.style.cssText = "position:fixed;top:0;left:0;right:0;z-index:2147483647;max-height:48vh;overflow:auto;background:#8b0000;color:#fff;border:2px solid #ffb4b4;border-radius:0 0 10px 10px;padding:12px;direction:rtl;text-align:right;font:13px/1.6 monospace;box-shadow:0 4px 18px #0008;white-space:pre-wrap;overflow-wrap:anywhere";
+            var head = document.createElement("div");
+            head.style.cssText = "display:flex;align-items:center;justify-content:space-between;gap:12px;font:bold 15px sans-serif;margin-bottom:8px";
+            head.appendChild(document.createTextNode("حالت عیب‌یابی — خطای جاوااسکریپت"));
+            var close = document.createElement("button");
+            close.type = "button";
+            close.textContent = "بستن";
+            close.style.cssText = "background:#fff;color:#700;border:0;border-radius:6px;padding:5px 10px;font-weight:bold";
+            close.onclick = function () { box.style.display = "none"; };
+            head.appendChild(close);
+            box.appendChild(head);
+            (document.body || document.documentElement).appendChild(box);
+          }
+          box.style.display = "block";
+          var entry = document.createElement("pre");
+          entry.style.cssText = "margin:8px 0 0;padding:8px;border-top:1px solid #ffffff66;font:inherit;white-space:pre-wrap;overflow-wrap:anywhere";
+          entry.textContent = "[" + kind + "] " + String(message || "خطای نامشخص") +
+            (source ? "\\nفایل: " + source : "") +
+            (line ? "\\nخط: " + line + (column ? ":" + column : "") : "") +
+            (stack ? "\\n" + String(stack) : "");
+          box.appendChild(entry);
+        } catch (_) {}
+      }
+      window.addEventListener("error", function (event) {
+        showDebugError("Error", event.message || (event.target && (event.target.src || event.target.href)) || "خطای بارگذاری اسکریپت", event.filename || "", event.lineno || 0, event.colno || 0, event.error && event.error.stack);
+      }, true);
+      window.addEventListener("unhandledrejection", function (event) {
+        var reason = event.reason;
+        showDebugError("Unhandled Promise Rejection", reason && (reason.stack || reason.message) || String(reason || "رد شدن Promise بدون مدیریت"), "", 0, 0, "");
+      });
+    })();
+    </script>
     <meta name="theme-color" content="#070B14">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
