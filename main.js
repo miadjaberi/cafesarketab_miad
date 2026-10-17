@@ -5422,9 +5422,19 @@ async function submitProductOrder() {
                 return url;
             } catch(e) {
                 console.warn('uploadProductDataUrl',e);
+                var uploadErrorDetails = [
+                    'HTTP: ' + (e && (e.statusCode || e.status || (e.context && e.context.status)) || 'نامشخص'),
+                    'name: ' + (e && e.name || 'نامشخص'),
+                    'message: ' + (e && e.message || String(e || 'خطای نامشخص')),
+                    'error: ' + (e && e.error || '—'),
+                    'details: ' + (e && e.details || '—'),
+                    'hint: ' + (e && e.hint || '—')
+                ].join('\\n');
+                var uploadErrorMessage = '❌ آپلود تصویر ناموفق بود\\n' + uploadErrorDetails;
                 if (typeof showNotification === 'function') {
-                    showNotification('❌ آپلود تصویر محصول ناموفق بود. باکت public-assets یا دسترسی Storage را چک کنید', 'error');
+                    showNotification('❌ آپلود تصویر محصول ناموفق بود؛ جزئیات خطا را در پنجره ببینید', 'error');
                 }
+                if (typeof alert === 'function') alert(uploadErrorMessage);
                 return null;
             }
         }
