@@ -1796,37 +1796,36 @@
 
     </div>
 
-    <!-- ===== MODAL: سن ازدواج ===== -->
+    <!-- ===== MODAL: سن ازدواج — integrated constellation calculator ===== -->
 <div class="modal-glass" id="marriageAgeModal">
   <div class="modal-glass-content">
-    <div class="modal-glass-header">
-      <div class="modal-glass-logo">💍</div>
-      <div class="modal-glass-title">سن ازدواج</div>
-      <button class="modal-glass-close" onclick="closeModalGlass('marriageAgeModal')">✕</button>
-    </div>
-    <div class="modal-glass-body">
-      <div class="modal-guide"><i class="fas fa-info-circle"></i> تاریخ تولد را وارد کنید. محاسبه در پس‌زمینه انجام می‌شود و نتیجه در سه عدد نمایش داده خواهد شد. این ابزار صرفاً راهنمای تقریبی است.</div>
-      <div class="marriage-date-grid-v55">
-        <div class="input-group"><label>📅 روز تولد</label><input type="number" id="birthDay" min="1" max="31" inputmode="numeric" placeholder="روز"></div>
-        <div class="input-group"><label>🗓️ ماه تولد</label><input type="number" id="birthMonth" min="1" max="12" inputmode="numeric" placeholder="ماه"></div>
-        <div class="input-group"><label>📆 سال تولد</label><input type="number" id="birthYear" min="1200" max="1450" inputmode="numeric" placeholder="مثلاً 1362"></div>
-      </div>
-      <button class="btn" type="button" onclick="calculateMarriageAge()">💍 محاسبه سن ازدواج</button>
-      <div class="marriage-three-result-v55" id="marriageThreeResult" style="display:none;margin-top:14px;padding:16px;border-radius:14px;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.35);text-align:center;">
-        <div class="marriage-three-label" style="font-weight:800;color:#F0D878;margin-bottom:8px;">نتیجه محاسبه</div>
-        <div class="marriage-three-numbers" style="font-size:1.6rem;font-weight:800;color:#F5F0E4;letter-spacing:2px;">
-          <span id="marriageOutYears">۰</span><span class="sep"> • </span><span id="marriageOutMonths">۰</span><span class="sep"> • </span><span id="marriageOutDays">۰</span>
-        </div>
-        <div class="marriage-three-caption" style="margin-top:6px;opacity:0.8;">سال • ماه • روز (شاخص تقریبی)</div>
-      </div>
-      <div class="result-box" id="marriageAgeResult" style="display:none;margin-top:12px;">
-        <div class="result-value" id="marriageAgeValue"></div>
-        <div class="result-description" id="marriageAgeDescription"></div>
-        <div class="result-description" id="marriageAgeAdvice" style="margin-top:10px;padding:12px;background:rgba(201,168,76,0.1);border-radius:8px;"></div>
-      </div>
+    <div class="modal-glass-header"><div class="modal-glass-logo">💍</div><div class="modal-glass-title">سن ازدواج در آینهٔ اعداد</div><button class="modal-glass-close" type="button" onclick="closeModalGlass('marriageAgeModal')" aria-label="بستن">✕</button></div>
+    <div class="modal-glass-body km-marriage-age">
+      <div class="km-ma-intro">تاریخ تولد را وارد کنید تا سه سنِ احتمالی طبق روش عددی این ابزار نمایش داده شود. این محاسبه صرفاً جنبهٔ سرگرمی و راهنمای تقریبی دارد.</div>
+      <div class="km-ma-card"><div class="km-ma-field-row">
+        <div class="km-ma-field"><label for="kmMarriageDay">روز تولد</label><input type="number" id="kmMarriageDay" min="1" max="31" inputmode="numeric" placeholder="مثلاً ۵"></div>
+        <div class="km-ma-field"><label for="kmMarriageMonth">ماه تولد</label><input type="number" id="kmMarriageMonth" min="1" max="12" inputmode="numeric" placeholder="مثلاً ۸"></div>
+        <div class="km-ma-field"><label for="kmMarriageYear">سال تولد</label><input type="number" id="kmMarriageYear" min="1200" max="1450" inputmode="numeric" placeholder="مثلاً ۱۳۷۳"></div>
+      </div><button class="btn km-ma-calc" type="button" id="kmMarriageCalcBtn">💍 آشکار کن</button><div class="km-ma-error" id="kmMarriageError" role="alert" aria-live="polite"></div></div>
+      <div class="km-ma-result" id="kmMarriageResult" style="display:none" aria-live="polite"><div class="km-ma-result-title">سه نقطهٔ روشن در مسیر عمر</div><div class="km-ma-constellation" id="kmMarriageConstellation"></div><div class="km-ma-disclaimer"><p>سن ازدواج در این روش یکی از سه عدد پیشنهادی در نظر گرفته می‌شود؛ این محاسبه پیش‌بینی قطعی نیست و آینده تنها در دست خداوند است، الله اعلم بالصواب. اگر با تجربهٔ واقعی مطابقت نداشت، جای نگرانی نیست.</p><p class="km-ma-invite">می‌توانید این روش را برای مقایسهٔ دوستان و خانواده نیز امتحان کنید ✦</p></div></div>
     </div>
   </div>
 </div>
+<style>
+.km-marriage-age{direction:rtl;color:#ede4d3}.km-ma-intro{font-size:13px;line-height:1.9;color:var(--parchment-dim,#cfc3a5);margin-bottom:14px}
+.km-ma-card{background:linear-gradient(180deg,rgba(237,228,211,.06),rgba(237,228,211,.025));border:1px solid rgba(201,162,39,.3);border-radius:16px;padding:18px 14px;box-shadow:0 12px 35px rgba(0,0,0,.22)}
+.km-ma-field-row{display:flex;gap:9px;margin-bottom:14px}.km-ma-field{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}.km-ma-field label{font-size:12px;color:#e8c65a}
+.km-ma-field input{width:100%;min-width:0;background:rgba(13,10,28,.7);border:1px solid rgba(201,162,39,.3);border-radius:10px;color:#ede4d3;font-family:inherit;font-size:17px;font-weight:700;text-align:center;padding:11px 5px;box-sizing:border-box;-moz-appearance:textfield}
+.km-ma-field input::-webkit-outer-spin-button,.km-ma-field input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}.km-ma-field input:focus{outline:none;border-color:#e8c65a;box-shadow:0 0 0 3px rgba(201,162,39,.15)}
+.km-ma-calc{width:100%;margin-top:2px}.km-ma-error{color:#ff9292;font-size:13px;text-align:center;min-height:20px;margin-top:8px}
+.km-ma-result{display:none;margin-top:20px}.km-ma-result.show{display:block!important;animation:kmMarriageFadeUp .45s ease}
+@keyframes kmMarriageFadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.km-ma-result-title{text-align:center;font-size:13px;color:#cfc3a5;margin-bottom:12px}.km-ma-constellation{display:flex;justify-content:center;align-items:flex-end;gap:clamp(10px,4vw,22px);padding:8px 0 22px}
+.km-ma-star-point{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0}.km-ma-star-point .km-ma-dot{width:13px;height:13px;border-radius:50%;background:#4a3a6b;border:1px solid rgba(201,162,39,.4)}
+.km-ma-star-point.peak .km-ma-dot{width:19px;height:19px;background:#e8c65a;box-shadow:0 0 18px rgba(232,198,90,.65)}.km-ma-star-point .km-ma-age{font-size:29px;font-weight:900;color:#cfc3a5}.km-ma-star-point.peak .km-ma-age{font-size:40px;color:#e8c65a;text-shadow:0 0 16px rgba(232,198,90,.25)}
+.km-ma-star-point .km-ma-label{font-size:11px;color:#cfc3a5;opacity:.8}.km-ma-disclaimer{background:rgba(13,10,28,.48);border:1px solid rgba(201,162,39,.25);border-radius:12px;padding:15px;font-size:12.5px;line-height:2;color:#cfc3a5;text-align:center}.km-ma-disclaimer p{margin:0 0 10px}.km-ma-disclaimer p:last-child{margin-bottom:0}.km-ma-invite{color:#e8c65a;font-weight:700}
+@media(max-width:380px){.km-ma-field-row{gap:6px}.km-ma-field input{font-size:15px}.km-ma-star-point .km-ma-age{font-size:24px}.km-ma-star-point.peak .km-ma-age{font-size:34px}}
+</style>
 <!-- ===== MODAL: در حال توسعه ===== -->
 
         <!-- ===== ابزارهای کمکی ===== -->
