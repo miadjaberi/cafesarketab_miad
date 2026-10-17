@@ -1969,6 +1969,32 @@
 
     <!-- Startup visibility is controlled by main.js bootGate; duplicate inline gate removed to prevent screen races. -->
     <script src="./data.js"></script>
+    <!-- Independent terms fallback: never grants app access; if main.js failed, sends user to server-validated registration. -->
+    <script>
+    (function () {
+      'use strict';
+      document.addEventListener('click', function (event) {
+        var button = event.target && event.target.closest && event.target.closest('.terms-agree-btn');
+        if (!button) return;
+        if (typeof window.acceptTermsAndContinue === 'function') return;
+        event.preventDefault();
+        event.stopPropagation();
+        try { localStorage.setItem('kafeTermsAccepted', '1'); } catch (e) {}
+        var terms = document.getElementById('termsScreen');
+        var splash = document.getElementById('splashScreen');
+        var app = document.getElementById('app');
+        var register = document.getElementById('registerScreen');
+        if (terms) { terms.style.display = 'none'; terms.classList.add('hidden'); }
+        if (splash) { splash.style.display = 'none'; splash.classList.add('hidden'); }
+        if (app) { app.style.display = 'none'; app.classList.add('hidden'); }
+        if (register) { register.classList.remove('hidden'); register.style.display = 'flex'; }
+        if (window.location.search.indexOf('debug=1') !== -1) {
+          var panel = document.getElementById('km-mobile-debug-errors-body');
+          if (panel) { var line = document.createElement('div'); line.textContent = 'Independent terms fallback used: main.js terms handler unavailable; app access remains blocked pending server-validated registration.'; panel.appendChild(line); }
+        }
+      }, true);
+    })();
+    </script>
     <script src="./main.js?v=20261017-syntaxfix-3"></script>
     <script src="./tools-extra.js"></script>
     <script src="./app.js"></script>
