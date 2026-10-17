@@ -1,6 +1,6 @@
 /* کافه سرکتاب میعاد — نسخهٔ پوستهٔ استاتیک.
    داده‌های سوپابیس کش نمی‌شوند؛ عملیات خرید و حساب باید با تأیید سرور انجام شوند. */
-const CACHE_VERSION = 'kafe-miad-v700.7-syntaxfix-2';
+const CACHE_VERSION = 'kafe-miad-v700.7-imagefallback-fa-1';
 const SHELL_CACHE = 'shell-' + CACHE_VERSION;
 
 const PRECACHE_URLS = [
@@ -33,7 +33,7 @@ const PRECACHE_URLS = [
 ];
 
 const CDN_URLS = [
-  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css',
+  'https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.0/css/all.min.css',
   'https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css',
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'
 ];
