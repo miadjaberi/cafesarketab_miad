@@ -1812,14 +1812,14 @@
           <div class="marriage-age-field-v2"><label for="marriageMonthV2">ماه تولد</label><input type="number" id="marriageMonthV2" min="1" max="12" inputmode="numeric" placeholder="۸"></div>
           <div class="marriage-age-field-v2"><label for="marriageYearV2">سال تولد</label><input type="number" id="marriageYearV2" min="1200" max="1450" inputmode="numeric" placeholder="۱۳۷۳"></div>
         </div>
-        <button class="btn marriage-age-calc-v2" type="button" id="marriageCalcBtnV2">💍 محاسبه سن ازدواج</button>
+        <div class="marriage-age-actions-v2"><button class="btn marriage-age-calc-v2" type="button" id="marriageCalcBtnV2">💍 محاسبه سن ازدواج</button><button class="btn marriage-age-clear-v2" type="button" id="marriageClearBtnV2">پاک کردن و محاسبهٔ جدید ↺</button></div>
         <div class="marriage-age-error-v2" id="marriageErrorV2" role="alert" aria-live="polite"></div>
       </div>
       <div class="marriage-age-result-v2" id="marriageResultV2" style="display:none" aria-live="polite">
         <div class="marriage-age-result-title-v2">سه نقطهٔ روشن در مسیر عمر</div>
         <div class="marriage-age-constellation-v2" id="marriageConstellationV2"></div>
         <div class="marriage-age-disclaimer-v2">
-          <p>این اعداد صرفاً نتیجهٔ یک روش عددی سنتی هستند و پیش‌بینی قطعی زمان ازدواج نیستند. علم و قطعیت نزد خداوند است؛ الله اعلم بالصواب.</p>
+          <p>این اعداد تقریبی‌اند و قطعی نیستند؛ سن واقعی ازدواج ممکن است یک سال زودتر یا دیرتر از هر عدد باشد. این محاسبه پیش‌بینی قطعی نیست و علم حقیقی نزد خداوند است؛ الله اعلم بالصواب.</p>
           <p class="marriage-age-invite-v2">می‌توانید این روش را در جمع خانواده و دوستان نیز امتحان کنید ✦</p>
         </div>
       </div>
@@ -1835,7 +1835,7 @@
 .marriage-age-field-v2 label{font-size:12px;color:#e8c65a}
 .marriage-age-field-v2 input{width:100%;min-width:0;box-sizing:border-box;background:rgba(13,10,28,.72);border:1px solid rgba(201,162,39,.3);border-radius:10px;color:#ede4d3;font:600 17px 'Vazirmatn',sans-serif;text-align:center;padding:12px 4px}
 .marriage-age-field-v2 input:focus{outline:2px solid rgba(232,198,90,.65);outline-offset:1px}
-.marriage-age-calc-v2{width:100%;margin-top:15px}
+.marriage-age-actions-v2{display:grid;grid-template-columns:1fr;gap:8px;margin-top:15px}.marriage-age-calc-v2,.marriage-age-clear-v2{width:100%;margin-top:0}.marriage-age-clear-v2{background:linear-gradient(135deg,#4a3a6b,#35264f)!important;color:#f5e8bf!important;border:1px solid rgba(201,162,39,.35)!important}
 .marriage-age-error-v2{min-height:20px;margin-top:8px;text-align:center;color:#ff9292;font-size:12px}
 .marriage-age-result-v2{margin-top:22px;padding:16px;border:1px solid rgba(201,162,39,.3);border-radius:16px;background:linear-gradient(180deg,rgba(107,30,63,.2),rgba(74,58,107,.18))}
 .marriage-age-result-v2.show{display:block!important;animation:marriageAgeFadeUpV2 .45s ease}
@@ -1893,9 +1893,18 @@
     requestAnimationFrame(function(){boxEl.classList.add('show');});
     try{if(typeof window.v8ServerFirstSave==='function')window.v8ServerFirstSave('marriage_age',{day:day,month:month,year:year,product:product,primaryIndex:primaryIndex,ages:ages});}catch(e){}
   }
+  function clearMarriageAgeV2(){
+    ['marriageDayV2','marriageMonthV2','marriageYearV2'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+    var errorEl=document.getElementById('marriageErrorV2');if(errorEl)errorEl.textContent='';
+    var boxEl=document.getElementById('marriageResultV2');if(boxEl){boxEl.classList.remove('show');boxEl.style.display='none';}
+    var constellationEl=document.getElementById('marriageConstellationV2');if(constellationEl)constellationEl.textContent='';
+    var dayEl=document.getElementById('marriageDayV2');if(dayEl)dayEl.focus();
+  }
   function init(){
     var btn=document.getElementById('marriageCalcBtnV2');
     if(btn&&!btn.dataset.marriageAgeBound){btn.dataset.marriageAgeBound='1';btn.addEventListener('click',calculateMarriageAgeV2);}
+    var clearBtn=document.getElementById('marriageClearBtnV2');
+    if(clearBtn&&!clearBtn.dataset.marriageAgeBound){clearBtn.dataset.marriageAgeBound='1';clearBtn.addEventListener('click',clearMarriageAgeV2);}
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
   window.calculateMarriageAgeV2=calculateMarriageAgeV2;
