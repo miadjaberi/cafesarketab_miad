@@ -130,3 +130,46 @@
   outline: 2px solid #C9A84C;
   outline-offset: 1px;
 }
+
+
+/* Strong contrast overrides for admin surfaces rendered with inline white backgrounds.
+   Keep image previews themselves untouched; only their surrounding cards/panels are themed. */
+#adminPanel .admin-card,
+#adminPanel .admin-item,
+#adminPanel .settings-history-item,
+#adminPanel [id="adminSubscriptionsList"] > div,
+#adminPanel [id="adminSubscriptionRequestsList"] > div,
+#adminPanel [id="adminMessages"] > div,
+#adminPanel [id="v18AdminConversationList"] > div,
+#adminPanel [id="adminDalilImages"] > div,
+#adminPanel [id="dalilImagesAdmin"] > div,
+#adminPanel [style*="background:#fff"],
+#adminPanel [style*="background: #fff"],
+#adminPanel [style*="background-color:#fff"],
+#adminPanel [style*="background-color: #fff"],
+#adminPanel [style*="background:white"],
+#adminPanel [style*="background: white"],
+#adminPanel [style*="background-color:white"],
+#adminPanel [style*="background-color: white"],
+#adminPanel [style*="background:#fffaf2"],
+#adminPanel [style*="background: #fffaf2"] {
+  background-color: #111827 !important;
+  color: #F3E8CF !important;
+  border-color: rgba(201, 168, 76, .55) !important;
+}
+
+/* Common inline text colors inside white cards should remain readable on navy. */
+#adminPanel [style*="color:#1A1A1A"],
+#adminPanel [style*="color: #1A1A1A"],
+#adminPanel [style*="color:#111"],
+#adminPanel [style*="color: #111"],
+#adminPanel [style*="color:#0A3545"],
+#adminPanel [style*="color: #0A3545"] {
+  color: #F3E8CF !important;
+}
+
+/* Keep file inputs and admin form controls readable. */
+#adminPanel input[type="file"] {
+  color: #F3E8CF !important;
+  background-color: #090E18 !important;
+}
