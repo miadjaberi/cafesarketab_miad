@@ -44,8 +44,12 @@
     <link rel="stylesheet" href="./button-feedback.css?v=20261015-online-1">
     <link rel="stylesheet" href="./royal-data-ui.css?v=20261017-1">
     <link rel="stylesheet" href="./shop-ui-fix.css?v=20261017-1">
-    <link rel="stylesheet" href="./spiritual-admin-fix.css?v=20261017-admin-contrast-2">
+    <link rel="stylesheet" href="./spiritual-admin-fix.css?v=20261017-terms-debug-1">
 
+    <!-- TEMPORARY TERMS DEBUG: visible only when ?debug=1 is present. -->
+    <script>
+    (function(){try{var qs=new URLSearchParams(window.location.search);if(!qs.has('debug'))return;function panel(msg){var box=document.getElementById('km-mobile-debug-errors');if(!box){box=document.createElement('div');box.id='km-mobile-debug-errors';box.style.cssText='position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#7f1010;color:#fff;padding:12px;font:12px/1.5 monospace;max-height:42vh;overflow:auto;direction:ltr;white-space:pre-wrap;';var close=document.createElement('button');close.textContent='Close';close.style.cssText='float:right;padding:6px;';close.onclick=function(){box.remove();};box.appendChild(close);var body=document.createElement('div');body.id='km-mobile-debug-errors-body';box.appendChild(body);document.body.appendChild(box);}var body=document.getElementById('km-mobile-debug-errors-body');if(body){var line=document.createElement('div');line.textContent=String(msg);body.appendChild(line);}}window.addEventListener('error',function(e){panel('Error: '+(e.message||'unknown')+' | '+(e.filename||'')+':'+(e.lineno||''));});window.addEventListener('unhandledrejection',function(e){panel('Promise: '+(e.reason&&e.reason.stack||e.reason||'unknown'));});document.addEventListener('click',function(e){var b=e.target&&e.target.closest&&e.target.closest('.terms-agree-btn');if(b)panel('Accept Terms clicked; handler='+(typeof window.acceptTermsAndContinue)+'; termsDisplay='+(document.getElementById('termsScreen')&&document.getElementById('termsScreen').style.display));},true);panel('Debug active. Add ?debug=1 to URL.');}catch(e){}})();
+    </script>
 </head>
 <body>
 
@@ -1965,7 +1969,7 @@
 
     <!-- Startup visibility is controlled by main.js bootGate; duplicate inline gate removed to prevent screen races. -->
     <script src="./data.js"></script>
-    <script src="./main.js?v=20261017-imagefallback-fa-1"></script>
+    <script src="./main.js?v=20261017-terms-debug-1"></script>
     <script src="./tools-extra.js"></script>
     <script src="./app.js"></script>
     <script src="./ui-layer-fix.js"></script>
