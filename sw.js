@@ -107,7 +107,11 @@ function isStaticAsset(url) {
 
 async function cacheFirst(req, fallbacks) {
   const cache = await caches.open(SHELL_CACHE);
-  let cached = await cache.match(req, { ignoreSearch: true });
+  const requestUrl = new URL(req.url);
+  const isVersionedModalUx = requestUrl.pathname.endsWith('/all-modal-ux.js') && requestUrl.search.length > 0;
+  // Keep the modal helper's release query meaningful: do not serve an older
+  // unversioned precache entry for a newly versioned helper request.
+  let cached = await cache.match(req, { ignoreSearch: !isVersionedModalUx });
   if (!cached && fallbacks) {
     for (const item of fallbacks) {
       cached = await cache.match(item);
