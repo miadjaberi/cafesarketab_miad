@@ -46,7 +46,7 @@ body{
 header{
   height:var(--header-height) !important;
   padding:10px 14px 8px !important;
-  background:rgba(8,12,20,.72) !important;
+  background:transparent !important;
   border-bottom:1px solid var(--line) !important;
   backdrop-filter:blur(18px) saturate(140%) !important;
   -webkit-backdrop-filter:blur(18px) saturate(140%) !important;
