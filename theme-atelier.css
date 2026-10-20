@@ -48,8 +48,6 @@ header{
   padding:10px 14px 8px !important;
   background:transparent !important;
   border-bottom:1px solid var(--line) !important;
-  backdrop-filter:blur(18px) saturate(140%) !important;
-  -webkit-backdrop-filter:blur(18px) saturate(140%) !important;
   box-shadow:0 10px 30px rgba(0,0,0,.25) !important;
 }
 .header-top{
