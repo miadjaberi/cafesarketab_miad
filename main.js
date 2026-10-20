@@ -5908,7 +5908,13 @@ async function submitProductOrder() {
       if(!Array.isArray(latest)) latest=[];
       // Never assume orders[0] is the order just submitted.
       var order=latest.find(function(o){return o&&o.id!=null&&!beforeIds[String(o.id)];});
-      if(!order) return; // No newly server-confirmed local order was created.
+      if(!order) {
+        console.warn('submitProductOrder: no newly confirmed order found');
+        if(typeof showNotification==='function') {
+          showNotification('⚠️ سفارش جدید تأیید نشد؛ لطفاً پیام خطای ثبت سفارش را بررسی کنید.','error');
+        }
+        return;
+      }
       var orderId=String(order.id);
       var receiptId='receipt-'+orderId;
       try{
