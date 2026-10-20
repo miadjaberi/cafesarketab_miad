@@ -2837,8 +2837,10 @@ h1, h2, h3, h4, .page-header h2, .section-title h2, .modal-glass-title, .registe
 
 /* ---------- ناوبری / هدر ---------- */
 header, .header-top, .bottom-nav {
-  background: rgba(12,11,13,0.96) !important;
   border-color: var(--brand-line-soft) !important;
+}
+.bottom-nav {
+  background: rgba(12,11,13,0.96) !important;
 }
 .nav-item-bottom { color: var(--brand-text-soft) !important; }
 .nav-item-bottom.active { color: var(--brand-gold-hi) !important; }
