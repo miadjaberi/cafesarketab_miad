@@ -3934,26 +3934,91 @@ async function submitProductOrder() {
         // ============================================================
         // پشتیبان‌گیری
         // ============================================================
-        window.exportData = function exportData() {
-            var data = {
-                products: getProducts(),
-                subscriptions: JSON.parse(localStorage.getItem('adminSubscriptions') || '[]'),
-                users: JSON.parse(localStorage.getItem('cafeUsers') || '[]'),
-                discount: JSON.parse(localStorage.getItem('discountSettings') || '{}'),
-                modals: {}
-            };
-            modalList.forEach(function(m) {
-                var saved = localStorage.getItem('modalData_' + m.id);
-                if (saved) data.modals[m.id] = saved;
-            });
-            var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            var url = URL.createObjectURL(blob);
-            var a = document.createElement('a');
-            a.href = url;
-            a.download = 'cafe_backup_' + new Date().toISOString().slice(0,10) + '.json';
-            a.click();
-            URL.revokeObjectURL(url);
-            showNotification('📤 خروجی گرفته شد');
+        window.exportData = async function exportData() {
+            try {
+                if (!supabaseClient) {
+                    throw new Error('اتصال Supabase در دسترس نیست.');
+                }
+
+                // همه ردیف‌ها را صفحه‌به‌صفحه می‌خواند؛ خطا را پنهان نمی‌کند.
+                async function readAllRows(tableName) {
+                    var rows = [];
+                    var pageSize = 1000;
+                    var offset = 0;
+
+                    while (true) {
+                        var result = await supabaseClient
+                            .from(tableName)
+                            .select('*')
+                            .range(offset, offset + pageSize - 1);
+
+                        if (result.error) {
+                            throw new Error(
+                                'خواندن جدول «' + tableName + '» ناموفق بود: ' +
+                                result.error.message
+                            );
+                        }
+
+                        var page = result.data;
+                        if (!Array.isArray(page)) {
+                            throw new Error(
+                                'پاسخ جدول «' + tableName + '» معتبر نیست.'
+                            );
+                        }
+
+                        rows = rows.concat(page);
+                        if (page.length < pageSize) break;
+                        offset += pageSize;
+                    }
+
+                    return rows;
+                }
+
+                // هر سه جدول باید با موفقیت خوانده شوند.
+                var results = await Promise.all([
+                    readAllRows('profiles'),
+                    readAllRows('subscriptions'),
+                    readAllRows('subscription_requests')
+                ]);
+
+                var data = {
+                    products: getProducts(),
+                    users: results[0],
+                    subscriptions: results[1],
+                    subscription_requests: results[2],
+                    discount: JSON.parse(
+                        localStorage.getItem('discountSettings') || '{}'
+                    ),
+                    modals: {}
+                };
+
+                modalList.forEach(function(m) {
+                    var saved = localStorage.getItem('modalData_' + m.id);
+                    if (saved) data.modals[m.id] = saved;
+                });
+
+                var blob = new Blob(
+                    [JSON.stringify(data, null, 2)],
+                    { type: 'application/json' }
+                );
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = 'cafe_backup_' +
+                    new Date().toISOString().slice(0, 10) + '.json';
+                a.click();
+                setTimeout(function() {
+                    URL.revokeObjectURL(url);
+                }, 1000);
+                showNotification('✅ بکاپ با اطلاعات کاربران و اشتراک‌های سرور آماده شد');
+            } catch (e) {
+                console.error('exportData failed:', e);
+                showNotification(
+                    '❌ بکاپ کامل نشد؛ فایلی دانلود نشد. ' +
+                    (e && e.message ? e.message : 'خطای نامشخص'),
+                    'error'
+                );
+            }
         }
 
         function importData(event) {
