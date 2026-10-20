@@ -5,6 +5,21 @@
   'use strict';
 
   var isRegistering = false;
+  var REQUEST_TIMEOUT_MS = 15000;
+
+  function withTimeout(promise, message) {
+    var timer;
+    return Promise.race([
+      promise,
+      new Promise(function (_, reject) {
+        timer = setTimeout(function () {
+          reject(new Error(message || 'ارتباط با سرور برقرار نشد'));
+        }, REQUEST_TIMEOUT_MS);
+      })
+    ]).finally(function () {
+      clearTimeout(timer);
+    });
+  }
 
   window.registerUser = async function () {
     if (isRegistering) {
@@ -14,6 +29,16 @@
       return;
     }
     isRegistering = true;
+    var registerButton = document.querySelector(
+      '#registerScreen button.register-btn'
+    );
+    var originalButtonText = registerButton
+      ? registerButton.textContent
+      : '';
+    if (registerButton) {
+      registerButton.disabled = true;
+      registerButton.textContent = 'در حال ارسال...';
+    }
 
     try {
       var nameEl = document.getElementById('regName');
@@ -37,14 +62,20 @@
       }
 
       // ۱. اطمینان از وجود سشن
-      var sr = await supabaseClient.auth.getSession();
+      var sr = await withTimeout(
+        supabaseClient.auth.getSession(),
+        'ارتباط با سرور برقرار نشد'
+      );
       var session = sr && sr.data && sr.data.session;
 
       if (!session || !session.user) {
         if (!supabaseClient.auth.signInAnonymously) {
           throw new Error('ورود کاربر در این پروژه فعال نیست.');
         }
-        var ar = await supabaseClient.auth.signInAnonymously();
+        var ar = await withTimeout(
+          supabaseClient.auth.signInAnonymously(),
+          'ارتباط با سرور برقرار نشد'
+        );
         if (ar.error || !ar.data || !ar.data.session) {
           throw (ar.error || new Error('ایجاد نشست کاربر ناموفق بود.'));
         }
@@ -57,11 +88,14 @@
       var isReturning = false;
 
       // ۲. اول سعی کن پروفایل خود همین سشن را بخوانی
-      var own = await supabaseClient
-        .from('profiles')
-        .select('id,name,phone,registered_at,role')
-        .eq('id', user.id)
-        .maybeSingle();
+      var own = await withTimeout(
+        supabaseClient
+          .from('profiles')
+          .select('id,name,phone,registered_at,role')
+          .eq('id', user.id)
+          .maybeSingle(),
+        'ارتباط با سرور برقرار نشد'
+      );
 
       if (own.error) {
         // A failed profile read is not the same as "no profile".
@@ -78,12 +112,15 @@
           role: own.data.role || 'user'
         };
         if (name && name !== own.data.name) {
-          var nameUpdate = await supabaseClient
-            .from('profiles')
-            .update({ name: name })
-            .eq('id', user.id)
-            .select('id,name,phone,registered_at,role')
-            .maybeSingle();
+          var nameUpdate = await withTimeout(
+            supabaseClient
+              .from('profiles')
+              .update({ name: name })
+              .eq('id', user.id)
+              .select('id,name,phone,registered_at,role')
+              .maybeSingle(),
+            'ارتباط با سرور برقرار نشد'
+          );
           if (nameUpdate.error || !nameUpdate.data || nameUpdate.data.id !== user.id) {
             throw (nameUpdate.error || new Error('تغییر نام از سرور تأیید نشد.'));
           }
@@ -99,11 +136,14 @@
           registered_at: registeredAt
         };
 
-        var pr = await supabaseClient
-          .from('profiles')
-          .upsert(profilePayload, { onConflict: 'id' })
-          .select()
-          .single();
+        var pr = await withTimeout(
+          supabaseClient
+            .from('profiles')
+            .upsert(profilePayload, { onConflict: 'id' })
+            .select()
+            .single(),
+          'ارتباط با سرور برقرار نشد'
+        );
 
         if (pr.error || !pr.data || pr.data.id !== user.id || pr.data.phone !== phone) {
           // Online-only: a phone number already in use is not proof of account ownership.
@@ -134,7 +174,10 @@
       }
 
       if (typeof updateUserDisplay === 'function') {
-        await updateUserDisplay(finalUserData);
+        await withTimeout(
+          updateUserDisplay(finalUserData),
+          'ارتباط با سرور برقرار نشد'
+        );
       }
 
       if (typeof showNotification === 'function') {
@@ -147,10 +190,16 @@
     } catch (e) {
       console.error('user entry', e);
       if (typeof showNotification === 'function') {
-        showNotification('❌ ورود کاربر انجام نشد: ' + (e.message || e), 'error');
+        showNotification('❌ ثبت‌نام انجام نشد: ' + (e.message || 'ارتباط با سرور برقرار نشد'), 'error');
+      } else {
+        alert('ثبت‌نام انجام نشد: ' + (e.message || 'ارتباط با سرور برقرار نشد'));
       }
     } finally {
       isRegistering = false;
+      if (registerButton) {
+        registerButton.disabled = false;
+        registerButton.textContent = originalButtonText;
+      }
     }
   };
 
