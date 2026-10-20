@@ -5860,7 +5860,7 @@ img.src=dataUrl;
 async function upload(data,key){/* V22.9-RC1: شکست Storage = null، نه Base64 */if(!data||String(data).indexOf('data:image/')!==0)return null;if(!supabaseClient){console.warn('media upload: no client');return null;}try{var a=data.split(','),mime=(a[0].match(/data:([^;]+);base64/)||[,'image/jpeg'])[1],bin=atob(a[1]),b=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)b[i]=bin.charCodeAt(i);var blob=new Blob([b],{type:mime}),ext=(mime.split('/')[1]||'jpg').replace(/[^a-z0-9]/gi,'')||'jpg',path='app-media/'+key+'-'+Date.now()+'-'+Math.random().toString(36).slice(2)+'.'+ext,r=await supabaseClient.storage.from('public-assets').upload(path,blob,{upsert:true,contentType:mime});if(r.error)throw r.error;var u=supabaseClient.storage.from('public-assets').getPublicUrl(path);var url=u.data&&u.data.publicUrl?u.data.publicUrl:null;if(!url)throw new Error('publicUrl empty');return url}catch(e){console.warn('media upload',key,e);return null}}
 function apply(s){
 if(!s)return;
-if(s.headerLogo){var h=document.getElementById('headerLogoImg');if(h)h.src=s.headerLogo;}
+if(s.headerLogo){var h=document.getElementById('headerLogoImg');if(h){h.src=s.headerLogo;var icon=document.querySelector('link[rel="icon"]');if(icon)icon.href=s.headerLogo;}}
 if(s.registerLogo){var r=document.getElementById('registerLogoImg')||document.querySelector('#registerScreen img');if(r)r.src=s.registerLogo;}
 if(s.splashBg){
  var freshSplash=splashFreshUrl(s.splashBg);
@@ -6040,18 +6040,17 @@ document.addEventListener('DOMContentLoaded',function(){try{window.applyGalleryI
       s.appIcon = dataUrl;
       localStorage.setItem('cafeSettings', JSON.stringify(s));
     } catch(e){}
-    // App icon is independent from the header logo. Update browser icons and the install manifest.
-    var sels = 'link[rel="icon"], link[rel="apple-touch-icon"], link[rel="shortcut icon"]';
+    // Keep the browser-tab favicon synced to headerLogo; appIcon controls install/Apple touch icons.
+    var sels = 'link[rel="apple-touch-icon"]';
     var links = document.querySelectorAll(sels);
     var iconType = 'image/png';
     if (/^data:image\/svg\+xml/i.test(dataUrl) || /\.svg(?:[?#]|$)/i.test(dataUrl)) iconType = 'image/svg+xml';
     else if (/^data:image\/webp/i.test(dataUrl) || /\.webp(?:[?#]|$)/i.test(dataUrl)) iconType = 'image/webp';
     else if (/^data:image\/jpeg/i.test(dataUrl) || /\.jpe?g(?:[?#]|$)/i.test(dataUrl)) iconType = 'image/jpeg';
     if (!links.length) {
-      var l1 = document.createElement('link'); l1.rel='icon'; l1.type=iconType; l1.href=dataUrl; document.head.appendChild(l1);
       var l2 = document.createElement('link'); l2.rel='apple-touch-icon'; l2.href=dataUrl; document.head.appendChild(l2);
     } else {
-      links.forEach(function(l){ l.href = dataUrl; if (l.rel === 'icon' || l.rel === 'shortcut icon') l.type = iconType; });
+      links.forEach(function(l){ l.href = dataUrl; });
     }
     // Ask the server-backed manifest to refresh only for a permanently uploaded icon.
     if (/^https:\/\/evxxvnlwtbaqpjbjaxdk\.supabase\.co\/storage\/v1\/object\/public\/public-assets\/app-media\//i.test(dataUrl)) {
