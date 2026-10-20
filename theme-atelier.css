@@ -518,3 +518,12 @@ body{
 
 /* neutralize conflicting atelier text colors */
 body, p, span, label, a { color: inherit; }
+
+
+/* KAFE MIAD — header background image only; keep real logo and controls above it */
+header{
+  background-image: url("https://evxxvnlwtbaqpjbjaxdk.supabase.co/storage/v1/object/public/public-assets/products/1792368404765-hqme2g6egz7.webp") !important;
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+}
