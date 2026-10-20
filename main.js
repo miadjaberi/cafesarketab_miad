@@ -3978,14 +3978,27 @@ async function submitProductOrder() {
                 var results = await Promise.all([
                     readAllRows('profiles'),
                     readAllRows('subscriptions'),
-                    readAllRows('subscription_requests')
+                    readAllRows('subscription_requests'),
+                    readAllRows('messages'),
+                    readAllRows('conversations'),
+                    readAllRows('orders'),
+                    readAllRows('order_items'),
+                    readAllRows('notifications'),
+                    readAllRows('products')
                 ]);
 
                 var data = {
-                    products: getProducts(),
+                    backupVersion: 2,
+                    exportedAt: new Date().toISOString(),
+                    products: results[8],
                     users: results[0],
                     subscriptions: results[1],
                     subscription_requests: results[2],
+                    messages: results[3],
+                    conversations: results[4],
+                    orders: results[5],
+                    order_items: results[6],
+                    notifications: results[7],
                     discount: JSON.parse(
                         localStorage.getItem('discountSettings') || '{}'
                     ),
@@ -6760,8 +6773,24 @@ window.v18SendUserMessage=async function(){
 async function isAdmin(){var c=sb(),ses=await session();if(!c||!ses)return false;try{var r=await c.from('profiles').select('role').eq('id',ses.user.id).maybeSingle();return !!(r.data&&r.data.role==='admin');}catch(e){return false;}}
 async function loadAdminConversations(){
  var c=sb(),list=document.getElementById('v18AdminConversationList');if(!list)return;if(!(await isAdmin())){list.innerHTML='<p style="color:#a00020">دسترسی مدیریت لازم است.</p>';return;}
- try{var r=await c.from('conversations').select('id,user_id,subject,status,created_at,updated_at').order('updated_at',{ascending:false}).limit(100);if(r.error)throw r.error;var rows=r.data||[];window.__v18Conversations=rows;
-  list.innerHTML=rows.length?rows.map(function(x){return '<div class="v18-conversation-item '+(String(x.id)===String(currentConversationId)?'active':'')+'" style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px"><div style="flex:1;min-width:0;cursor:pointer" onclick="v18OpenAdminConversation('+kafeHtmlJsArg(String(x.id))+')"><strong>'+esc(x.subject||'بدون موضوع')+'</strong><div class="muted">کاربر: '+esc(x.user_id)+' · '+esc(x.status)+' · '+esc(fmt(x.updated_at||x.created_at))+'</div></div><button type="button" class="danger" title="حذف گفتگو" onclick="event.stopPropagation();v18DeleteAdminConversation('+kafeHtmlJsArg(String(x.id))+')" style="flex-shrink:0;padding:6px 10px;border-radius:8px;border:0;cursor:pointer;background:#a00020;color:#fff;font-size:0.75rem">🗑️ حذف</button></div>';}).join(''):'<p style="color:#666;font-size:.8rem">پیامی ثبت نشده است.</p>';
+ try{
+  var r=await c.from('conversations').select('id,user_id,subject,status,created_at,updated_at').order('updated_at',{ascending:false}).limit(100);
+  if(r.error)throw r.error;
+  var rows=r.data||[];window.__v18Conversations=rows;
+  var latestUserMessageByConversation={};
+  if(rows.length){
+    var messageResult=await c.from('messages').select('id,conversation_id,created_at,is_from_admin').in('conversation_id',rows.map(function(x){return x.id;})).order('created_at',{ascending:false}).limit(1000);
+    if(messageResult.error)throw messageResult.error;
+    (messageResult.data||[]).forEach(function(m){
+      var key=String(m.conversation_id);
+      if(!m.is_from_admin&&!latestUserMessageByConversation[key])latestUserMessageByConversation[key]=m;
+    });
+  }
+  list.innerHTML=rows.length?rows.map(function(x){
+    var latest=latestUserMessageByConversation[String(x.id)];
+    var openCall='v18OpenAdminConversation('+kafeHtmlJsArg(String(x.id))+(latest?','+kafeHtmlJsArg(String(latest.id)):'')+')';
+    return '<div class="v18-conversation-item '+(String(x.id)===String(currentConversationId)?'active':'')+'" style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px"><div style="flex:1;min-width:0;cursor:pointer" onclick="'+openCall+'"><strong>'+esc(x.subject||'بدون موضوع')+'</strong><div class="muted">کاربر: '+esc(x.user_id)+' · '+esc(x.status)+' · '+esc(fmt(x.updated_at||x.created_at))+'</div></div><button type="button" class="danger" title="حذف گفتگو" onclick="event.stopPropagation();v18DeleteAdminConversation('+kafeHtmlJsArg(String(x.id))+')" style="flex-shrink:0;padding:6px 10px;border-radius:8px;border:0;cursor:pointer;background:#a00020;color:#fff;font-size:0.75rem">🗑️ حذف</button></div>';
+  }).join(''):'<p style="color:#666;font-size:.8rem">پیامی ثبت نشده است.</p>';
  }catch(e){list.innerHTML='<p style="color:#a00020;font-size:.8rem">خطا: '+esc(e.message||e)+'</p>';}
 }
 
@@ -6771,11 +6800,19 @@ window.v18DeleteAdminMessage=async function(msgId,convId){
     if(!msgId){showNotification('شناسه پیام نامعتبر','error');return;}
     if(!confirm('این پیام حذف شود؟'))return;
     var c=sb();if(!c){showNotification('اتصال سرور نیست','error');return;}
-    var r=await c.from('messages').delete().eq('id',msgId);
+    var r=await c.from('messages').delete().eq('id',msgId).select('id');
     if(r.error)throw r.error;
+    if(!r.data||r.data.length===0){
+      throw new Error('هیچ ردیفی حذف نشد؛ ممکن است مجوز حذف یا دسترسی به این پیام وجود نداشته باشد.');
+    }
     showNotification('✅ پیام حذف شد');
     if(convId) await window.v18OpenAdminConversation(convId);
-  }catch(e){console.error('v18DeleteAdminMessage',e);showNotification('حذف پیام ناموفق: '+(e.message||e),'error');}
+  }catch(e){
+    console.error('v18DeleteAdminMessage',e);
+    var errorText=e&&e.message?e.message:JSON.stringify(e);
+    alert('خطای حذف پیام در Supabase:\n'+errorText);
+    showNotification('حذف پیام ناموفق: '+errorText,'error');
+  }
 };
 window.v18DeleteAdminConversation=async function(convId){
   try{
@@ -6799,8 +6836,19 @@ window.v18DeleteAdminConversation=async function(convId){
   }catch(e){console.error('v18DeleteAdminConversation',e);showNotification('حذف گفتگو ناموفق: '+(e.message||e),'error');}
 };
 
-window.v18OpenAdminConversation=async function(id){currentConversationId=id;var c=sb();if(!c||!(await isAdmin()))return;var card=document.getElementById('v18AdminConversationCard');if(card)card.style.display='block';var header=document.getElementById('v18AdminConversationHeader'),list=document.getElementById('v18AdminMessageList');var row=(window.__v18Conversations||[]).find(function(x){return String(x.id)===String(id);});if(header)header.innerHTML='<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div><h4 style="margin:0">💬 '+esc(row&&row.subject||'گفتگو')+'</h4><div style="font-size:.7rem;color:#666;margin-top:5px">کاربر: '+esc(row&&row.user_id||'')+' · وضعیت: '+esc(row&&row.status||'')+'</div></div><button type="button" class="danger" onclick="v18DeleteAdminConversation('+kafeHtmlJsArg(String(id))+')" style="padding:8px 12px;border-radius:8px;border:0;cursor:pointer;background:#a00020;color:#fff;font-size:0.78rem;white-space:nowrap">🗑️ حذف گفتگو</button></div>';
- var r=await c.from('messages').select('id,content,body,text,sender_id,is_from_admin,created_at').eq('conversation_id',id).order('created_at',{ascending:true});if(r.error){if(list)list.innerHTML='<p style="color:#a00020">'+esc(r.error.message)+'</p>';return;}if(list)list.innerHTML=(r.data||[]).map(function(m){var mid=m.id!=null?String(m.id):'';return '<div class="v18-bubble '+(m.is_from_admin?'admin':'user')+'" style="position:relative">'+esc(m.content||m.body||m.text||'')+'<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:6px"><small>'+esc(m.is_from_admin?'مدیریت':'کاربر')+' · '+esc(fmt(m.created_at))+'</small>'+(mid?'<button type="button" onclick="v18DeleteAdminMessage('+kafeHtmlJsArg(mid)+','+kafeHtmlJsArg(String(id))+')" style="padding:2px 8px;font-size:0.7rem;border-radius:6px;border:1px solid rgba(160,0,32,0.5);background:rgba(160,0,32,0.15);color:#c00;cursor:pointer">حذف پیام</button>':'')+'</div></div>';}).join('')||'<p style="color:#666">پیامی وجود ندارد.</p>';if(list)list.scrollTop=list.scrollHeight;};
+window.v18OpenAdminConversation=async function(id,focusMessageId){currentConversationId=id;var c=sb();if(!c||!(await isAdmin()))return;var card=document.getElementById('v18AdminConversationCard');if(card)card.style.display='block';var header=document.getElementById('v18AdminConversationHeader'),list=document.getElementById('v18AdminMessageList');var row=(window.__v18Conversations||[]).find(function(x){return String(x.id)===String(id);});if(header)header.innerHTML='<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div><h4 style="margin:0">💬 '+esc(row&&row.subject||'گفتگو')+'</h4><div style="font-size:.7rem;color:#666;margin-top:5px">کاربر: '+esc(row&&row.user_id||'')+' · وضعیت: '+esc(row&&row.status||'')+'</div></div><button type="button" class="danger" onclick="v18DeleteAdminConversation('+kafeHtmlJsArg(String(id))+')" style="padding:8px 12px;border-radius:8px;border:0;cursor:pointer;background:#a00020;color:#fff;font-size:0.78rem;white-space:nowrap">🗑️ حذف گفتگو</button></div>';
+ var r=await c.from('messages').select('id,content,body,text,sender_id,is_from_admin,created_at').eq('conversation_id',id).order('created_at',{ascending:true});if(r.error){if(list)list.innerHTML='<p style="color:#a00020">'+esc(r.error.message)+'</p>';return;}if(list)list.innerHTML=(r.data||[]).map(function(m){var mid=m.id!=null?String(m.id):'';return '<div id="v18-message-'+esc(mid)+'" class="v18-bubble '+(m.is_from_admin?'admin':'user')+'" style="position:relative">'+esc(m.content||m.body||m.text||'')+'<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:6px"><small>'+esc(m.is_from_admin?'مدیریت':'کاربر')+' · '+esc(fmt(m.created_at))+'</small>'+(mid?'<button type="button" onclick="v18DeleteAdminMessage('+kafeHtmlJsArg(mid)+','+kafeHtmlJsArg(String(id))+')" style="padding:2px 8px;font-size:0.7rem;border-radius:6px;border:1px solid rgba(160,0,32,0.5);background:rgba(160,0,32,0.15);color:#c00;cursor:pointer">حذف پیام</button>':'')+'</div></div>';}).join('')||'<p style="color:#666">پیامی وجود ندارد.</p>';if(list)list.scrollTop=list.scrollHeight;
+ if(list&&focusMessageId){
+   var target=document.getElementById('v18-message-'+String(focusMessageId));
+   if(target){
+     target.scrollIntoView({behavior:'smooth',block:'center'});
+     target.style.outline='3px solid #d4af37';
+     target.style.outlineOffset='3px';
+     target.style.borderRadius='10px';
+     setTimeout(function(){target.style.outline='';target.style.outlineOffset='';},5000);
+   }
+ }
+};
 window.v18SendAdminReply=async function(){var c=sb(),ses=await session(),input=document.getElementById('v18AdminReply'),text=(input&&input.value||'').trim();if(!c||!ses||!(await isAdmin())){showNotification('❌ دسترسی مدیریت ندارید','error');return;}if(!currentConversationId||!text){showNotification('متن پاسخ را وارد کنید','error');return;}try{var cr=await c.from('conversations').select('user_id,subject').eq('id',currentConversationId).single();if(cr.error)throw cr.error;var prof=await profileFor(cr.data.user_id);var mr=await c.from('messages').insert([{conversation_id:currentConversationId,sender_id:ses.user.id,content:text,body:text,text:text,is_from_admin:true,type:'other',type_name:'پاسخ مدیریت',subject:cr.data.subject||'پاسخ مدیریت',status:'پاسخ داده شد'}]).select('id').single();if(mr.error)throw mr.error;var ur=await c.from('conversations').update({updated_at:new Date().toISOString(),status:'open'}).eq('id',currentConversationId);if(ur.error)throw ur.error;await c.from('notifications').insert([{user_id:cr.data.user_id,user_phone:prof&&prof.phone||null,user_name:prof&&prof.name||null,message:'پاسخ جدید مدیریت برای شما ثبت شد.',type:'message',read:false,related_id:String(currentConversationId),action_url:null}]);input.value='';showNotification('✅ پاسخ در سرور ثبت شد');await window.v18OpenAdminConversation(currentConversationId);}catch(e){console.error('V18 admin reply',e);showNotification('❌ ثبت پاسخ ناموفق بود: '+(e.message||e),'error');}};
 window.v18CloseConversation=async function(){var c=sb();if(!c||!(await isAdmin())||!currentConversationId)return;try{var r=await c.from('conversations').update({status:'closed',updated_at:new Date().toISOString()}).eq('id',currentConversationId);if(r.error)throw r.error;showNotification('🔒 گفتگو بسته شد');await window.v18OpenAdminConversation(currentConversationId);}catch(e){showNotification('❌ بستن گفتگو ناموفق بود: '+(e.message||e),'error');}};
 window.v18LoadAdminMessages=loadAdminConversations;
