@@ -3258,7 +3258,9 @@ async function submitProductOrder() {
                 resetProductForm();
             } catch (e) {
                 console.error('addProduct', e);
-                alert('خطا در ذخیره محصول: ' + (e && e.message ? e.message : e));
+                if (typeof showNotification === 'function') {
+                    showNotification('❌ خطا در ذخیره محصول: ' + (e && e.message ? e.message : e), 'error');
+                }
             }
         }
         window.addProduct = addProduct;
