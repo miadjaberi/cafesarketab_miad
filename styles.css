@@ -3138,3 +3138,14 @@ header .header-notifications .header-btn.kafe-notif-clear i { color:#fff !import
 @media (prefers-reduced-motion:reduce) {
   #splashScreen .splash-bg-img { transform:none !important; }
 }
+
+#termsScreen, #registerScreen {
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+}
+body.modal-open #termsScreen, body.modal-open #registerScreen {
+    position: absolute !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow-y: auto !important;
+}
