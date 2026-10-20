@@ -2786,6 +2786,94 @@ async function submitProductOrder() {
             return true;
         }
 
+        // پاک‌سازی داده‌ها فقط با نشست معتبر مدیر و تأیید صریح
+        function ensureAdminCleanupButton(panel) {
+            if (!panel || document.getElementById('adminClearTestDataBox')) return;
+
+            var box = document.createElement('section');
+            box.id = 'adminClearTestDataBox';
+            box.style.cssText =
+                'margin:16px;padding:14px;border:1px solid #b8860b;' +
+                'border-radius:12px;background:rgba(20,35,70,.92);' +
+                'color:#fff;text-align:center;';
+
+            var title = document.createElement('div');
+            title.textContent = 'پاک‌سازی داده‌های تستی';
+            title.style.cssText = 'font-weight:bold;color:#ffd76a;margin-bottom:8px;';
+
+            var description = document.createElement('p');
+            description.textContent =
+                'این عملیات همه پیام‌ها، گفتگوها، سفارش‌ها و اشتراک‌ها و ' +
+                'درخواست‌ها و اعلان‌های مربوط را از سرور حذف می‌کند.';
+
+            var button = document.createElement('button');
+            button.type = 'button';
+            button.textContent = 'پاک‌سازی داده‌های تستی';
+            button.style.cssText =
+                'padding:10px 16px;border:0;border-radius:8px;' +
+                'background:#a83232;color:#fff;font-weight:bold;';
+
+            var resultBox = document.createElement('p');
+            resultBox.id = 'adminClearTestDataResult';
+            resultBox.setAttribute('role', 'status');
+
+            button.addEventListener('click', async function () {
+                if (!(await verifyOnlineAdmin())) {
+                    resultBox.textContent = 'خطا: نشست معتبر مدیر تأیید نشد.';
+                    return;
+                }
+
+                var confirmed = window.confirm(
+                    'هشدار جدی!\n\n' +
+                    'همه پیام‌ها، گفتگوها، سفارش‌ها، اقلام سفارش، ' +
+                    'اشتراک‌ها، درخواست‌های اشتراک و اعلان‌ها پاک می‌شوند.\n\n' +
+                    'پروفایل کاربران و محصولات حذف نمی‌شوند.\n\n' +
+                    'آیا مطمئنی که می‌خواهی ادامه بدهی؟'
+                );
+                if (!confirmed) return;
+
+                button.disabled = true;
+                resultBox.textContent = 'در حال اجرای درخواست روی سرور…';
+
+                try {
+                    var response = await supabaseClient.rpc(
+                        'admin_clear_test_data'
+                    );
+                    if (response.error) throw response.error;
+
+                    var counts = response.data || {};
+                    var labels = {
+                        messages: 'پیام‌ها',
+                        conversations: 'گفتگوها',
+                        order_items: 'اقلام سفارش',
+                        orders: 'سفارش‌ها',
+                        subscriptions: 'اشتراک‌ها',
+                        subscription_requests: 'درخواست‌های اشتراک',
+                        notifications: 'اعلان‌ها'
+                    };
+
+                    resultBox.textContent =
+                        'عملیات سرور با موفقیت انجام شد:\n' +
+                        Object.keys(labels).map(function (key) {
+                            return labels[key] + ': ' +
+                                (counts[key] == null ? 'نامشخص' : counts[key]);
+                        }).join(' | ');
+                } catch (error) {
+                    resultBox.textContent =
+                        'پاک‌سازی ناموفق بود: ' +
+                        (error && error.message ? error.message : String(error));
+                } finally {
+                    button.disabled = false;
+                }
+            });
+
+            box.appendChild(title);
+            box.appendChild(description);
+            box.appendChild(button);
+            box.appendChild(resultBox);
+            panel.appendChild(box);
+        }
+
         async function openAdmin() {
             if (!(await requireAdminOrClose(false))) return false;
             // دوباره session را از auth بخوان — فقط token واقعی
@@ -2809,6 +2897,7 @@ async function submitProductOrder() {
                 panel.style.zIndex = '99999';
                 panel.style.pointerEvents = 'auto';
                 panel.classList.add('active');
+                ensureAdminCleanupButton(panel);
             }
             try { document.body.style.overflow = 'hidden'; } catch (e) {}
             try{await cloudLoadAdminSettings()}catch(e){}
