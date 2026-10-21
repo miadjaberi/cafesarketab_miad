@@ -3130,13 +3130,13 @@ header .header-notifications .header-btn.kafe-notif-clear i { color:#fff !import
 html { height: 100%; min-height: 100%; overscroll-behavior-y: none; }
 html, body { width: 100%; max-width: 100%; overflow: hidden !important; }
 body {
-  height: 100vh; height: 100dvh; min-height: 0 !important;
+  height: 100vh; height: 100svh; min-height: 0 !important;
   overscroll-behavior: none; touch-action: pan-x;
 }
 #app { min-height: 0 !important; height: 100%; overflow: hidden; }
 .pages-container {
   height: calc(100vh - var(--header-height) - var(--bottom-nav-height) - 8px - env(safe-area-inset-bottom, 0px)) !important;
-  height: calc(100dvh - var(--header-height) - var(--bottom-nav-height) - 8px - env(safe-area-inset-bottom, 0px)) !important;
+  height: calc(100svh - var(--header-height) - var(--bottom-nav-height) - 8px - env(safe-area-inset-bottom, 0px)) !important;
   min-height: 0 !important; overscroll-behavior: contain; touch-action: pan-x;
 }
 .page-swipe { min-height: 0 !important; overscroll-behavior-y: contain; touch-action: pan-y; }
