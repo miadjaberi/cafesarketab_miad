@@ -1,89 +1,95 @@
-/* Kafe Miad — session recovery for returning registered users.
-   Restores a server-backed profile when browser-local cafeUser is missing.
-   It never grants admin rights and never creates a profile from client-supplied identity. */
+/* Kafe Miad — fail-closed server session/profile gate.
+   A cached cafeUser value is never accepted as authentication. */
 (function () {
   'use strict';
-  var started = false;
-
-  function client() { return window.supabaseClient || null; }
+  var started = false, validated = false, observer = null;
+  function client() { return window.supabaseClient || window.v12Supabase || null; }
+  function byId(id) { return document.getElementById(id); }
   function hide(id) {
-    var el = document.getElementById(id);
-    if (!el) return;
-    el.style.display = 'none';
-    el.classList.add('hidden');
-    el.classList.remove('active');
+    var el = byId(id); if (!el) return;
+    el.style.display = 'none'; el.classList.add('hidden'); el.classList.remove('active');
+  }
+  function clearCachedUser() { try { localStorage.removeItem('cafeUser'); } catch (e) {} }
+  function showRegister() {
+    validated = false; window.__kafeServerAuthValidated = false;
+    var app = byId('app');
+    if (app) { app.style.display = 'none'; app.classList.add('hidden'); }
+    hide('splashScreen'); hide('termsScreen');
+    var register = byId('registerScreen');
+    if (register) { register.classList.remove('hidden'); register.style.display = 'flex'; }
   }
   function showApp() {
-    hide('termsScreen');
-    hide('splashScreen');
-    hide('registerScreen');
-    var app = document.getElementById('app');
-    if (app) {
-      app.style.display = 'block';
-      app.classList.remove('hidden');
+    validated = true; window.__kafeServerAuthValidated = true;
+    hide('termsScreen'); hide('splashScreen'); hide('registerScreen');
+    var app = byId('app');
+    if (app) { app.style.display = 'block'; app.classList.remove('hidden'); }
+  }
+  function enforceGate() {
+    if (validated || window.__kafeServerAuthValidated === true) return;
+    var app = byId('app');
+    if (app && (app.style.display !== 'none' || !app.classList.contains('hidden'))) {
+      app.style.display = 'none'; app.classList.add('hidden');
     }
   }
-  function hasLocalUser() {
-    try {
-      var u = JSON.parse(localStorage.getItem('cafeUser') || 'null');
-      return !!(u && (u.name || u.phone));
-    } catch (e) { return false; }
+  function installGate() {
+    window.__kafeServerAuthValidated = false;
+    var app = byId('app');
+    if (app) { app.style.display = 'none'; app.classList.add('hidden'); }
+    if (!observer && app && typeof MutationObserver !== 'undefined') {
+      observer = new MutationObserver(enforceGate);
+      observer.observe(app, { attributes: true, attributeFilter: ['style', 'class'] });
+    }
   }
   async function recover() {
-    if (started || hasLocalUser()) return;
-    var panel = document.getElementById('adminPanel');
-    if (panel && panel.classList.contains('active')) return;
-    started = true;
+    if (started || validated) return;
+    started = true; installGate();
     try {
       var c = client();
-      for (var i = 0; !c && i < 20; i++) {
-        await new Promise(function (resolve) { setTimeout(resolve, 100); });
-        c = client();
+      for (var i = 0; !c && i < 30; i++) {
+        await new Promise(function (resolve) { setTimeout(resolve, 100); }); c = client();
       }
-      if (!c || !c.auth) return;
-      var sr = await c.auth.getSession();
-      var session = sr && sr.data && sr.data.session;
-      if (!session || !session.user || !session.user.id) return;
-
-      // The session UID is authoritative; never look up another person's profile by phone.
-      var pr = await c.from('profiles')
-        .select('id,name,phone,role,registered_at')
-        .eq('id', session.user.id)
-        .maybeSingle();
-      if (pr.error || !pr.data || (!pr.data.name && !pr.data.phone)) return;
-
-      var profile = pr.data;
+      if (!c || !c.auth || typeof c.auth.getSession !== 'function' || typeof c.auth.getUser !== 'function') {
+        clearCachedUser(); showRegister(); return;
+      }
+      var sr = await c.auth.getSession(), session = sr && sr.data && sr.data.session;
+      if ((sr && sr.error) || !session || !session.user || !session.user.id) {
+        clearCachedUser(); showRegister(); return;
+      }
+      var ur = await c.auth.getUser(), serverUser = ur && ur.data && ur.data.user;
+      if ((ur && ur.error) || !serverUser || serverUser.id !== session.user.id) {
+        clearCachedUser(); showRegister(); return;
+      }
+      var pr = await c.from('profiles').select('id,name,phone,role,registered_at')
+        .eq('id', serverUser.id).maybeSingle();
+      if (pr.error) { clearCachedUser(); showRegister(); return; }
+      var profile = pr.data, role = profile && String(profile.role || '').toLowerCase();
+      var validProfile = !!(profile && profile.id === serverUser.id &&
+        typeof profile.name === 'string' && profile.name.trim() &&
+        typeof profile.phone === 'string' && /^09[0-9]{9}$/.test(profile.phone.replace(/\s/g, '')) &&
+        (role === 'user' || role === 'admin'));
+      if (!validProfile) {
+        clearCachedUser();
+        try { await c.auth.signOut(); } catch (e) {}
+        showRegister(); return;
+      }
       var user = {
-        name: profile.name || '',
-        phone: profile.phone || '',
-        registeredAt: profile.registered_at || new Date().toISOString(),
-        user_id: profile.id,
-        role: profile.role || 'user'
+        name: profile.name.trim(), phone: profile.phone,
+        registeredAt: profile.registered_at || '', user_id: profile.id, role: role
       };
-      try {
-        localStorage.setItem('cafeUser', JSON.stringify(user));
-        // Existing server profile is only created by the registration flow after the terms gate.
-        localStorage.setItem('kafeTermsAccepted', '1');
-      } catch (e) {}
+      try { localStorage.setItem('cafeUser', JSON.stringify(user)); } catch (e) {}
       showApp();
       try {
-        if (typeof window.updateUserDisplay === 'function') {
-          await window.updateUserDisplay(profile);
-        }
+        if (typeof window.updateUserDisplay === 'function') await window.updateUserDisplay(profile);
       } catch (e) { console.warn('session recovery display', e); }
-      console.info('Kafe Miad: restored existing profile from Supabase.');
+      console.info('Kafe Miad: server session and registered profile verified.');
     } catch (e) {
-      // Recovery must never hold up the app or block manual registration.
-      console.warn('Kafe Miad session recovery skipped:', e && e.message ? e.message : e);
-    } finally {
-      started = false;
-    }
+      clearCachedUser(); showRegister();
+      console.warn('Kafe Miad auth gate blocked entry:', e && e.message ? e.message : e);
+    } finally { started = false; }
   }
-
+  installGate();
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () { setTimeout(recover, 250); }, { once: true });
-  } else {
-    setTimeout(recover, 250);
-  }
-  window.addEventListener('pageshow', function () { setTimeout(recover, 250); });
+    document.addEventListener('DOMContentLoaded', function () { recover(); }, { once: true });
+  } else { recover(); }
+  window.addEventListener('pageshow', function () { if (!validated) recover(); });
 })();
