@@ -78,7 +78,7 @@
 
       if (!name || !phone || !pin) throw new Error('نام، شماره تماس و رمز ورود را وارد کنید.');
       if (!/^09[0-9]{9}$/.test(phone)) throw new Error('شماره تماس باید ۱۱ رقم و با ۰۹ شروع شود.');
-      if (!/^\d{6,12}$/.test(pin)) throw new Error('رمز باید فقط شامل ۶ تا ۱۲ رقم باشد.');
+      if (!/^\d{8,12}$/.test(pin)) throw new Error('رمز باید فقط شامل ۸ تا ۱۲ رقم باشد.');
 
       var client = window.supabaseClient || window.v12Supabase;
       if (!client || !client.functions || typeof client.functions.invoke !== 'function') {
