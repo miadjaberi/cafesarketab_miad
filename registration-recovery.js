@@ -202,7 +202,8 @@
         }
       }
 
-      // ۳. ذخیره و ورود
+      // ۳. ذخیره و ورود؛ آزادسازی دروازه فقط پس از تأیید سرور
+      window.__kafeServerAuthValidated = true;
       try {
         localStorage.setItem('cafeUser', JSON.stringify(finalUserData));
       } catch (e) {}
