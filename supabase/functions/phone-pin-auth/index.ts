@@ -15,6 +15,19 @@ function emailFor(phone: string) {
   return phone + "@phone.cafemiyad.invalid";
 }
 
+async function rateKey(value: string): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function consumeLimit(admin: ReturnType<typeof createClient>, key: string, limit: number) {
+  return admin.rpc("consume_phone_pin_rate_limit", {
+    p_rate_key: key,
+    p_limit: limit,
+    p_window_seconds: 900
+  });
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return reply(405, { error: "روش درخواست پشتیبانی نمی‌شود." });
@@ -34,12 +47,28 @@ Deno.serve(async (req: Request) => {
   }
   if (!name || name.length > 100) return reply(400, { error: "نام معتبر نیست." });
 
-  // Important: service credentials stay server-side only. Before public deployment,
-  // add durable per-phone/IP throttling and an abuse-control mechanism.
+  // Service-role credentials remain server-side. Limit by phone and gateway IP.
   const admin = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
   const auth = createClient(url, anonKey, { auth: { persistSession: false, autoRefreshToken: false } });
 
   try {
+    const forwarded = req.headers.get("x-forwarded-for") || req.headers.get("cf-connecting-ip") || "unknown";
+    const ip = forwarded.split(",")[0].trim().slice(0, 100) || "unknown";
+    const [phoneKey, ipKey] = await Promise.all([
+      rateKey("phone:" + phone),
+      rateKey("ip:" + ip)
+    ]);
+    const [phoneLimit, ipLimit] = await Promise.all([
+      consumeLimit(admin, phoneKey, 8),
+      consumeLimit(admin, ipKey, 30)
+    ]);
+    if (phoneLimit.error || ipLimit.error) {
+      return reply(503, { error: "کنترل امنیتی سرور آماده نیست؛ بعداً دوباره تلاش کنید." });
+    }
+    if (phoneLimit.data !== true || ipLimit.data !== true) {
+      return reply(429, { error: "تعداد تلاش‌ها زیاد است؛ ۱۵ دقیقه دیگر دوباره تلاش کنید." });
+    }
+
     const { data: existingProfile, error: lookupError } = await admin
       .from("profiles").select("id,name,phone,role,registered_at").eq("phone", phone).maybeSingle();
     if (lookupError) return reply(500, { error: "بررسی حساب در سرور ناموفق بود." });
