@@ -11,7 +11,7 @@
   }
   function clearCachedUser() { try { localStorage.removeItem('cafeUser'); } catch (e) {} }
   function showRegister() {
-    validated = false; window.__kafeServerAuthValidated = false;
+    validated = false;
     var app = byId('app');
     if (app) { app.style.display = 'none'; app.classList.add('hidden'); }
     hide('splashScreen'); hide('termsScreen');
@@ -19,20 +19,19 @@
     if (register) { register.classList.remove('hidden'); register.style.display = 'flex'; }
   }
   function showApp() {
-    validated = true; window.__kafeServerAuthValidated = true;
+    validated = true;
     hide('termsScreen'); hide('splashScreen'); hide('registerScreen');
     var app = byId('app');
     if (app) { app.style.display = 'block'; app.classList.remove('hidden'); }
   }
   function enforceGate() {
-    if (validated || window.__kafeServerAuthValidated === true) return;
+    if (validated) return;
     var app = byId('app');
     if (app && (app.style.display !== 'none' || !app.classList.contains('hidden'))) {
       app.style.display = 'none'; app.classList.add('hidden');
     }
   }
   function installGate() {
-    window.__kafeServerAuthValidated = false;
     var app = byId('app');
     if (app) { app.style.display = 'none'; app.classList.add('hidden'); }
     if (!observer && app && typeof MutationObserver !== 'undefined') {
@@ -40,6 +39,39 @@
       observer.observe(app, { attributes: true, attributeFilter: ['style', 'class'] });
     }
   }
+  // Registration may open the app only after a fresh server-side auth/profile check.
+  async function confirmServerProfile(expectedUserId, expectedPhone) {
+    var c = client();
+    if (!c || !c.auth || !expectedUserId) return false;
+    var sr = await c.auth.getSession();
+    var session = sr && sr.data && sr.data.session;
+    if ((sr && sr.error) || !session || !session.user || session.user.id !== expectedUserId) return false;
+    var ur = await c.auth.getUser();
+    var serverUser = ur && ur.data && ur.data.user;
+    if ((ur && ur.error) || !serverUser || serverUser.id !== expectedUserId) return false;
+    var pr = await c.from('profiles').select('id,name,phone,role,registered_at')
+      .eq('id', serverUser.id).maybeSingle();
+    if (!pr || pr.error || !pr.data) return false;
+    var profile = pr.data;
+    var role = String(profile.role || '').toLowerCase();
+    var phone = typeof profile.phone === 'string' ? profile.phone.replace(/\\s/g, '') : '';
+    var validProfile = profile.id === serverUser.id &&
+      typeof profile.name === 'string' && !!profile.name.trim() &&
+      /^09[0-9]{9}$/.test(phone) &&
+      (role === 'user' || role === 'admin') &&
+      (!expectedPhone || phone === String(expectedPhone).replace(/\\s/g, ''));
+    if (!validProfile) return false;
+    var user = {
+      name: profile.name.trim(), phone: profile.phone,
+      registeredAt: profile.registered_at || '', user_id: profile.id, role: role
+    };
+    try { localStorage.setItem('cafeUser', JSON.stringify(user)); } catch (e) {}
+    validated = true;
+    showApp();
+    return true;
+  }
+  window.kafeConfirmServerProfile = confirmServerProfile;
+
   async function recover() {
     if (started || validated) return;
     started = true; installGate();
