@@ -5,7 +5,50 @@
   'use strict';
 
   var isRegistering = false;
-  var REQUEST_TIMEOUT_MS = 15000;
+  var REQUEST_TIMEOUT_MS = 20000;
+
+  function registrationFeedback(message, type) {
+    type = type || 'info';
+    var button = document.querySelector('#registerScreen button.register-btn');
+    var box = document.getElementById('kmRegistrationFeedback');
+    if (!box && button && button.parentNode) {
+      box = document.createElement('div');
+      box.id = 'kmRegistrationFeedback';
+      box.setAttribute('role', 'status');
+      box.setAttribute('aria-live', 'polite');
+      box.style.cssText = 'display:none;margin-top:12px;padding:11px 12px;border:1px solid rgba(201,168,76,.45);border-radius:12px;background:rgba(7,11,20,.97);color:#F5F0E4;font:700 13px/1.8 Vazirmatn,sans-serif;text-align:center;white-space:pre-wrap;overflow-wrap:anywhere;';
+      button.parentNode.insertBefore(box, button.nextSibling);
+    }
+    if (box) {
+      box.textContent = String(message || '');
+      box.style.display = 'block';
+      box.style.borderColor = type === 'error' ? '#ff6b6b' : (type === 'success' ? '#58d68d' : '#C9A84C');
+      box.style.color = type === 'error' ? '#ffdede' : (type === 'success' ? '#caffdf' : '#F5F0E4');
+    }
+
+    var toast = document.getElementById('notification');
+    if (toast) {
+      toast.style.setProperty('position', 'fixed', 'important');
+      toast.style.setProperty('z-index', '2147483647', 'important');
+      toast.style.setProperty('top', 'calc(12px + env(safe-area-inset-top, 0px))', 'important');
+      toast.style.setProperty('left', '12px', 'important');
+      toast.style.setProperty('right', '12px', 'important');
+      toast.style.setProperty('max-width', 'none', 'important');
+      toast.style.setProperty('padding', '12px 14px', 'important');
+      toast.style.setProperty('border-radius', '14px', 'important');
+      toast.style.setProperty('background', type === 'error' ? '#7f1d1d' : (type === 'success' ? '#14532d' : '#172033'), 'important');
+      toast.style.setProperty('color', '#ffffff', 'important');
+      toast.style.setProperty('font-weight', '800', 'important');
+      toast.style.setProperty('line-height', '1.8', 'important');
+      toast.style.setProperty('box-shadow', '0 8px 28px rgba(0,0,0,.45)', 'important');
+    }
+    try {
+      if (typeof window.showNotification === 'function') window.showNotification(message, type);
+      else if (toast) { toast.textContent = String(message || ''); toast.style.display = 'block'; }
+    } catch (e) {
+      if (toast) { toast.textContent = String(message || ''); toast.style.display = 'block'; }
+    }
+  }
 
   function withTimeout(promise, message) {
     var timer;
@@ -23,9 +66,7 @@
 
   window.registerUser = async function () {
     if (isRegistering) {
-      if (typeof showNotification === 'function') {
-        showNotification('لطفاً چند لحظه صبر کنید...', 'info');
-      }
+      registrationFeedback('درخواست قبلی هنوز در حال انجام است؛ لطفاً چند لحظه صبر کنید.', 'info');
       return;
     }
     isRegistering = true;
@@ -37,8 +78,9 @@
       : '';
     if (registerButton) {
       registerButton.disabled = true;
-      registerButton.textContent = 'در حال ارسال...';
+      registerButton.textContent = 'در حال بررسی...';
     }
+    registrationFeedback('در حال بررسی اتصال و ارسال درخواست به سرور…', 'info');
 
     try {
       var nameEl = document.getElementById('regName');
@@ -47,17 +89,17 @@
       var phone = phoneEl ? (phoneEl.value || '').replace(/\s/g, '').trim() : '';
 
       if (!name || !phone) {
-        if (typeof showNotification === 'function') showNotification('لطفاً نام و شماره تماس را وارد کنید', 'error');
+        registrationFeedback('لطفاً نام و شماره تماس را وارد کنید.', 'error');
         return;
       }
       if (!/^09[0-9]{9}$/.test(phone)) {
-        if (typeof showNotification === 'function') showNotification('شماره تماس نامعتبر است', 'error');
+        registrationFeedback('شماره تماس نامعتبر است؛ شماره را با ۰۹ شروع کنید و ۱۱ رقم وارد کنید.', 'error');
         return;
       }
 
       var supabaseClient = window.supabaseClient || window.v12Supabase || null;
       if (!supabaseClient) {
-        if (typeof showNotification === 'function') showNotification('❌ اتصال آنلاین در دسترس نیست', 'error');
+        registrationFeedback('ثبت‌نام انجام نشد: اتصال امن به سرور آماده نیست. اینترنت را بررسی کنید و دوباره تلاش کنید.', 'error');
         return;
       }
 
@@ -174,26 +216,24 @@
       }
 
       if (typeof updateUserDisplay === 'function') {
-        await withTimeout(
-          updateUserDisplay(finalUserData),
-          'ارتباط با سرور برقرار نشد'
-        );
+        try {
+          await withTimeout(updateUserDisplay(finalUserData), 'به‌روزرسانی نمای کاربر زمان‌بر شد');
+        } catch (uiError) {
+          // The profile write was already confirmed by Supabase. Do not misreport
+          // a UI refresh issue as a failed server registration.
+          console.warn('Registration confirmed; user display refresh failed:', uiError);
+        }
       }
 
-      if (typeof showNotification === 'function') {
-        showNotification(
-          isReturning
-            ? '✅ خوش آمدید دوباره ' + finalUserData.name
-            : '✅ ورود کاربر انجام شد و حساب روی سرور ثبت شد.'
-        );
-      }
+      registrationFeedback(
+        isReturning
+          ? '✅ خوش آمدید دوباره ' + finalUserData.name
+          : '✅ ثبت‌نام توسط سرور تأیید شد و حساب شما ثبت گردید.',
+        'success'
+      );
     } catch (e) {
       console.error('user entry', e);
-      if (typeof showNotification === 'function') {
-        showNotification('❌ ثبت‌نام انجام نشد: ' + (e.message || 'ارتباط با سرور برقرار نشد'), 'error');
-      } else {
-        alert('ثبت‌نام انجام نشد: ' + (e.message || 'ارتباط با سرور برقرار نشد'));
-      }
+      registrationFeedback('❌ ثبت‌نام انجام نشد: ' + (e.message || 'ارتباط با سرور برقرار نشد') + '\nاطلاعات شما به‌صورت محلی تأیید نمی‌شود؛ پس از رفع خطا دوباره تلاش کنید.', 'error');
     } finally {
       isRegistering = false;
       if (registerButton) {
