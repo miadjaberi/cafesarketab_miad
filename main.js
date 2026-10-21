@@ -6322,7 +6322,7 @@ document.addEventListener('DOMContentLoaded',function(){try{window.applyGalleryI
     hideEl('termsScreen');
     try {
       if (savedUser()) { bootGate(); return; }
-      showSplashThen(function(){ hideEl('splashScreen'); bootGate(); }, 700);
+      showSplashThen(function(){ hideEl('splashScreen'); bootGate(); }, 2500);
     } catch (e) {
       console.error('Accept Terms failed:', e);
       acceptingTerms = false;
@@ -6338,7 +6338,7 @@ document.addEventListener('DOMContentLoaded',function(){try{window.applyGalleryI
     console.error('Accept Terms handler unavailable; using guarded fallback');
     try { localStorage.setItem(TERMS_KEY, '1'); } catch (err) {}
     hideEl('termsScreen');
-    showSplashThen(function(){ hideEl('splashScreen'); bootGate(); }, 700);
+    showSplashThen(function(){ hideEl('splashScreen'); bootGate(); }, 2500);
   }, true);
   function startupRequestTimeout(promise, ms, label){
     return Promise.race([promise, new Promise(function(_, reject){
