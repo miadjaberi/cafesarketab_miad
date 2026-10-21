@@ -60,8 +60,13 @@ jobs:
       - name: Install Capacitor
         run: |
           npm init -y
-          npm install @capacitor/core @capacitor/android
-          npm install --save-dev @capacitor/cli
+          npm install @capacitor/core @capacitor/android @capacitor/splash-screen
+          npm install --save-dev @capacitor/cli @capacitor/assets
+
+      - name: Install image tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y imagemagick
 
       - name: Configure Capacitor
         shell: bash
@@ -70,10 +75,25 @@ jobs:
           {
             "appId": "com.miadjaberi.cafesarketabmiad",
             "appName": "کافه سرکتاب میعاد",
-            "webDir": "www"
+            "webDir": "www",
+            "plugins": {
+              "SplashScreen": {
+                "launchShowDuration": 2500,
+                "launchAutoHide": true,
+                "launchFadeOutDuration": 250,
+                "backgroundColor": "#070B14",
+                "showSpinner": false
+              }
+            }
           }
           EOF
           npx cap add android
+          mkdir -p resources
+          convert icon512.png -resize 1024x1024 -background '#070B14' -gravity center -extent 1024x1024 resources/icon-only.png
+          convert icon512.png -resize 1024x1024 -background none -gravity center -extent 1024x1024 resources/icon-foreground.png
+          convert -size 1024x1024 xc:'#070B14' resources/icon-background.png
+          convert assets/splash.jpg -resize '2732x2732^' -gravity center -extent 2732x2732 resources/splash.png
+          npx capacitor-assets generate --android --assetPath resources --iconBackgroundColor '#070B14' --splashBackgroundColor '#070B14'
           npx cap sync android
 
       - name: Build debug APK
