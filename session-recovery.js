@@ -91,6 +91,12 @@
       if ((ur && ur.error) || !serverUser || serverUser.id !== session.user.id) {
         clearCachedUser(); showRegister(); return;
       }
+      if (serverUser.is_anonymous) {
+        try { await c.auth.signOut(); } catch (e) {}
+        clearCachedUser();
+        showRegister();
+        return;
+      }
       var pr = await c.from('profiles').select('id,name,phone,role,registered_at')
         .eq('id', serverUser.id).maybeSingle();
       if (pr.error) { clearCachedUser(); showRegister(); return; }
