@@ -1,0 +1,83 @@
+name: Build Android APK
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-apk:
+    name: Build debug APK with Capacitor
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Prepare web assets for Capacitor
+        shell: bash
+        run: |
+          mkdir -p www
+          rsync -a --delete \
+            --exclude='.git/' \
+            --exclude='.github/' \
+            --exclude='node_modules/' \
+            --exclude='android/' \
+            --exclude='www/' \
+            --exclude='package.json' \
+            --exclude='package-lock.json' \
+            --exclude='capacitor.config.*' \
+            ./ www/
+          test -f www/index.html || { echo "ERROR: index.html was not found in the repository root."; exit 1; }
+
+      - name: Install Capacitor
+        run: |
+          npm init -y
+          npm install @capacitor/core @capacitor/android
+          npm install --save-dev @capacitor/cli
+
+      - name: Configure Capacitor
+        shell: bash
+        run: |
+          cat > capacitor.config.json <<'EOF'
+          {
+            "appId": "com.miadjaberi.cafesarketabmiad",
+            "appName": "کافه سرکتاب میعاد",
+            "webDir": "www"
+          }
+          EOF
+          npx cap add android
+          npx cap sync android
+
+      - name: Build debug APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cafe-miad-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
