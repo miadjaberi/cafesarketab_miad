@@ -204,7 +204,13 @@
 
       // ۳. ورود فقط پس از تأیید دوباره نشست و پروفایل از خود سرور
       if (typeof window.kafeConfirmServerProfile !== 'function' ||
-          !(await window.kafeConfirmServerProfile(finalUserData.user_id, finalUserData.phone))) {
+          !(await withTimeout(
+            window.kafeConfirmServerProfile(
+              finalUserData.user_id,
+              finalUserData.phone
+            ),
+            'تأیید حساب از سرور بیش از ۲۰ ثانیه طول کشید؛ دوباره تلاش کنید.'
+          ))) {
         throw new Error('ثبت حساب در دیتابیس تأیید نشد؛ ورود انجام نشد.');
       }
 
