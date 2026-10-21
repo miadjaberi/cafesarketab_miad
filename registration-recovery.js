@@ -46,7 +46,7 @@
     wrap.style.marginTop = '12px';
     var label = document.createElement('label');
     label.htmlFor = 'regPin';
-    label.textContent = 'رمز ورود (۶ تا ۱۲ رقم)';
+    label.textContent = 'رمز ورود (۸ تا ۱۲ رقم)';
     var pin = document.createElement('input');
     pin.id = 'regPin';
     pin.type = 'password';
