@@ -202,18 +202,10 @@
         }
       }
 
-      // ۳. ذخیره و ورود؛ آزادسازی دروازه فقط پس از تأیید سرور
-      window.__kafeServerAuthValidated = true;
-      try {
-        localStorage.setItem('cafeUser', JSON.stringify(finalUserData));
-      } catch (e) {}
-
-      var rs = document.getElementById('registerScreen');
-      var app = document.getElementById('app');
-      if (rs) rs.style.display = 'none';
-      if (app) {
-        app.style.display = 'block';
-        app.classList.remove('hidden');
+      // ۳. ورود فقط پس از تأیید دوباره نشست و پروفایل از خود سرور
+      if (typeof window.kafeConfirmServerProfile !== 'function' ||
+          !(await window.kafeConfirmServerProfile(finalUserData.user_id, finalUserData.phone))) {
+        throw new Error('ثبت حساب در دیتابیس تأیید نشد؛ ورود انجام نشد.');
       }
 
       if (typeof updateUserDisplay === 'function') {
