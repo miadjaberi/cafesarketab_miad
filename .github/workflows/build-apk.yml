@@ -32,6 +32,9 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          # Explicitly install supported SDK packages; do not request the removed legacy "tools" package.
+          packages: 'platform-tools,platforms;android-34,build-tools;34.0.0'
 
       - name: Prepare web assets for Capacitor
         shell: bash
@@ -82,4 +85,4 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-# Trigger initial APK build on main; no application files changed.
+# Android SDK packages are explicitly pinned to avoid requesting the removed legacy "tools" package.
