@@ -6605,6 +6605,15 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){lo
     }
   }
 
+  /* KAFE_OPERATIONAL_MODAL_HOME_V1 — بستن نتیجهٔ عملیات به منوی مودال‌ها */
+  document.addEventListener('click', function (event) {
+    var action = event.target && event.target.closest ? event.target.closest('#v7OperationalResultModal #v7OpModalCloseX, #v7OperationalResultModal #v7OpModalGotIt') : null;
+    if (!action) return;
+    try {
+      if (typeof window.scrollToPage === 'function') window.scrollToPage(1);
+    } catch (e) {}
+  });
+
   document.addEventListener('click', function (event) {
     var close = event.target && event.target.closest ? event.target.closest('#productDetailModal .modal-glass-close') : null;
     if (!close) return;
