@@ -5763,16 +5763,28 @@ document.addEventListener('DOMContentLoaded',function(){try{window.applyGalleryI
         // ===== سن ازدواج V8 — فرمول اصلی: روز و ماه دو رقمی × سال شمسی =====
 var selectedMarriageGender='male';
 window.calculateMarriageAge = function calculateMarriageAge(){
-  var d=parseInt((document.getElementById('birthDay')||{}).value,10),m=parseInt((document.getElementById('birthMonth')||{}).value,10),y=parseInt((document.getElementById('birthYear')||{}).value,10);
+  var dayInput=document.getElementById('birthDay'),monthInput=document.getElementById('birthMonth');
+  var d=parseInt((dayInput||{}).value,10),m=parseInt((monthInput||{}).value,10),y=parseInt((document.getElementById('birthYear')||{}).value,10);
   if(!d||d<1||d>31||!m||m<1||m>12||!y||y<1200||y>1450){showNotification('روز ۱ تا ۳۱، ماه ۱ تا ۱۲ و سال ۱۲۰۰ تا ۱۴۵۰ وارد کنید','error');return;}
-  var dm=parseInt(String(d).padStart(2,'0')+String(m).padStart(2,'0'),10), result=dm*y, digits=String(result).replace(/[^0-9]/g,'').split('').map(Number).filter(Boolean), primary=digits.length?Math.max.apply(null,digits):0;
+  var dayText=String(d).padStart(2,'0'),monthText=String(m).padStart(2,'0');
+  var dm=parseInt(dayText+monthText,10),result=dm*y,digits=String(result).split('').map(Number);
+  var primary=digits.length?Math.max.apply(null,digits):0,primaryIndex=digits.indexOf(primary);
+  var ages=[17+primaryIndex,25+primaryIndex,33+primaryIndex];
   var box=document.getElementById('marriageAgeResult'),value=document.getElementById('marriageAgeValue'),desc=document.getElementById('marriageAgeDescription'),advice=document.getElementById('marriageAgeAdvice');
   if(value)value.textContent='عدد محاسبه: '+result;
-  if(desc)desc.innerHTML='📅 تاریخ ورودی: '+String(d).padStart(2,'0')+'/'+String(m).padStart(2,'0')+'/'+y+'<br>🔢 عدد روز-ماه: '+dm+'<br>⭐ بزرگ‌ترین رقم نتیجه (شاخص اصلی): '+primary;
-  if(advice)advice.innerHTML='<strong>راهنما:</strong><br>این ابزار بر اساس فرمول داده‌شده یک شاخص عددی ارائه می‌کند و به‌تنهایی پیش‌بینی قطعی درباره ازدواج نیست.';
+  if(desc)desc.innerHTML='📅 تاریخ ورودی: '+dayText+'/'+monthText+'/'+y+'<br>🔢 عدد روز-ماه: '+dm+'<br>⭐ بزرگ‌ترین رقم نتیجه: '+primary+'<br>📍 جایگاه اولین تکرار آن (از صفر): '+primaryIndex;
+  if(advice)advice.innerHTML='<strong>راهنما:</strong><br>این سه عدد بر اساس فرمول ارائه‌شده محاسبه شده‌اند و پیش‌بینی قطعی درباره زمان ازدواج نیستند.';
   if(box)box.style.display='block';
-  var three=document.getElementById('marriageThreeResult');if(three)three.style.display='none';
-  try{if(typeof window.v8ServerFirstSave==='function')window.v8ServerFirstSave('marriage_age',{day:d,month:m,year:y,result:result,primaryIndex:primary})}catch(e){}
+  var three=document.getElementById('marriageThreeResult');
+  if(three){
+    three.style.display='block';
+    var outYears=document.getElementById('marriageOutYears'),outMonths=document.getElementById('marriageOutMonths'),outDays=document.getElementById('marriageOutDays');
+    if(outYears)outYears.textContent=String(ages[0]);
+    if(outMonths)outMonths.textContent=String(ages[1]);
+    if(outDays)outDays.textContent=String(ages[2]);
+    var caption=three.querySelector('.marriage-three-caption');if(caption)caption.textContent='سه سن احتمالی (سال)';
+  }
+  try{if(typeof window.v8ServerFirstSave==='function')window.v8ServerFirstSave('marriage_age',{day:d,month:m,year:y,result:result,primaryIndex:primaryIndex,ages:ages})}catch(e){}
 };
 
 
