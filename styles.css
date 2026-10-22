@@ -2977,3 +2977,31 @@ header .header-brand {
 @media (max-width: 480px) {
   :root { --header-height: 112px !important; }
 }
+
+
+/* KAFE_MODAL_CLEAR_AND_HOME_V1 — دکمهٔ پاک‌کن در سربرگ مودال */
+.modal-glass-header .kafe-modal-clear-btn {
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-inline-start: auto;
+  padding: 0;
+  border: 1px solid rgba(201,168,76,.48);
+  border-radius: 10px;
+  background: rgba(201,168,76,.10);
+  color: #F5D76E;
+  font-size: 21px;
+  line-height: 1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.modal-glass-header .kafe-modal-clear-btn:active {
+  background: rgba(201,168,76,.24);
+  transform: scale(.96);
+}
+.modal-glass-header .modal-glass-close {
+  flex: 0 0 34px;
+}
