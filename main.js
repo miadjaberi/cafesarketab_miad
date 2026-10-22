@@ -6826,7 +6826,8 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){lo
       if(responsibility){
         responsibility.textContent='این متن برای مطالعه و اطلاع‌رسانی نمایش داده می‌شود. مشاهده شرایط در مودال «شرح حال» نیازمند فشردن دکمه یا تأیید جداگانه نیست.';
       }
-      target.replaceChildren(copy);
+      while(target.firstChild) target.removeChild(target.firstChild);
+      target.appendChild(copy);
       target.setAttribute('data-filled','1');
     } catch(e) { console.warn('نمایش شرایط در مودال شرح حال:',e); }
   }
