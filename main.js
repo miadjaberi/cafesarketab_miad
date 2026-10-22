@@ -6583,15 +6583,12 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){lo
       if (modal) modal.classList.remove('active');
       document.body.style.overflow = '';
     }
-    // صفحهٔ مودال‌ها، منوی اصلی ابزارهای تخصصی برنامه است.
+    // بازگشت مستقیم به منوی مودال‌های تخصصی؛ به صفحه ابزارهای قدیمی نرو.
     try {
-      if (typeof window.scrollToPage === 'function') window.scrollToPage(1);
-      else {
-        var container = document.getElementById('pagesContainer');
-        if (container && container.children[1]) {
-          container.children[1].scrollIntoView({ behavior: 'smooth', inline: 'start' });
-        }
-      }
+      var menuPage = document.getElementById('pageModals');
+      if (menuPage) menuPage.scrollIntoView({ behavior: 'auto', inline: 'start', block: 'nearest' });
+      if (typeof updateSwipeDots === 'function') updateSwipeDots(1);
+      if (typeof updateBottomNav === 'function') updateBottomNav(1);
     } catch (e) {}
   };
 
@@ -6777,13 +6774,10 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){lo
 
   function returnToModalMenu() {
     try {
-      if (typeof window.scrollToPage === 'function') {
-        window.scrollToPage(1);
-        return;
-      }
-      var container = document.getElementById('pagesContainer');
-      var menuPage = container && container.children[1];
-      if (menuPage) menuPage.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+      var menuPage = document.getElementById('pageModals');
+      if (menuPage) menuPage.scrollIntoView({ behavior: 'auto', inline: 'start', block: 'nearest' });
+      if (typeof updateSwipeDots === 'function') updateSwipeDots(1);
+      if (typeof updateBottomNav === 'function') updateBottomNav(1);
     } catch (e) {}
   }
 
