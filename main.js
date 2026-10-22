@@ -6808,7 +6808,7 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){lo
 })();
 
 
-/* مودال «شرح حال»: نمایش فقط‌خواندنیِ شرایط و ضوابط، بدون دکمه یا تأیید */
+/* مودال «شرح حال»: نمایش کامل شرایط و فرم تأیید مطالعه */
 (function(){
   function fillProfileTerms(){
     try {
@@ -6816,15 +6816,42 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){lo
       var source=document.querySelector('#termsScreen .terms-inner');
       if(!target || !source || target.getAttribute('data-filled')==='1') return;
       var copy=source.cloneNode(true);
-      var responsibility=copy.querySelector('.terms-card:last-child p');
-      if(responsibility){
-        responsibility.textContent='این متن برای مطالعه و اطلاع‌رسانی نمایش داده می‌شود. مشاهده شرایط در مودال «شرح حال» نیازمند فشردن دکمه یا تأیید جداگانه نیست.';
-      }
+      /* این مودال فقط برای مطالعه است؛ دکمه پذیرش صفحه ورود داخل کپی نمایش داده نشود. */
+      var footer=copy.querySelector('.terms-footer-bar');
+      if(footer) footer.remove();
+      copy.style.cssText='display:block;flex:none;overflow:visible;max-height:none;width:100%;max-width:none;margin:0;padding:8px 2px 14px;box-sizing:border-box;background:transparent;border:0;border-radius:0;box-shadow:none;';
+      copy.querySelectorAll('[id]').forEach(function(el){ el.removeAttribute('id'); });
       while(target.firstChild) target.removeChild(target.firstChild);
       target.appendChild(copy);
       target.setAttribute('data-filled','1');
     } catch(e) { console.warn('نمایش شرایط در مودال شرح حال:',e); }
   }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',fillProfileTerms);
-  else fillProfileTerms();
+
+  window.acknowledgeProfileTerms=function(){
+    var check=document.getElementById('profileTermsAgreeCheck');
+    if(!check || !check.checked) return;
+    if(typeof window.closeModalGlass==='function') window.closeModalGlass('developingModal');
+    else {
+      var modal=document.getElementById('developingModal');
+      if(modal) modal.style.display='none';
+    }
+  };
+
+  function bindAcknowledgement(){
+    var check=document.getElementById('profileTermsAgreeCheck');
+    var button=document.getElementById('profileTermsAgreeButton');
+    if(!check || !button || check.getAttribute('data-bound')==='1') return;
+    check.addEventListener('change',function(){
+      button.disabled=!check.checked;
+      button.style.opacity=check.checked?'1':'.55';
+    });
+    check.setAttribute('data-bound','1');
+  }
+
+  function boot(){
+    fillProfileTerms();
+    bindAcknowledgement();
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot);
+  else boot();
 })();
