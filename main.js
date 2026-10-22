@@ -6511,6 +6511,98 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){lo
 })();
 
 
+
+/* KAFE_MODAL_CLEAR_AND_HOME_V1 — پاک‌کردن فرم جاری و بازگشت به منوی مودال‌ها */
+(function () {
+  'use strict';
+
+  function clearModalInputs(modal) {
+    if (!modal) return;
+    var fields = modal.querySelectorAll('input, textarea, select');
+    fields.forEach(function (field) {
+      if (field.disabled || field.readOnly || field.type === 'hidden' ||
+          field.matches('[data-preserve-on-clear="true"]')) return;
+      var type = (field.type || '').toLowerCase();
+      if (type === 'button' || type === 'submit' || type === 'reset' || type === 'image') return;
+      if (type === 'checkbox' || type === 'radio') {
+        field.checked = false;
+      } else if (type === 'file') {
+        field.value = '';
+      } else if (field.tagName === 'SELECT') {
+        field.selectedIndex = -1;
+      } else {
+        field.value = '';
+      }
+    });
+    try {
+      if (typeof window.showNotification === 'function') {
+        window.showNotification('اطلاعات واردشده در این پنجره پاک شد');
+      }
+    } catch (e) {}
+  }
+
+  function addClearButtons(root) {
+    (root || document).querySelectorAll('.modal-glass-header').forEach(function (header) {
+      if (header.querySelector('.kafe-modal-clear-btn')) return;
+      var close = header.querySelector('.modal-glass-close');
+      if (!close) return;
+      var modal = header.closest('.modal-glass');
+      if (!modal) return;
+      var clear = document.createElement('button');
+      clear.type = 'button';
+      clear.className = 'kafe-modal-clear-btn';
+      clear.setAttribute('aria-label', 'پاک کردن اطلاعات این پنجره');
+      clear.setAttribute('title', 'پاک کردن اطلاعات واردشده');
+      clear.textContent = '⌫';
+      clear.addEventListener('click', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        clearModalInputs(modal);
+      });
+      header.insertBefore(clear, close);
+    });
+  }
+
+  var originalClose = window.closeModalGlass;
+  window.closeModalGlass = function (modalId) {
+    if (typeof originalClose === 'function') originalClose.apply(this, arguments);
+    else {
+      var modal = document.getElementById(modalId);
+      if (modal) modal.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+    // صفحهٔ مودال‌ها، منوی اصلی ابزارهای تخصصی برنامه است.
+    try {
+      if (typeof window.scrollToPage === 'function') window.scrollToPage(1);
+      else {
+        var container = document.getElementById('pagesContainer');
+        if (container && container.children[1]) {
+          container.children[1].scrollIntoView({ behavior: 'smooth', inline: 'start' });
+        }
+      }
+    } catch (e) {}
+  };
+
+  function boot() {
+    addClearButtons(document);
+    if (!window.__kafeModalClearObserver && document.body && window.MutationObserver) {
+      window.__kafeModalClearObserver = new MutationObserver(function (records) {
+        records.forEach(function (record) {
+          record.addedNodes.forEach(function (node) {
+            if (node.nodeType !== 1) return;
+            if (node.matches && node.matches('.modal-glass-header')) addClearButtons(node.parentNode || document);
+            else if (node.querySelectorAll) addClearButtons(node);
+          });
+        });
+      });
+      window.__kafeModalClearObserver.observe(document.body, { childList: true, subtree: true });
+    }
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+})();
+
 /* APP_THEME_MODE — تیره طلایی (پیش‌فرض) / روشن */
 (function(){
   function applyMode(mode){
