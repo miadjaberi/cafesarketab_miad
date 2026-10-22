@@ -6583,8 +6583,40 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){lo
     } catch (e) {}
   };
 
+  /* KAFE_PRODUCT_DETAIL_CLEAR_V1 — پنجرهٔ جزئیات محصول ساختار سربرگ معمولی ندارد */
+  function addProductDetailControls() {
+    var modal = document.getElementById('productDetailModal');
+    if (!modal) return;
+    var close = modal.querySelector('.modal-glass-close');
+    var imageWrap = close && close.parentElement;
+    if (imageWrap && !imageWrap.querySelector('.kafe-product-clear-btn')) {
+      var clear = document.createElement('button');
+      clear.type = 'button';
+      clear.className = 'kafe-product-clear-btn';
+      clear.setAttribute('aria-label', 'پاک کردن اطلاعات این پنجره');
+      clear.setAttribute('title', 'پاک کردن اطلاعات واردشده');
+      clear.textContent = '⌫';
+      clear.addEventListener('click', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        clearModalInputs(modal);
+      });
+      imageWrap.insertBefore(clear, close);
+    }
+  }
+
+  document.addEventListener('click', function (event) {
+    var close = event.target && event.target.closest ? event.target.closest('#productDetailModal .modal-glass-close') : null;
+    if (!close) return;
+    // دکمهٔ ضربدر جزئیات محصول، پس از اجرای closeProductDetail به منوی مودال‌ها برگردد.
+    try {
+      if (typeof window.scrollToPage === 'function') window.scrollToPage(1);
+    } catch (e) {}
+  });
+
   function boot() {
     addClearButtons(document);
+    addProductDetailControls();
     if (!window.__kafeModalClearObserver && document.body && window.MutationObserver) {
       window.__kafeModalClearObserver = new MutationObserver(function (records) {
         records.forEach(function (record) {
