@@ -6573,11 +6573,11 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){lo
     }
     // صفحهٔ مودال‌ها، منوی اصلی ابزارهای تخصصی برنامه است.
     try {
-      if (typeof window.scrollToPage === 'function') window.scrollToPage(2);
+      if (typeof window.scrollToPage === 'function') window.scrollToPage(1);
       else {
         var container = document.getElementById('pagesContainer');
-        if (container && container.children[2]) {
-          container.children[2].scrollIntoView({ behavior: 'smooth', inline: 'start' });
+        if (container && container.children[1]) {
+          container.children[1].scrollIntoView({ behavior: 'smooth', inline: 'start' });
         }
       }
     } catch (e) {}
