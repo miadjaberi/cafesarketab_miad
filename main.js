@@ -3296,7 +3296,7 @@ async function submitProductOrder() {
             {id:'asmaniModal', title:'اسماء الحسنی', icon:'🌟'},
             {id:'vefqModal', title:'طلسم‌ساز وفق', icon:'🔮'},
             {id:'marriageAgeModal', title:'سن ازدواج', icon:'💍'},
-            {id:'developingModal', title:'در حال توسعه', icon:'🚧'}
+            {id:'developingModal', title:'شرح حال', icon:'📋'}
         ];
 
         // ============================================================
@@ -4906,7 +4906,7 @@ async function submitProductOrder() {
                 {id:'mokelModal', title:'استخراج موکل', icon:'📿'},
                 {id:'asmaniModal', title:'اسماء الحسنی', icon:'🌟'},
                 {id:'marriageAgeModal', title:'سن ازدواج', icon:'💍'},
-                {id:'developingModal', title:'در حال توسعه', icon:'🚧'}
+                {id:'developingModal', title:'شرح حال', icon:'📋'}
             ];
             // اگر modalList سراسری هست از آن استفاده کن
             try {
@@ -6811,4 +6811,25 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){lo
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
+})();
+
+
+/* مودال «شرح حال»: نمایش فقط‌خواندنیِ شرایط و ضوابط، بدون دکمه یا تأیید */
+(function(){
+  function fillProfileTerms(){
+    try {
+      var target=document.getElementById('profileTermsContent');
+      var source=document.querySelector('#termsScreen .terms-inner');
+      if(!target || !source || target.getAttribute('data-filled')==='1') return;
+      var copy=source.cloneNode(true);
+      var responsibility=copy.querySelector('.terms-card:last-child p');
+      if(responsibility){
+        responsibility.textContent='این متن برای مطالعه و اطلاع‌رسانی نمایش داده می‌شود. مشاهده شرایط در مودال «شرح حال» نیازمند فشردن دکمه یا تأیید جداگانه نیست.';
+      }
+      target.replaceChildren(copy);
+      target.setAttribute('data-filled','1');
+    } catch(e) { console.warn('نمایش شرایط در مودال شرح حال:',e); }
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',fillProfileTerms);
+  else fillProfileTerms();
 })();
