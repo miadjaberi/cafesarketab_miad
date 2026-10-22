@@ -6729,13 +6729,20 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){lo
   function decorate(modal) {
     if (!modal || modal.dataset.kafeDetailedGuide === '1') return;
     var header = modal.querySelector('.modal-glass-header');
-    if (!header) return;
     var guide = document.createElement('section');
     guide.className = 'kafe-modal-detailed-guide';
     guide.setAttribute('role', 'note');
     guide.innerHTML = '<div class="kafe-modal-guide-title">راهنمای این پنجره</div><p></p>';
     guide.querySelector('p').textContent = getGuide(modal);
-    header.insertAdjacentElement('afterend', guide);
+    if (header) {
+      header.insertAdjacentElement('afterend', guide);
+    } else {
+      /* پنجره‌های ویژه مثل جزئیات محصول سربرگ استاندارد ندارند. */
+      var content = modal.querySelector('.modal-glass-content') || modal;
+      var body = content.querySelector('.ig-product-body');
+      if (body) body.insertBefore(guide, body.firstChild);
+      else content.insertBefore(guide, content.firstChild);
+    }
 
     /* متن‌های کوتاه راهنمای قدیمی حذف می‌شوند؛ پیام‌های پرداخت/امنیتی حفظ می‌شوند. */
     modal.querySelectorAll('.modal-guide').forEach(function (old) {
