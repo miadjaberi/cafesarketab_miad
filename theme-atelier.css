@@ -46,8 +46,10 @@ body{
 header{
   height:var(--header-height) !important;
   padding:10px 14px 8px !important;
-  background:transparent !important;
+  background:rgba(8,12,20,.72) !important;
   border-bottom:1px solid var(--line) !important;
+  backdrop-filter:blur(18px) saturate(140%) !important;
+  -webkit-backdrop-filter:blur(18px) saturate(140%) !important;
   box-shadow:0 10px 30px rgba(0,0,0,.25) !important;
 }
 .header-top{
@@ -516,19 +518,3 @@ body{
 
 /* neutralize conflicting atelier text colors */
 body, p, span, label, a { color: inherit; }
-
-
-/* KAFE MIAD — header background image only; keep real logo and controls above it */
-header{
-  background-image: url("https://evxxvnlwtbaqpjbjaxdk.supabase.co/storage/v1/object/public/public-assets/products/1792368404765-hqme2g6egz7.webp") !important;
-  background-size: cover !important;
-  background-position: center center !important;
-  background-repeat: no-repeat !important;
-}
-
-header, .header-top {
-    background-color: transparent !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    box-shadow: none !important;
-}

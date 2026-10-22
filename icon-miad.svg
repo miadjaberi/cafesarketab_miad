@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#102e68"/><stop offset="1" stop-color="#030a20"/></linearGradient><linearGradient id="gold" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#fff0a0"/><stop offset=".42" stop-color="#ffc43d"/><stop offset="1" stop-color="#a85d08"/></linearGradient></defs>
-<rect width="512" height="512" rx="94" fill="url(#bg)"/><rect x="24" y="24" width="464" height="464" rx="78" fill="none" stroke="url(#gold)" stroke-width="5"/><circle cx="256" cy="242" r="178" fill="none" stroke="url(#gold)" stroke-width="5"/><circle cx="256" cy="242" r="151" fill="none" stroke="#dba62e" stroke-width="2" opacity=".7"/>
-<path d="M256 70l10 24 25 2-19 16 6 25-22-14-22 14 6-25-19-16 25-2z" fill="url(#gold)"/>
-<path d="M106 335V166h46l104 126 104-126h46v169h-47V236l-103 120-103-120v99z" fill="url(#gold)" stroke="#ffe8a0" stroke-width="2" stroke-linejoin="round"/>
-<path d="M226 190c-13-30 19-43 30-67 11 24 39 39 27 66-7 14-20 20-27 35-7-15-22-20-30-34z" fill="url(#gold)" opacity=".95"/>
-<path d="M93 379q81-65 163 0 82-65 163 0l-18 13q-73-46-145 4-72-50-145-4z" fill="url(#gold)" stroke="#fce28b" stroke-width="2"/>
-<path d="M215 397h82l-9 38q-32 24-64 0z" fill="url(#gold)" stroke="#ffe8a0" stroke-width="3"/><path d="M297 405q34-8 21 20l-18 8" fill="none" stroke="url(#gold)" stroke-width="8"/><path d="M244 387q-18-23 2-35m18 35q-7-20 8-30" fill="none" stroke="#ffe8a0" stroke-width="5" stroke-linecap="round"/>
-<text x="256" y="470" font-family="serif" font-weight="bold" font-size="23" text-anchor="middle" fill="#ffd45d">MIAD</text></svg>

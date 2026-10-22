@@ -1,37 +1,35 @@
 {
-  "id": "https://miadjaberi.github.io/cafesarketab_miad/",
+  "id": "/",
   "name": "کافه سرکتاب میعاد",
   "short_name": "کافه میعاد",
-  "description": "کافه سرکتاب میعاد — آموزش، محتوا و فروش محصولات علوم حروف، ابجد، رمل و مشاوره تخصصی",
+  "description": "آموزش، محتوا و فروش محصولات کافه سرکتاب میعاد",
   "lang": "fa",
   "dir": "rtl",
-  "start_url": "./index.html?source=pwa",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "display_override": [
-    "standalone",
-    "minimal-ui"
-  ],
   "orientation": "portrait-primary",
   "background_color": "#070B14",
   "theme_color": "#070B14",
-  "categories": [
-    "education",
-    "lifestyle",
-    "shopping"
-  ],
+  "categories": ["education", "shopping", "lifestyle"],
   "icons": [
     {
-      "src": "./icon192.png?v=20261014-rc21",
+      "src": "./icon192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icon512.png?v=20261014-rc21",
+      "src": "./icon512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
+    },
+    {
+      "src": "./icon512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "shortcuts": [
@@ -41,6 +39,5 @@
       "url": "./index.html",
       "description": "باز کردن کافه سرکتاب میعاد"
     }
-  ],
-  "prefer_related_applications": false
+  ]
 }

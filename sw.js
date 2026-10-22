@@ -1,31 +1,24 @@
-/* کافه سرکتاب میعاد — نسخهٔ پوستهٔ استاتیک.
-   داده‌های سوپابیس کش نمی‌شوند؛ عملیات خرید و حساب باید با تأیید سرور انجام شوند. */
-const CACHE_VERSION = 'kafe-miad-v700.8-header-fix';
-const SHELL_CACHE = 'shell-' + CACHE_VERSION;
+/* کافه سرکتاب میعاد — Service Worker
+   هدف: نصب‌پذیری PWA + کش محدود برای فایل‌های استاتیک
+   API/Supabase عمداً Network-First است تا داده آنلاین خراب نشود.
+*/
+const CACHE_VERSION = 'kafe-miad-v22.9-rc1';
+const SHELL_CACHE = `shell-${CACHE_VERSION}`;
 
+/* فایل‌هایی که بعد از نصب در کش می‌مانند (در صورت وجود روی سرور) */
 const PRECACHE_URLS = [
   './',
   './index.html',
   './styles.css',
   './data.js',
-  './main.js',
-  './tools-extra.js',
+  './main.js', './tools-extra.js',
   './app.js',
   './pwa-register.js',
   './ui-layer-fix.js',
-  './ops-alerts.js',
-  './ops-center.js',
-  './session-recovery.js',
-  './registration-recovery.js',
-  './admin-entry-guard.js',
-  './all-modal-ux.js',
-  './offline-sync.js',
   './theme-atelier.css',
-  './theme-lock.css',
-  './button-feedback.css',
   './assets/splash.jpg',
+  './theme-lock.css',
   './manifest.webmanifest',
-  './icon-miad.svg',
   './icon192.png',
   './icon512.png',
   './icon512-maskable.png',
@@ -33,41 +26,25 @@ const PRECACHE_URLS = [
   './favicon.png'
 ];
 
-const CDN_URLS = [
-  'https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.0/css/all.min.css',
-  'https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css',
-  'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'
-];
-
 self.addEventListener('install', (event) => {
-  event.waitUntil((async () => {
-    const cache = await caches.open(SHELL_CACHE);
-    await Promise.all(PRECACHE_URLS.map(async (u) => {
-      try {
-        const res = await fetch(u, { cache: 'no-cache' });
-        if (res && res.ok) await cache.put(u, res);
-      } catch (e) {}
-    }));
-    await Promise.all(CDN_URLS.map(async (u) => {
-      try {
-        const res = await fetch(u, { mode: 'no-cors', cache: 'no-cache' });
-        if (res) await cache.put(u, res);
-      } catch (e) {}
-    }));
-    await self.skipWaiting();
-  })());
+  event.waitUntil(
+    caches.open(SHELL_CACHE)
+      .then((cache) => cache.addAll(PRECACHE_URLS.map((u) => new Request(u, { cache: 'reload' }))))
+      .then(() => self.skipWaiting())
+      .catch(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil((async () => {
-    const cache = await caches.open(SHELL_CACHE);
-    const ready = await cache.match('./index.html');
-    if (ready) {
-      const keys = await caches.keys();
-      await Promise.all(keys.filter((k) => k.startsWith('shell-') && k !== SHELL_CACHE).map((k) => caches.delete(k)));
-    }
-    await self.clients.claim();
-  })());
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(
+        keys
+          .filter((k) => k.startsWith('shell-') && k !== SHELL_CACHE)
+          .map((k) => caches.delete(k))
+      )
+    ).then(() => self.clients.claim())
+  );
 });
 
 function isSupabaseOrApi(url) {
@@ -87,15 +64,6 @@ function isSupabaseOrApi(url) {
   }
 }
 
-function isAppHost(url) {
-  try {
-    const u = new URL(url);
-    return u.hostname === 'cdn.jsdelivr.net' || u.hostname === 'cdnjs.cloudflare.com' || u.hostname === 'fonts.googleapis.com' || u.hostname === 'fonts.gstatic.com';
-  } catch (e) {
-    return false;
-  }
-}
-
 function isStaticAsset(url) {
   try {
     const u = new URL(url);
@@ -105,67 +73,57 @@ function isStaticAsset(url) {
   }
 }
 
-async function cacheFirst(req, fallbacks) {
-  const cache = await caches.open(SHELL_CACHE);
-  const requestUrl = new URL(req.url);
-  const isVersionedModalUx = requestUrl.pathname.endsWith('/all-modal-ux.js') && requestUrl.search.length > 0;
-  // Keep the modal helper's release query meaningful: do not serve an older
-  // unversioned precache entry for a newly versioned helper request.
-  let cached = await cache.match(req, { ignoreSearch: !isVersionedModalUx });
-  if (!cached && fallbacks) {
-    for (const item of fallbacks) {
-      cached = await cache.match(item);
-      if (cached) break;
-    }
-  }
-  const update = fetch(req).then((res) => {
-    if (res && (res.ok || res.type === 'opaque')) cache.put(req, res.clone()).catch(() => {});
-    return res;
-  }).catch(() => cached);
-  if (cached) return cached;
-  return Promise.race([
-    update,
-    new Promise((resolve) => setTimeout(() => resolve(cached || null), 4000))
-  ]).then((res) => res || update);
-}
-
-// Navigation must prefer the live deployment. Cache-first HTML can keep an
-// old loader/app visible after a release while the background update silently
-// downloads a different version. Fall back to cached HTML only when offline.
-async function networkFirstNavigation(req) {
-  const cache = await caches.open(SHELL_CACHE);
-  try {
-    const res = await fetch(req, { cache: 'no-store' });
-    if (res && res.ok) {
-      await cache.put(req, res.clone()).catch(() => {});
-      await cache.put(new URL('./index.html', self.registration.scope).toString(), res.clone()).catch(() => {});
-      return res;
-    }
-    throw new Error('navigation_http_' + (res ? res.status : 'empty'));
-  } catch (e) {
-    const cached = await cache.match(req, { ignoreSearch: true })
-      || await cache.match(new URL('./index.html', self.registration.scope).toString())
-      || await cache.match(new URL('./', self.registration.scope).toString());
-    if (cached) return cached;
-    throw e;
-  }
-}
-
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
-  const url = req.url;
-  if (isSupabaseOrApi(url)) return;
 
-  if (req.mode === 'navigate' || ((req.headers.get('accept') || '').includes('text/html') && !isAppHost(url))) {
-    event.respondWith(networkFirstNavigation(req));
+  const url = req.url;
+
+  /* Supabase / API: همیشه شبکه — بدون دخالت کش */
+  if (isSupabaseOrApi(url)) {
+    event.respondWith(fetch(req));
     return;
   }
-  if (isStaticAsset(url) || isAppHost(url)) {
-    event.respondWith(cacheFirst(req));
+
+  /* استاتیک: Cache-First با به‌روزرسانی در پس‌زمینه */
+  if (isStaticAsset(url)) {
+    event.respondWith(
+      caches.match(req).then((cached) => {
+        const network = fetch(req)
+          .then((res) => {
+            if (res && res.ok) {
+              const copy = res.clone();
+              caches.open(SHELL_CACHE).then((c) => c.put(req, copy)).catch(() => {});
+            }
+            return res;
+          })
+          .catch(() => cached);
+        return cached || network;
+      })
+    );
+    return;
+  }
+
+  /* صفحات HTML: Network-First، در خطا از کش */
+  if (req.mode === 'navigate' || (req.headers.get('accept') || '').includes('text/html')) {
+    event.respondWith(
+      fetch(req)
+        .then((res) => {
+          if (res && res.ok) {
+            const copy = res.clone();
+            caches.open(SHELL_CACHE).then((c) => c.put(req, copy)).catch(() => {});
+          }
+          return res;
+        })
+        .catch(() =>
+          caches.match(req).then((c) => c || caches.match('./index.html'))
+        )
+    );
   }
 });
 
 self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
