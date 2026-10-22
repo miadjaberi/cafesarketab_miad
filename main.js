@@ -6754,20 +6754,24 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){lo
   }
 
   function scan(root) {
-    (root || document).querySelectorAll('.modal-glass').forEach(decorate);
-    /* برخی مودال‌های سفارشی از کلاس modal-glass استفاده نمی‌کنند. */
-    (root || document).querySelectorAll('[id$="Modal"], [id$="modal"]').forEach(function (modal) {
-      if (modal.querySelector && modal.querySelector('.modal-glass-header')) decorate(modal);
+    var scope = root || document;
+    scope.querySelectorAll('.modal-glass').forEach(decorate);
+    /* همهٔ مودال‌های ابزار را پوشش بده؛ پنجرهٔ کد امنیتی مدیر عمداً دست‌نخورده می‌ماند. */
+    scope.querySelectorAll('[id$="Modal"], [id$="modal"]').forEach(function (modal) {
+      if (!modal || modal.id === 'telegramOtpModal') return;
+      decorate(modal);
     });
   }
 
   function returnToModalMenu() {
     try {
-      if (typeof window.scrollToPage === 'function') window.scrollToPage(1);
-      else {
-        var container = document.getElementById('pagesContainer');
-        if (container && container.children[1]) container.scrollTo({ left: 0, behavior: 'smooth' });
+      if (typeof window.scrollToPage === 'function') {
+        window.scrollToPage(1);
+        return;
       }
+      var container = document.getElementById('pagesContainer');
+      var menuPage = container && container.children[1];
+      if (menuPage) menuPage.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
     } catch (e) {}
   }
 
@@ -6784,7 +6788,7 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){lo
         records.forEach(function (record) {
           record.addedNodes.forEach(function (node) {
             if (node.nodeType === 1) {
-              if (node.matches && (node.matches('.modal-glass') || node.matches('[id$="Modal"]') || node.matches('[id$="modal"]'))) decorate(node);
+              if (node.matches && node.id !== 'telegramOtpModal' && (node.matches('.modal-glass') || node.matches('[id$="Modal"]') || node.matches('[id$="modal"]'))) decorate(node);
               scan(node);
             }
           });
