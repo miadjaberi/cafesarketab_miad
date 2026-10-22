@@ -3027,3 +3027,50 @@ header .header-brand {
   line-height: 1;
   cursor: pointer;
 }
+
+
+/* KAFE_MODAL_DETAILED_GLASS_GUIDES_V1 — راهنمای شیشه‌ای کوچک، هم‌سبک کارت خوشامدگویی */
+.kafe-modal-detailed-guide {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  margin: 8px 0 14px;
+  padding: 11px 12px;
+  border: 1px solid rgba(255, 215, 0, 0.24);
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(201,168,76,0.13), rgba(255,255,255,0.045));
+  box-shadow: 0 4px 18px rgba(0,0,0,0.16), inset 0 1px 0 rgba(255,255,255,0.06);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  color: var(--txt-body, #F5F0E4);
+  font-size: 0.76rem;
+  line-height: 1.85;
+  text-align: right;
+}
+.kafe-modal-detailed-guide::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 120px;
+  height: 120px;
+  top: -68px;
+  right: -32px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(201,168,76,0.17), transparent 72%);
+  pointer-events: none;
+}
+.kafe-modal-guide-title {
+  color: #F0D878;
+  font-size: 0.78rem;
+  font-weight: 800;
+  margin-bottom: 3px;
+}
+.kafe-modal-detailed-guide p {
+  margin: 0;
+  color: #F5F0E4 !important;
+  -webkit-text-fill-color: #F5F0E4 !important;
+}
+body.theme-light .kafe-modal-detailed-guide p { color: #F5F0E4 !important; -webkit-text-fill-color: #F5F0E4 !important; }
+@media (max-width: 420px) {
+  .kafe-modal-detailed-guide { padding: 9px 10px; font-size: 0.72rem; line-height: 1.75; margin-bottom: 11px; }
+}
