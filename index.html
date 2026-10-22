@@ -1936,8 +1936,15 @@
   <div class="modal-glass-content">
     <div class="modal-glass-header"><div class="modal-glass-logo">📋</div><div class="modal-glass-title">شرح حال</div><button class="modal-glass-close" onclick="closeModalGlass('developingModal')">✕</button></div>
     <div class="modal-glass-body">
-      <div class="modal-guide">شرایط و ضوابط جهت مطالعه؛ این بخش فقط نمایشی است و به فشردن دکمه یا تأیید جداگانه نیاز ندارد.</div>
-      <div class="terms-inner" id="profileTermsContent" aria-label="شرایط و ضوابط"></div>
+      <div class="modal-guide">متن کامل شرایط و ضوابط برای مطالعه در همین پنجره نمایش داده می‌شود.</div>
+      <div id="profileTermsContent" aria-label="متن کامل شرایط و ضوابط" style="max-height:55vh;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;width:100%;box-sizing:border-box;padding:8px 2px;"></div>
+      <div id="profileTermsAcknowledgement" style="margin-top:14px;padding:12px;border:1px solid rgba(201,168,76,.45);border-radius:14px;background:rgba(255,255,255,.04);">
+        <label for="profileTermsAgreeCheck" style="display:flex;align-items:flex-start;gap:10px;color:#F7F0E4;font-size:.9rem;line-height:1.8;">
+          <input id="profileTermsAgreeCheck" type="checkbox" style="margin-top:7px;flex:0 0 auto;width:18px;height:18px;accent-color:#C9A84C;">
+          <span>متن شرایط و ضوابط را مطالعه کردم و مفاد آن را می‌پذیرم.</span>
+        </label>
+        <button id="profileTermsAgreeButton" type="button" disabled onclick="acknowledgeProfileTerms()" style="width:100%;margin-top:12px;padding:12px;border:0;border-radius:12px;background:linear-gradient(135deg,#8F6F28,#C9A84C,#E6C878);color:#111827;font-weight:800;opacity:.55;">✓ تأیید مطالعه و بستن پنجره</button>
+      </div>
     </div>
   </div>
 </div>
