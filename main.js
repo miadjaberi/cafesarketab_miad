@@ -4665,7 +4665,9 @@ async function submitProductOrder() {
             var u={};try{u=JSON.parse(localStorage.getItem('cafeUser')||'{}')}catch(e){}
             var r=await supabaseClient.from('subscriptions').select('*').eq('code',code).eq('active',true).maybeSingle();
             if(r.error||!r.data){showNotification('کد نامعتبر یا منقضی است','error');return}
-            if(r.data.user_id && r.data.user_id!==(await ensureSupabaseSession()).user.id){showNotification('این کد برای کاربر دیگری صادر شده است','error');return}
+            var authSession=await ensureSupabaseSession();
+            if(!authSession||!authSession.user){showNotification('برای فعال‌سازی اشتراک ابتدا با رمز اختصاصی وارد حساب شوید','error');return}
+            if(r.data.user_id && r.data.user_id!==authSession.user.id){showNotification('این کد برای کاربر دیگری صادر شده است','error');return}
             await supabaseClient.from('subscriptions').update({used:true,active:false,updated_at:new Date().toISOString()}).eq('id',r.data.id);
             var exp=r.data.expiry_date||new Date(Date.now()+Number(r.data.days||1)*86400000).toISOString();
             localStorage.setItem('userSubscription',JSON.stringify({active:true,expiry:exp,plan:r.data.plan||'otp'}));
@@ -5687,11 +5689,15 @@ document.addEventListener('DOMContentLoaded',function(){try{window.applyGalleryI
       var elapsed=Date.now()-started,wait=Math.max(0,minSplash-elapsed);
       setTimeout(async function(){
         if(splash){splash.classList.add('hidden');setTimeout(function(){splash.style.display='none';},180);}
-        if(session&&session.user){
+        if(session&&session.user&&!session.user.is_anonymous){
           var pr=null;try{pr=await window.supabaseClient.from('profiles').select('id,name,phone,role').eq('id',session.user.id).maybeSingle();}catch(e){}
           if(pr&&!pr.error&&pr.data){var app=document.getElementById('app');if(app)app.style.display='block';var reg=document.getElementById('registerScreen');if(reg)reg.style.display='none';if(typeof updateUserDisplay==='function')await updateUserDisplay(pr.data);}
           else{try{localStorage.removeItem('cafeUser');}catch(e){}var reg0=document.getElementById('registerScreen');if(reg0)reg0.style.display='flex';}
-        }else{var reg4=document.getElementById('registerScreen');if(reg4)reg4.style.display='flex';}
+        }else{
+          if(session&&session.user&&session.user.is_anonymous&&window.supabaseClient){try{await window.supabaseClient.auth.signOut({scope:'local'});}catch(e){}}
+          try{localStorage.removeItem('cafeUser');}catch(e){}
+          var reg4=document.getElementById('registerScreen');if(reg4)reg4.style.display='flex';
+        }
       },wait);
     })();
   };
