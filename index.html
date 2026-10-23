@@ -187,9 +187,10 @@
         <div class="register-box">
             <img class="register-logo-img" id="registerLogoImg" alt="لوگو" src="./icon192.png" />
             <div class="register-title">کافه سرکتاب میعاد</div>
-            <div class="register-sub">برای دسترسی به امکانات، لطفاً ثبت‌نام کنید</div>
-            <input type="text" class="register-input" id="regName" placeholder="نام و نام خانوادگی">
-            <input type="tel" class="register-input" id="regPhone" placeholder="شماره تماس">
+            <div class="register-sub">برای ورود یا ثبت‌نام، نام، شماره تماس و رمز اختصاصی خود را وارد کنید</div>
+            <input type="text" class="register-input" id="regName" placeholder="نام و نام خانوادگی" autocomplete="name">
+            <input type="tel" class="register-input" id="regPhone" placeholder="شماره تماس" inputmode="tel" autocomplete="tel">
+            <input type="password" class="register-input" id="regPassword" placeholder="رمز اختصاصی (حداقل ۸ نویسه)" minlength="8" maxlength="72" autocomplete="current-password">
             <button class="register-btn" onclick="registerUser()">
                 <i class="fas fa-arrow-left"></i> ورود به برنامه
             </button>
