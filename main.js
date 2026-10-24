@@ -3941,32 +3941,7 @@ async function submitProductOrder() {
             grid.innerHTML = html;
         }
 
-        // ============================================================
-        // ثبت نام
-        // ============================================================
-        function registerUser() {
-            var name = document.getElementById('regName').value.trim();
-            var phone = document.getElementById('regPhone').value.trim();
-            if (!name || !phone) {
-                showNotification('لطفاً نام و شماره تماس را وارد کنید', 'error');
-                return;
-            }
-            if (!/^09[0-9]{9}$/.test(phone)) {
-                showNotification('شماره تماس نامعتبر است', 'error');
-                return;
-            }
-            var user = { name: name, phone: phone, registeredAt: new Date().toISOString() };
-            localStorage.setItem('cafeUser', JSON.stringify(user));
-            var users = JSON.parse(localStorage.getItem('cafeUsers') || '[]');
-            if (!users.find(function(u) { return u.phone === phone; })) {
-                users.push(user);
-                localStorage.setItem('cafeUsers', JSON.stringify(users));
-            }
-            document.getElementById('registerScreen').style.display = 'none';
-            document.getElementById('app').style.display = 'block';
-            updateUserDisplay(user);
-            showNotification('✅ خوش آمدید ' + name);
-        }
+        // مسیر قدیمی ثبت‌نام محلی حذف شد؛ تنها ورود PIN از phone-pin-auth مجاز است.
 
         function updateUserDisplay(user) {
             // یک نقطه واحد: اگر نسخه پیشرفته ثبت شده، همان را صدا بزن
@@ -3990,14 +3965,7 @@ async function submitProductOrder() {
         }
         window.updateUserDisplay = updateUserDisplay;
 
-        function logoutUser() {
-            if (confirm('آیا از خروج اطمینان دارید؟')) {
-                localStorage.removeItem('cafeUser');
-                document.getElementById('app').style.display = 'none';
-                document.getElementById('registerScreen').style.display = 'flex';
-                showNotification('👋 خروج انجام شد');
-            }
-        }
+        // مسیر قدیمی خروج محلی حذف شد؛ خروج نهایی با Supabase signOut انجام می‌شود.
 
         // ============================================================
         // Swipe بین صفحات
@@ -5767,16 +5735,9 @@ document.addEventListener('DOMContentLoaded',function(){try{window.applyGalleryI
       var bar=document.getElementById('splashLoaderBar')||splash.querySelector('.splash-loader-bar');
       if(bar){bar.style.animation='none';void bar.offsetWidth;bar.style.animation='loadBar 5s linear forwards';}
     }
-    var sessionPromise=(async function(){
-      try{
-        if(window.supabaseClient){
-          var ar=await window.supabaseClient.auth.getSession();
-          var currentSession=ar&&ar.data&&ar.data.session||null;
-          if(currentSession&&currentSession.user&&!currentSession.user.is_anonymous)return currentSession;
-        }
-      }catch(e){}
-      return null;
-    })();
+    // نشست ذخیره‌شده به‌تنهایی نباید ورود عادی ایجاد کند؛ PIN باید دوباره بررسی شود.
+    // مسیر مستقل مدیر و OTP تلگرام دست‌نخورده باقی می‌ماند.
+    var sessionPromise=Promise.resolve(null);
     (async function(){
       var session=await Promise.race([sessionPromise,new Promise(function(resolve){setTimeout(function(){resolve(null);},maxSplash);})]);
       var elapsed=Date.now()-started,wait=Math.max(0,minSplash-elapsed);
@@ -6352,7 +6313,11 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){lo
       if(typeof showNotification==='function')showNotification('👋 خروج از نشست انجام شد');
     }catch(e){
       console.error('logoutUser',e);
-      if(typeof showNotification==='function')showNotification('❌ خروج از حساب انجام نشد: '+(e.message||e),'error');
+      try{localStorage.removeItem('cafeUser');}catch(storageError){}
+      var failedApp=document.getElementById('app'),failedReg=document.getElementById('registerScreen');
+      if(failedApp)failedApp.style.display='none';
+      if(failedReg)failedReg.style.display='flex';
+      if(typeof showNotification==='function')showNotification('خروج از سرور تأیید نشد؛ صفحه ورود نمایش داده شد. اتصال را بررسی و دوباره تلاش کنید.','error');
     }
   };
   var oldToggle=window.toggleUserSettings;
