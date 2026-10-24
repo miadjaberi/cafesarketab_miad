@@ -81,7 +81,39 @@ Deno.serve(async (req: Request) => {
     const { data: existingProfile, error: lookupError } = await findProfile(admin, phone);
     if (lookupError) return reply(500, { error: "بررسی حساب در سرور ناموفق بود." });
     if (existingProfile) {
-      return reply(409, { error: "این شماره قبلاً ثبت شده است؛ با شماره و PIN وارد شوید." });
+      // مهاجرت فقط با نشست معتبر همان حساب ناشناس انجام می‌شود؛ نام/شماره به‌تنهایی اثبات مالکیت نیست.
+      const bearer = (req.headers.get("authorization") || "").replace(/^Bearer\\s+/i, "").trim();
+      if (bearer) {
+        const { data: oldAuth, error: oldAuthError } = await auth.auth.getUser(bearer);
+        const oldUser = oldAuth && oldAuth.user;
+        if (!oldAuthError && oldUser && oldUser.is_anonymous === true && oldUser.id === existingProfile.id &&
+            existingProfile.phone === phone && ["user", "admin"].includes(String(existingProfile.role || ""))) {
+          const email = emailFor(phone);
+          const { data: migratedUser, error: migrateError } = await admin.auth.admin.updateUserById(oldUser.id, {
+            email,
+            password: pin,
+            email_confirm: true,
+            user_metadata: { ...(oldUser.user_metadata || {}), phone_login: true, name: name || existingProfile.name || "", phone }
+          });
+          if (migrateError || !migratedUser.user) {
+            return reply(409, { error: "مهاجرت حساب قدیمی انجام نشد؛ حساب قبلی حفظ شده است. ممکن است شماره/ایمیل ورود از قبل رزرو شده باشد." });
+          }
+          const profilePatch: Record<string, unknown> = { phone };
+          if (name) profilePatch.name = name;
+          const { data: migratedProfile, error: profileUpdateError } = await admin.from("profiles")
+            .update(profilePatch).eq("id", oldUser.id)
+            .select("id,name,phone,role,registered_at").single();
+          if (profileUpdateError || !migratedProfile) {
+            return reply(500, { error: "ورود به حساب به‌روزرسانی شد اما پروفایل تأیید نشد؛ حساب حذف نشده است." });
+          }
+          const { data: migratedSignIn, error: migratedSignInError } = await auth.auth.signInWithPassword({ email, password: pin });
+          if (migratedSignInError || !migratedSignIn.session || !migratedSignIn.user || migratedSignIn.user.id !== oldUser.id) {
+            return reply(500, { error: "حساب قدیمی حفظ شد اما ساخت نشست پس از مهاجرت ناموفق بود." });
+          }
+          return reply(200, { created: false, migrated: true, user: { id: oldUser.id }, session: migratedSignIn.session, profile: migratedProfile });
+        }
+      }
+      return reply(409, { error: "این شماره قبلاً ثبت شده است. برای مهاجرت امن، نشست حساب قدیمی باید روی همین دستگاه موجود باشد؛ نام و شماره به‌تنهایی کافی نیست." });
     }
 
     const email = emailFor(phone);
