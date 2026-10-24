@@ -5448,9 +5448,18 @@ async function submitProductOrder() {
     var submit = document.getElementById('authSubmitButton');
     if(submit) submit.disabled = true;
     try{
+      // اگر نشست ناشناس قدیمی هنوز روی همین دستگاه موجود است، فقط همان نشست را برای مهاجرت امن می‌فرستیم.
+      var legacyAccessToken = '';
+      try {
+        var currentAuthState = await supabaseClient.auth.getSession();
+        legacyAccessToken = currentAuthState && currentAuthState.data && currentAuthState.data.session
+          ? currentAuthState.data.session.access_token || '' : '';
+      } catch(sessionReadError) {}
+      var authHeaders = {'Content-Type':'application/json','apikey':SUPABASE_KEY};
+      if (legacyAccessToken) authHeaders.Authorization = 'Bearer ' + legacyAccessToken;
       var response = await fetch(SUPABASE_URL + '/functions/v1/phone-pin-auth',{
         method:'POST',
-        headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},
+        headers:authHeaders,
         body:JSON.stringify({
           action: mode,
           name: mode === 'register' ? name : '',
@@ -5476,8 +5485,8 @@ async function submitProductOrder() {
       if(!result || !result.session || !result.session.access_token || !result.session.refresh_token || !result.profile || !result.user || !result.user.id){
         throw new Error('پاسخ سرور کامل نیست؛ نشست ورود دریافت نشد.');
       }
-      if(mode === 'register' && result.created !== true){
-        throw new Error('این شماره قبلاً ثبت شده است؛ از گزینه «ورود با شماره و PIN» استفاده کنید.');
+      if(mode === 'register' && result.created !== true && result.migrated !== true){
+        throw new Error('این شماره قبلاً ثبت شده است؛ برای مهاجرت امن حساب قدیمی باید نشست قبلی همان حساب روی این دستگاه موجود باشد.');
       }
       if(mode === 'login' && result.created === true){
         throw new Error('سرور پاسخ ورود معتبر نداد. ثبت‌نام جدید از مسیر ورود پذیرفته نمی‌شود.');
