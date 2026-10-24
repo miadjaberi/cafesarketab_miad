@@ -1,14 +1,12 @@
-Kafe Miad V22.9-RC1
-هدف: نسخه اصلاح‌شده برای تست HTTPS / GitHub Pages (نه ادعای صفرخطا)
+کافه سرکتاب میعاد — شاخه fix/unified-pin-auth-security-2026-10-24
 
-تغییرات نسبت به V22.8c:
-- آپلود تصویر محصول: در شکست Storage دیگر Base64 ذخیره نمی‌شود
-- آپلود تصاویر تنظیمات (لوگو/اسپلش/...): شکست = حذف Base64، نه ذخیره محلی حجیم
-- پاک‌سازی LocalStorage فقط کلیدهای مرده سکه/OTP؛ سفارش و اشتراک واقعی پاک نمی‌شود
-- نسخه کش PWA: kafe-miad-v22.9-rc1
+تغییرات:
+- ورود کاربر از طریق phone-pin-auth با PIN عددی ۸–۱۲ رقم
+- فیلد PIN در صفحه ثبت‌نام
+- باکت receipts خصوصی + حذف public read
+- محدودسازی EXECUTE تابع admin_clear_test_data
+- verify_jwt برای subscription-request روشن شد
+- گسترش کلیدهای رسانه‌ای admin در کش تنظیمات
 
-هنوز قبل از انتشار عمومی لازم است:
-- تطبیق anon key با پروژه واقعی Supabase
-- بررسی باکت public-assets و receipts + Policy
-- تست Runtime روی لینک HTTPS
-- تأیید جدول products (local_id / UUID)
+OTP تلگرام مدیر دست‌نخورده است.
+شاخه main هنوز merge نشده تا تأیید نهایی مالک.
