@@ -5420,74 +5420,131 @@ async function submitProductOrder() {
 
   /* window.renderAdminOrders (localStorage) removed — superseded by server version in 18-final-production.js */
 
-  /* ---------- user entry: server-validated phone + PIN ---------- */
-  window.registerUser=async function(){
-    var nameEl=document.getElementById('regName');
-    var phoneEl=document.getElementById('regPhone');
-    var pinEl=document.getElementById('regPin');
-    var name=nameEl?(nameEl.value||'').trim():'';
-    var phone=phoneEl?(phoneEl.value||'').replace(/\\s/g,'').trim():'';
-    var pin=pinEl?(pinEl.value||'').trim():'';
-    if(!name||!phone||!pin){
-      showNotification('لطفاً نام، شماره تماس و رمز ورود را وارد کنید','error');
+  /* ---------- phone + PIN auth: explicit register/login modes ---------- */
+  window.phonePinAuthMode = 'register';
+  window.togglePhonePinMode = function(){
+    var mode = window.phonePinAuthMode === 'register' ? 'login' : 'register';
+    window.phonePinAuthMode = mode;
+    var nameEl = document.getElementById('regName');
+    var desc = document.getElementById('authModeDescription');
+    var submit = document.getElementById('authSubmitButton');
+    var toggle = document.getElementById('authModeToggle');
+    var pinEl = document.getElementById('regPin');
+    if(nameEl){
+      nameEl.style.display = mode === 'login' ? 'none' : '';
+      nameEl.required = mode === 'register';
+      nameEl.setAttribute('aria-hidden', mode === 'login' ? 'true' : 'false');
+    }
+    if(desc) desc.textContent = mode === 'login'
+      ? 'برای ورود، شماره تلفن و PIN قبلی خود را وارد کنید.'
+      : 'برای ثبت‌نام، نام، شماره تماس و PIN دلخواه ۸ تا ۱۲ رقمی را وارد کنید.';
+    if(submit) submit.innerHTML = mode === 'login'
+      ? '<i class="fas fa-sign-in-alt"></i> ورود'
+      : '<i class="fas fa-user-plus"></i> ثبت‌نام';
+    if(toggle) toggle.textContent = mode === 'login'
+      ? 'حساب ندارید؟ ثبت‌نام کنید'
+      : 'قبلاً حساب دارید؟ ورود با شماره و PIN';
+    if(pinEl) pinEl.autocomplete = mode === 'login' ? 'current-password' : 'new-password';
+  };
+
+  window.registerUser = async function(){
+    var mode = window.phonePinAuthMode === 'login' ? 'login' : 'register';
+    var nameEl = document.getElementById('regName');
+    var phoneEl = document.getElementById('regPhone');
+    var pinEl = document.getElementById('regPin');
+    var name = nameEl ? (nameEl.value || '').trim() : '';
+    var phone = phoneEl ? (phoneEl.value || '').replace(/\s/g, '').trim() : '';
+    var pin = pinEl ? (pinEl.value || '').trim() : '';
+
+    if(mode === 'register' && !name){
+      showNotification('لطفاً نام و نام خانوادگی را وارد کنید','error');
+      return;
+    }
+    if(!phone || !pin){
+      showNotification(mode === 'login' ? 'لطفاً شماره تلفن و PIN را وارد کنید' : 'لطفاً شماره تلفن و PIN را وارد کنید','error');
       return;
     }
     if(!/^09[0-9]{9}$/.test(phone)){
-      showNotification('شماره تماس نامعتبر است','error');
+      showNotification('شماره تلفن باید ۱۱ رقم و با 09 شروع شود','error');
       return;
     }
-    if(!/^\\d{8,12}$/.test(pin)){
-      showNotification('رمز ورود باید ۸ تا ۱۲ رقم باشد','error');
+    if(!/^\d{8,12}$/.test(pin)){
+      showNotification('PIN باید فقط شامل ۸ تا ۱۲ رقم باشد','error');
       return;
     }
     if(!supabaseClient){
-      showNotification('❌ اتصال آنلاین در دسترس نیست','error');
+      showNotification('اتصال امن به سرور در دسترس نیست','error');
       return;
     }
+
+    var submit = document.getElementById('authSubmitButton');
+    if(submit) submit.disabled = true;
     try{
-      var response=await fetch(SUPABASE_URL+'/functions/v1/phone-pin-auth',{
+      var response = await fetch(SUPABASE_URL + '/functions/v1/phone-pin-auth',{
         method:'POST',
         headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},
-        body:JSON.stringify({action:'register_or_login',name:name,phone:phone,pin:pin})
+        body:JSON.stringify({
+          action: mode,
+          name: mode === 'register' ? name : '',
+          phone: phone,
+          pin: pin
+        })
       });
-      var result=null;
-      try{result=await response.json();}catch(parseError){}
+      var result = null;
+      try { result = await response.json(); } catch(parseError) {}
       if(!response.ok){
-        throw new Error(result&&(result.error||result.message)||('درخواست ورود ناموفق بود (HTTP '+response.status+')'));
+        var serverMessage = result && (result.error || result.message);
+        if(response.status === 409 && mode === 'register'){
+          throw new Error('این شماره قبلاً ثبت شده است؛ از گزینه «ورود با شماره و PIN» استفاده کنید.');
+        }
+        if((response.status === 401 || response.status === 403) && mode === 'login'){
+          throw new Error('PIN اشتباه است یا ورود به این حساب مجاز نیست. شماره و PIN را بررسی کنید.');
+        }
+        if(response.status === 404 && mode === 'login'){
+          throw new Error('برای این شماره حسابی پیدا نشد؛ ابتدا ثبت‌نام کنید.');
+        }
+        throw new Error(serverMessage || ('درخواست ناموفق بود (HTTP ' + response.status + ')'));
       }
-      if(!result||!result.session||!result.session.access_token||!result.session.refresh_token||!result.profile||!result.user||!result.user.id){
+      if(!result || !result.session || !result.session.access_token || !result.session.refresh_token || !result.profile || !result.user || !result.user.id){
         throw new Error('پاسخ سرور کامل نیست؛ نشست ورود دریافت نشد.');
       }
-      var sessionResult=await supabaseClient.auth.setSession({
-        access_token:result.session.access_token,
-        refresh_token:result.session.refresh_token
+      if(mode === 'register' && result.created !== true){
+        throw new Error('این شماره قبلاً ثبت شده است؛ از گزینه «ورود با شماره و PIN» استفاده کنید.');
+      }
+      if(mode === 'login' && result.created === true){
+        throw new Error('سرور پاسخ ورود معتبر نداد. ثبت‌نام جدید از مسیر ورود پذیرفته نمی‌شود.');
+      }
+      var sessionResult = await supabaseClient.auth.setSession({
+        access_token: result.session.access_token,
+        refresh_token: result.session.refresh_token
       });
-      if(sessionResult.error||!sessionResult.data||!sessionResult.data.session){
-        throw (sessionResult.error||new Error('ذخیره نشست امن ورود ناموفق بود.'));
+      if(sessionResult.error || !sessionResult.data || !sessionResult.data.session){
+        throw (sessionResult.error || new Error('ذخیره نشست ورود ناموفق بود.'));
       }
-      var session=sessionResult.data.session;
-      if(session.user.id!==result.user.id||result.profile.id!==result.user.id){
+      var session = sessionResult.data.session;
+      if(session.user.id !== result.user.id || result.profile.id !== result.user.id){
         await supabaseClient.auth.signOut();
-        throw new Error('شناسه حساب دریافتی از سرور با نشست ورود مطابقت ندارد.');
+        throw new Error('شناسه حساب با نشست ورود مطابقت ندارد.');
       }
-      var registeredAt=result.profile.registered_at||new Date().toISOString();
       try{
-        localStorage.setItem('cafeUser',JSON.stringify({
-          name:result.profile.name||name,
-          phone:result.profile.phone||phone,
-          registeredAt:registeredAt,
-          user_id:result.profile.id
+        localStorage.setItem('cafeUser', JSON.stringify({
+          name: result.profile.name || name,
+          phone: result.profile.phone || phone,
+          registeredAt: result.profile.registered_at || new Date().toISOString(),
+          user_id: result.profile.id
         }));
       }catch(storageError){}
-      var rs=document.getElementById('registerScreen');
-      var app=document.getElementById('app');
-      if(rs)rs.style.display='none';
-      if(app)app.style.display='block';
-      if(typeof updateUserDisplay==='function')await updateUserDisplay(result.profile);
-      if(typeof showNotification==='function')showNotification(result.created?'✅ ثبت‌نام و ورود با موفقیت انجام شد.':'✅ ورود به حساب با موفقیت انجام شد.');
+      var registerScreen = document.getElementById('registerScreen');
+      var app = document.getElementById('app');
+      if(registerScreen) registerScreen.style.display = 'none';
+      if(app) app.style.display = 'block';
+      if(typeof updateUserDisplay === 'function') await updateUserDisplay(result.profile);
+      showNotification(mode === 'register' ? 'ثبت‌نام با موفقیت انجام شد.' : 'ورود با موفقیت انجام شد.');
     }catch(e){
-      console.error('phone-pin-auth entry',e);
-      showNotification('❌ ورود/ثبت‌نام انجام نشد: '+(e.message||e),'error');
+      console.error('phone-pin-auth entry', e);
+      showNotification('ورود/ثبت‌نام انجام نشد: ' + (e && e.message ? e.message : 'خطای نامشخص'), 'error');
+    }finally{
+      if(submit) submit.disabled = false;
     }
   };
 
