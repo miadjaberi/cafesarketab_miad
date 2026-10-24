@@ -5531,6 +5531,24 @@ async function submitProductOrder() {
     }
   };
 
+  // Explicit click bindings: avoid relying on inline HTML handlers for auth actions.
+  var authSubmitButton = document.getElementById('authSubmitButton');
+  if (authSubmitButton) {
+    authSubmitButton.addEventListener('click', function(event) {
+      event.preventDefault();
+      if (typeof window.registerUser === 'function') window.registerUser();
+      else if (typeof showNotification === 'function') showNotification('بخش ورود هنوز آماده نشده است؛ صفحه را یک‌بار تازه‌سازی کنید.', 'error');
+    });
+  }
+  var authModeToggleButton = document.getElementById('authModeToggle');
+  if (authModeToggleButton) {
+    authModeToggleButton.addEventListener('click', function(event) {
+      event.preventDefault();
+      if (typeof window.togglePhonePinMode === 'function') window.togglePhonePinMode();
+      else if (typeof showNotification === 'function') showNotification('تغییر حالت ورود در دسترس نیست؛ صفحه را یک‌بار تازه‌سازی کنید.', 'error');
+    });
+  }
+
   /* ---------- local safety on order deletion ---------- */
   var originalDeleteOrderAdmin=window.deleteOrderAdmin;
   window.deleteOrderAdmin=function(id){
