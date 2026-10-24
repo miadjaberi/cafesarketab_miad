@@ -2,7 +2,7 @@
    هدف: نصب‌پذیری PWA + کش محدود برای فایل‌های استاتیک
    API/Supabase عمداً Network-First است تا داده آنلاین خراب نشود.
 */
-const CACHE_VERSION = 'kafe-miad-v22.10-profile-terms-fix-v1';
+const CACHE_VERSION = 'kafe-miad-v22.12-pin-auth-no-auto-login-v1';
 const SHELL_CACHE = `shell-${CACHE_VERSION}`;
 
 /* فایل‌هایی که بعد از نصب در کش می‌مانند (در صورت وجود روی سرور) */
