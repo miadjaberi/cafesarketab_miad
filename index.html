@@ -191,10 +191,10 @@
             <input type="text" class="register-input" id="regName" placeholder="نام و نام خانوادگی" autocomplete="name">
             <input type="tel" class="register-input" id="regPhone" placeholder="شماره تماس" inputmode="tel" autocomplete="tel" maxlength="11">
             <input type="password" class="register-input" id="regPin" placeholder="PIN دلخواه (۸ تا ۱۲ رقم)" inputmode="numeric" pattern="[0-9]{8,12}" minlength="8" maxlength="12" autocomplete="new-password" aria-label="رمز ورود PIN" required>
-            <button class="register-btn" id="authSubmitButton" onclick="registerUser()">
+            <button type="button" class="register-btn" id="authSubmitButton">
                 <i class="fas fa-user-plus"></i> ثبت‌نام
             </button>
-            <button type="button" id="authModeToggle" onclick="togglePhonePinMode()" style="display:block;width:100%;margin-top:12px;padding:10px;border:1px solid rgba(255,215,0,.55);border-radius:10px;background:transparent;color:#ffe082;font:inherit;cursor:pointer">قبلاً حساب دارید؟ ورود با شماره و PIN</button>
+            <button type="button" id="authModeToggle" style="display:block;width:100%;margin-top:12px;padding:10px;border:1px solid rgba(255,215,0,.55);border-radius:10px;background:transparent;color:#ffe082;font:inherit;cursor:pointer">قبلاً حساب دارید؟ ورود با شماره و PIN</button>
             <div class="register-footer">✦ هر آنچه می‌خواهی، در اینجاست ✦</div>
         </div>
     </div>
