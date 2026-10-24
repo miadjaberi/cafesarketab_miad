@@ -1963,6 +1963,58 @@
 <div id="telegramOtpCountdown" style="text-align:center;margin:10px 0;color:#777;font-size:13px;min-height:20px;"></div><div style="display:flex;gap:8px;"><button type="button" id="telegramOtpVerifyBtn" style="flex:1;padding:13px;border:0;border-radius:12px;background:#8B4513;color:#FFFFFF;font-weight:800;">تأیید کد</button><button type="button" id="telegramOtpCancelBtn" style="flex:1;padding:13px;border:1px solid #ccc;border-radius:12px;background:#fff;color:#1A1A1A;font-weight:700;">انصراف</button></div>
 </div></div>
     <div id="v8NetworkState" style="position:fixed;bottom:8px;left:8px;z-index:99999;font:700 10px sans-serif;padding:5px 8px;border-radius:12px;background:rgba(20,20,40,.88);color:#f5d76e;pointer-events:none">● آماده</div>
+    <!-- Reliable auth controls: registered before main.js so later runtime errors cannot silently disable clicks. -->
+    <script>
+    (function () {
+      function authFeedback(message) {
+        try {
+          if (typeof window.showNotification === 'function') window.showNotification(message, 'error');
+          else window.alert(message);
+        } catch (e) {
+          window.alert(message);
+        }
+      }
+      var submit = document.getElementById('authSubmitButton');
+      var toggle = document.getElementById('authModeToggle');
+      if (submit) submit.addEventListener('click', function (event) {
+        event.preventDefault();
+        if (typeof window.registerUser !== 'function') {
+          authFeedback('بخش ورود درست بارگذاری نشده است. خطای اجرای main.js باید بررسی شود.');
+          return;
+        }
+        try {
+          var result = window.registerUser();
+          if (result && typeof result.catch === 'function') {
+            result.catch(function (error) {
+              console.error('Auth button rejected:', error);
+              authFeedback('خطا در ورود/ثبت‌نام: ' + (error && error.message ? error.message : 'خطای نامشخص'));
+            });
+          }
+        } catch (error) {
+          console.error('Auth button failed:', error);
+          authFeedback('خطا در اجرای ورود/ثبت‌نام: ' + (error && error.message ? error.message : 'خطای نامشخص'));
+        }
+      });
+      if (toggle) toggle.addEventListener('click', function (event) {
+        event.preventDefault();
+        if (typeof window.togglePhonePinMode !== 'function') {
+          authFeedback('تغییر حالت ورود بارگذاری نشده است.');
+          return;
+        }
+        try { window.togglePhonePinMode(); }
+        catch (error) {
+          console.error('Auth mode toggle failed:', error);
+          authFeedback('خطا در تغییر حالت ورود: ' + (error && error.message ? error.message : 'خطای نامشخص'));
+        }
+      });
+      window.addEventListener('error', function (event) {
+        console.error('Uncaught page error:', event.message, event.filename, event.lineno);
+      });
+      window.addEventListener('unhandledrejection', function (event) {
+        console.error('Unhandled promise rejection:', event.reason);
+      });
+    })();
+    </script>
     <script src="./data.js"></script>
     <script src="./main.js"></script>
     <script src="./tools-extra.js"></script>
