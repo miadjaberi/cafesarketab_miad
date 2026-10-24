@@ -142,7 +142,6 @@
   if (btn) {
     btn.type = 'button';
     btn.onclick = function () {
-      alert('دکمه کلیک شد!');
       if (typeof window.registerUser !== 'function') {
         notify('تابع ورود بارگذاری نشد. صفحه را تازه‌سازی کنید.', 'error');
         return;
