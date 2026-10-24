@@ -77,28 +77,16 @@
             }
         } catch (e) { console.warn('Supabase init error', e); }
 
-        // Final online layer: keep offline-first behavior, but establish an
-        // anonymous Supabase session when the project allows it. This gives
-        // receipt uploads a real authenticated owner without changing the
-        // existing UI or local data model.
+        // Only reuse a real authenticated session; never create anonymous sessions.
         var _sbAnonReady = false;
         async function ensureSupabaseSession() {
             if (!supabaseClient) return null;
             try {
                 var current = await supabaseClient.auth.getSession();
-                if (current && current.data && current.data.session) {
-                    _sbAnonReady = true;
-                    return current.data.session;
-                }
-                if (!supabaseClient.auth.signInAnonymously) {
-                    throw new Error('ورود موقت کاربر در پروژه فعال نیست.');
-                }
-                var r = await supabaseClient.auth.signInAnonymously();
-                if (r.error || !r.data || !r.data.session) {
-                    throw (r.error || new Error('ایجاد نشست کاربر ناموفق بود.'));
-                }
+                var session = current && current.data && current.data.session;
+                if (!session || !session.user || session.user.is_anonymous) return null;
                 _sbAnonReady = true;
-                return r.data.session;
+                return session;
             } catch (e) {
                 console.warn('Supabase session', e);
                 return null;
@@ -5432,39 +5420,75 @@ async function submitProductOrder() {
 
   /* window.renderAdminOrders (localStorage) removed — superseded by server version in 18-final-production.js */
 
-  /* ---------- user entry: real Supabase session + profile ---------- */
-  var originalRegisterUser=window.registerUser;
+  /* ---------- user entry: server-validated phone + PIN ---------- */
   window.registerUser=async function(){
-    var nameEl=document.getElementById('regName'),phoneEl=document.getElementById('regPhone');
-    var name=nameEl?(nameEl.value||'').trim():'',phone=phoneEl?(phoneEl.value||'').replace(/\s/g,'').trim():'';
-    if(!name||!phone){
-      showNotification('لطفاً نام و شماره تماس را وارد کنید','error');
+    var nameEl=document.getElementById('regName');
+    var phoneEl=document.getElementById('regPhone');
+    var pinEl=document.getElementById('regPin');
+    var name=nameEl?(nameEl.value||'').trim():'';
+    var phone=phoneEl?(phoneEl.value||'').replace(/\\s/g,'').trim():'';
+    var pin=pinEl?(pinEl.value||'').trim():'';
+    if(!name||!phone||!pin){
+      showNotification('لطفاً نام، شماره تماس و رمز ورود را وارد کنید','error');
       return;
     }
     if(!/^09[0-9]{9}$/.test(phone)){
       showNotification('شماره تماس نامعتبر است','error');
       return;
     }
-    if(!supabaseClient){showNotification('❌ اتصال آنلاین در دسترس نیست','error');return;}
+    if(!/^\\d{8,12}$/.test(pin)){
+      showNotification('رمز ورود باید ۸ تا ۱۲ رقم باشد','error');
+      return;
+    }
+    if(!supabaseClient){
+      showNotification('❌ اتصال آنلاین در دسترس نیست','error');
+      return;
+    }
     try{
-      var sr=await supabaseClient.auth.getSession();
-      var session=sr&&sr.data&&sr.data.session;
-      if(!session||!session.user){
-        if(!supabaseClient.auth.signInAnonymously) throw new Error('ورود کاربر در این پروژه فعال نیست.');
-        var ar=await supabaseClient.auth.signInAnonymously();
-        if(ar.error||!ar.data||!ar.data.session) throw (ar.error||new Error('ایجاد نشست کاربر ناموفق بود.'));
-        session=ar.data.session;
+      var response=await fetch(SUPABASE_URL+'/functions/v1/phone-pin-auth',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},
+        body:JSON.stringify({action:'register_or_login',name:name,phone:phone,pin:pin})
+      });
+      var result=null;
+      try{result=await response.json();}catch(parseError){}
+      if(!response.ok){
+        throw new Error(result&&(result.error||result.message)||('درخواست ورود ناموفق بود (HTTP '+response.status+')'));
       }
-      var user=session.user;
-      var registeredAt=new Date().toISOString();
-      var profilePayload={id:user.id,name:name,phone:phone,registered_at:registeredAt};
-      var pr=await supabaseClient.from('profiles').upsert(profilePayload,{onConflict:'id'}).select().single();
-      if(pr.error) throw pr.error;
-      try{localStorage.setItem('cafeUser',JSON.stringify({name:name,phone:phone,registeredAt:registeredAt,user_id:user.id}));}catch(e){}
-      var rs=document.getElementById('registerScreen'),app=document.getElementById('app');if(rs)rs.style.display='none';if(app)app.style.display='block';
-      if(typeof updateUserDisplay==='function')await updateUserDisplay(user);
-      if(typeof showNotification==='function')showNotification('✅ ورود کاربر انجام شد و حساب روی سرور ثبت شد.');
-    }catch(e){console.error('user entry',e);showNotification('❌ ورود کاربر انجام نشد: '+(e.message||e),'error');}
+      if(!result||!result.session||!result.session.access_token||!result.session.refresh_token||!result.profile||!result.user||!result.user.id){
+        throw new Error('پاسخ سرور کامل نیست؛ نشست ورود دریافت نشد.');
+      }
+      var sessionResult=await supabaseClient.auth.setSession({
+        access_token:result.session.access_token,
+        refresh_token:result.session.refresh_token
+      });
+      if(sessionResult.error||!sessionResult.data||!sessionResult.data.session){
+        throw (sessionResult.error||new Error('ذخیره نشست امن ورود ناموفق بود.'));
+      }
+      var session=sessionResult.data.session;
+      if(session.user.id!==result.user.id||result.profile.id!==result.user.id){
+        await supabaseClient.auth.signOut();
+        throw new Error('شناسه حساب دریافتی از سرور با نشست ورود مطابقت ندارد.');
+      }
+      var registeredAt=result.profile.registered_at||new Date().toISOString();
+      try{
+        localStorage.setItem('cafeUser',JSON.stringify({
+          name:result.profile.name||name,
+          phone:result.profile.phone||phone,
+          registeredAt:registeredAt,
+          user_id:result.profile.id
+        }));
+      }catch(storageError){}
+      var rs=document.getElementById('registerScreen');
+      var app=document.getElementById('app');
+      if(rs)rs.style.display='none';
+      if(app)app.style.display='block';
+      if(typeof updateUserDisplay==='function')await updateUserDisplay(result.profile);
+      if(typeof showNotification==='function')showNotification(result.created?'✅ ثبت‌نام و ورود با موفقیت انجام شد.':'✅ ورود به حساب با موفقیت انجام شد.');
+    }catch(e){
+      console.error('phone-pin-auth entry',e);
+      showNotification('❌ ورود/ثبت‌نام انجام نشد: '+(e.message||e),'error');
+    }
   };
 
   /* ---------- local safety on order deletion ---------- */
