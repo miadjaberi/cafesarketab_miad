@@ -82,7 +82,7 @@ Deno.serve(async (req: Request) => {
     if (lookupError) return reply(500, { error: "بررسی حساب در سرور ناموفق بود." });
     if (existingProfile) {
       // مهاجرت فقط با نشست معتبر همان حساب ناشناس انجام می‌شود؛ نام/شماره به‌تنهایی اثبات مالکیت نیست.
-      const bearer = (req.headers.get("authorization") || "").replace(/^Bearer\\s+/i, "").trim();
+      const bearer = (req.headers.get("authorization") || "").replace(/^Bearer\s+/i, "").trim();
       if (bearer) {
         const { data: oldAuth, error: oldAuthError } = await auth.auth.getUser(bearer);
         const oldUser = oldAuth && oldAuth.user;
