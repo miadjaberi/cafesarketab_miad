@@ -5711,7 +5711,13 @@ document.addEventListener('DOMContentLoaded',function(){try{window.applyGalleryI
       if(bar){bar.style.animation='none';void bar.offsetWidth;bar.style.animation='loadBar 5s linear forwards';}
     }
     var sessionPromise=(async function(){
-      try{if(window.supabaseClient){var ar=await window.supabaseClient.auth.getSession();return ar&&ar.data&&ar.data.session||null;}}catch(e){}
+      try{
+        if(window.supabaseClient){
+          var ar=await window.supabaseClient.auth.getSession();
+          var currentSession=ar&&ar.data&&ar.data.session||null;
+          if(currentSession&&currentSession.user&&!currentSession.user.is_anonymous)return currentSession;
+        }
+      }catch(e){}
       return null;
     })();
     (async function(){
