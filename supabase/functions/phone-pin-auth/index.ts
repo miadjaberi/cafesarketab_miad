@@ -19,18 +19,13 @@ async function consumeLimit(admin: ReturnType<typeof createClient>, key: string,
   return admin.rpc("consume_phone_pin_rate_limit", { p_rate_key: key, p_limit: limit, p_window_seconds: 900 });
 }
 async function findProfile(admin: ReturnType<typeof createClient>, phone: string) {
-  return admin.from("profiles").select("id,name,phone,role,registered_at").eq("phone", phone).maybeSingle();
+  // This lookup is only used to detect whether registration is already taken.
+  // Legacy duplicate rows must not turn a normal lookup into a 500.
+  return admin.from("profiles").select("id,name,phone,role,registered_at").eq("phone", phone).limit(1).maybeSingle();
 }
 async function findProfileById(admin: ReturnType<typeof createClient>, id: string) {
   return admin.from("profiles").select("id,name,phone,role,registered_at").eq("id", id).maybeSingle();
 }
-async function loginExisting(auth: ReturnType<typeof createClient>, profile: Record<string, any>, phone: string, pin: string) {
-  if (profile.role !== "user") return null;
-  const { data: signed, error } = await auth.auth.signInWithPassword({ email: emailFor(phone), password: pin });
-  if (error || !signed.session || !signed.user || signed.user.id !== profile.id) return null;
-  return { user: { id: signed.user.id }, session: signed.session, profile };
-}
-
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return reply(405, { error: "روش درخواست پشتیبانی نمی‌شود." });
@@ -62,16 +57,29 @@ Deno.serve(async (req: Request) => {
     if (phoneLimit.error || ipLimit.error) return reply(503, { error: "کنترل امنیتی سرور آماده نیست؛ بعداً دوباره تلاش کنید." });
     if (phoneLimit.data !== true || ipLimit.data !== true) return reply(429, { error: "تعداد تلاش‌ها زیاد است؛ ۱۵ دقیقه دیگر دوباره تلاش کنید." });
 
-    const { data: existingProfile, error: lookupError } = await findProfile(admin, phone);
-    if (lookupError) return reply(500, { error: "بررسی حساب در سرور ناموفق بود؛ ممکن است شماره تکراری باشد." });
-
     if (action === "login") {
-      if (!existingProfile) return reply(404, { error: "برای این شماره حسابی پیدا نشد؛ ابتدا ثبت‌نام کنید." });
-      const result = await loginExisting(auth, existingProfile, phone, pin);
-      if (!result) return reply(401, { error: "PIN اشتباه است یا ورود به این حساب مجاز نیست." });
-      return reply(200, { created: false, ...result });
+      // Authenticate against Supabase Auth first. Looking up by phone can be ambiguous
+      // because legacy test data contains duplicate profiles for the same phone.
+      const { data: signed, error: signInError } = await auth.auth.signInWithPassword({
+        email: emailFor(phone),
+        password: pin
+      });
+      if (signInError || !signed.session || !signed.user) {
+        return reply(401, { error: "PIN اشتباه است یا برای این شماره حسابی پیدا نشد." });
+      }
+
+      // Bind the authenticated identity to its own profile; never pick an arbitrary
+      // duplicate row by phone, and never allow a non-user role through this flow.
+      const { data: profile, error: profileError } = await findProfileById(admin, signed.user.id);
+      if (profileError) return reply(500, { error: "بررسی پروفایل حساب ناموفق بود." });
+      if (!profile || profile.phone !== phone || profile.role !== "user") {
+        return reply(401, { error: "ورود به این حساب مجاز نیست؛ اطلاعات حساب با شماره تطبیق ندارد." });
+      }
+      return reply(200, { created: false, user: { id: signed.user.id }, session: signed.session, profile });
     }
 
+    const { data: existingProfile, error: lookupError } = await findProfile(admin, phone);
+    if (lookupError) return reply(500, { error: "بررسی حساب در سرور ناموفق بود." });
     if (existingProfile) {
       return reply(409, { error: "این شماره قبلاً ثبت شده است؛ با شماره و PIN وارد شوید." });
     }
