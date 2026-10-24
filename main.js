@@ -5388,6 +5388,12 @@ async function submitProductOrder() {
 
   /* window.renderAdminOrders (localStorage) removed — superseded by server version in 18-final-production.js */
 
+  // Scope fix: this auth wrapper is separate from the main-app IIFE.
+  // Reuse the already-created Supabase client exposed by the main app.
+  var supabaseClient = window.supabaseClient || null;
+  var SUPABASE_URL = 'https://evxxvnlwtbaqpjbjaxdk.supabase.co';
+  var SUPABASE_KEY = 'sb_publishable_yqampnRU4wIzRn-3ENi81g_ojYSM4le';
+
   /* ---------- phone + PIN auth: explicit register/login modes ---------- */
   window.phonePinAuthMode = 'register';
   window.togglePhonePinMode = function(){
