@@ -187,13 +187,14 @@
         <div class="register-box">
             <img class="register-logo-img" id="registerLogoImg" alt="لوگو" src="./icon192.png" />
             <div class="register-title">کافه سرکتاب میعاد</div>
-            <div class="register-sub">برای دسترسی به امکانات، لطفاً ثبت‌نام کنید</div>
-            <input type="text" class="register-input" id="regName" placeholder="نام و نام خانوادگی">
-            <input type="tel" class="register-input" id="regPhone" placeholder="شماره تماس">
-            <input type="password" class="register-input" id="regPin" placeholder="رمز ورود (۸ تا ۱۲ رقم)" inputmode="numeric" pattern="[0-9]{8,12}" minlength="8" maxlength="12" autocomplete="new-password" required>
-            <button class="register-btn" onclick="registerUser()">
-                <i class="fas fa-arrow-left"></i> ورود به برنامه
+            <div class="register-sub" id="authModeDescription">برای ثبت‌نام، نام، شماره تماس و PIN دلخواه ۸ تا ۱۲ رقمی را وارد کنید.</div>
+            <input type="text" class="register-input" id="regName" placeholder="نام و نام خانوادگی" autocomplete="name">
+            <input type="tel" class="register-input" id="regPhone" placeholder="شماره تماس" inputmode="tel" autocomplete="tel" maxlength="11">
+            <input type="password" class="register-input" id="regPin" placeholder="PIN دلخواه (۸ تا ۱۲ رقم)" inputmode="numeric" pattern="[0-9]{8,12}" minlength="8" maxlength="12" autocomplete="new-password" aria-label="رمز ورود PIN" required>
+            <button class="register-btn" id="authSubmitButton" onclick="registerUser()">
+                <i class="fas fa-user-plus"></i> ثبت‌نام
             </button>
+            <button type="button" id="authModeToggle" onclick="togglePhonePinMode()" style="display:block;width:100%;margin-top:12px;padding:10px;border:1px solid rgba(255,215,0,.55);border-radius:10px;background:transparent;color:#ffe082;font:inherit;cursor:pointer">قبلاً حساب دارید؟ ورود با شماره و PIN</button>
             <div class="register-footer">✦ هر آنچه می‌خواهی، در اینجاست ✦</div>
         </div>
     </div>
