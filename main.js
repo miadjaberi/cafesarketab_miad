@@ -4542,35 +4542,58 @@ async function submitProductOrder() {
               return;
             }
             var items = [];
+            window.__adminInboxSubCache = window.__adminInboxSubCache || [];
+            window.__adminInboxOrderCache = window.__adminInboxOrderCache || [];
+
             if (filter === 'all' || filter === 'subscriptions' || filter === 'unread') {
               var sr = await supabaseClient.from('subscription_requests')
-                .select('id,name,phone,plan,amount,status,created_at,user_id')
+                .select('id,name,phone,plan,plan_days,amount,status,receipt_path,user_id,created_at,admin_note,admin_code')
                 .order('created_at', { ascending: false })
                 .limit(40);
               if (!sr.error) {
+                window.__adminInboxSubCache = sr.data || [];
                 (sr.data || []).forEach(function(x){
                   var pending = !x.status || /انتظار|pending|جدید/i.test(String(x.status));
                   if (filter === 'unread' && !pending) return;
-                  items.push({ kind:'subscription', pending:pending, sort:x.created_at||'', title:'⭐ درخواست اشتراک',
-                    body:(x.name||'')+' · '+(x.phone||'')+' · طرح: '+(x.plan||'')+' · وضعیت: '+(x.status||'—'), id:x.id });
+                  var amt = (x.amount != null && x.amount !== '') ? (Number(x.amount).toLocaleString('fa-IR') + ' تومان') : 'مبلغ: —';
+                  items.push({
+                    kind: 'subscription',
+                    pending: pending,
+                    sort: x.created_at || '',
+                    title: '⭐ درخواست اشتراک',
+                    body: (x.name || '') + ' · ' + (x.phone || '') + ' · طرح: ' + (x.plan || '—') + ' · ' + amt + ' · وضعیت: ' + (x.status || 'در انتظار'),
+                    id: x.id
+                  });
                 });
               }
             }
+
             if (filter === 'all' || filter === 'orders' || filter === 'unread') {
               var orq = await supabaseClient.from('orders')
-                .select('id,local_id,name,phone,product_name,status,payment_status,created_at,user_id')
+                .select('*')
                 .order('created_at', { ascending: false })
                 .limit(40);
               if (!orq.error) {
+                window.__adminInboxOrderCache = orq.data || [];
                 (orq.data || []).forEach(function(x){
-                  var st = String(x.status||x.payment_status||'');
+                  var st = String(x.status || x.payment_status || '');
                   var pending = !st || /انتظار|pending|جدید|ثبت/i.test(st);
                   if (filter === 'unread' && !pending) return;
-                  items.push({ kind:'order', pending:pending, sort:x.created_at||'', title:'🛒 سفارش محصول',
-                    body:(x.name||'')+' · '+(x.phone||'')+' · '+(x.product_name||'محصول')+' · '+(st||'—'), id:x.id });
+                  var pname = x.productName || x.product_name || 'محصول';
+                  var total = x.total_amount != null ? x.total_amount : x.productPrice;
+                  var priceTxt = (total != null && total !== '') ? (Number(total).toLocaleString('fa-IR') + ' تومان') : '';
+                  items.push({
+                    kind: 'order',
+                    pending: pending,
+                    sort: x.created_at || '',
+                    title: '🛒 سفارش محصول',
+                    body: (x.name || x.customer_name || '') + ' · ' + (x.phone || '') + ' · ' + pname + (priceTxt ? (' · ' + priceTxt) : '') + ' · ' + (st || '—'),
+                    id: x.id
+                  });
                 });
               }
             }
+
             if (filter === 'all' || filter === 'unread') {
               var srSess = await supabaseClient.auth.getSession();
               var me = srSess && srSess.data && srSess.data.session && srSess.data.session.user;
@@ -4583,26 +4606,41 @@ async function submitProductOrder() {
                 if (!nq.error) {
                   (nq.data || []).forEach(function(n){
                     if (filter === 'unread' && n.read) return;
-                    items.push({ kind:'notification', pending:!n.read, sort:n.created_at_ts||n.created_at||'', title:'🔔 اعلان', body:n.message||'', id:n.id });
+                    items.push({ kind: 'notification', pending: !n.read, sort: n.created_at_ts || n.created_at || '', title: '🔔 اعلان', body: n.message || '', id: n.id });
                   });
                 }
               }
             }
-            items.sort(function(a,b){ return String(b.sort).localeCompare(String(a.sort)); });
+
+            items.sort(function(a, b){ return String(b.sort).localeCompare(String(a.sort)); });
             if (!items.length) {
               box.innerHTML = '<p style="font-size:.8rem;color:#555">موردی در صندوق ورودی نیست.</p>';
               return;
             }
+
+            function findSub(id){
+              var list = window.__adminInboxSubCache || [];
+              for (var i = 0; i < list.length; i++) if (String(list[i].id) === String(id)) return list[i];
+              return null;
+            }
+            function findOrd(id){
+              var list = window.__adminInboxOrderCache || [];
+              for (var i = 0; i < list.length; i++) if (String(list[i].id) === String(id)) return list[i];
+              return null;
+            }
+
             box.innerHTML = items.map(function(it){
               var actions = '';
-              if (it.kind === 'subscription' && it.pending && typeof window.decideCloudSubscription === 'function') {
+              if (it.kind === 'subscription') {
                 actions = '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">'
-                  + '<button type="button" onclick="decideCloudSubscription(\''+String(it.id)+'\',\'approved\').then(function(){renderAdminInbox()})">✅ تأیید و فعال‌سازی</button>'
-                  + '<button type="button" onclick="decideCloudSubscription(\''+String(it.id)+'\',\'rejected\').then(function(){renderAdminInbox()})">❌ رد</button></div>';
+                  + '<button type="button" onclick="(function(id){var row=(window.__adminInboxSubCache||[]).find(function(y){return String(y.id)===String(id)});if(!row){showNotification(\'جزئیات پیدا نشد\',\'error\');return;}if(typeof showAdminPurchaseDetail===\'function\')showAdminPurchaseDetail(\'subscription\',row);})(\''+String(it.id).replace(/\'/g,'')+'\')">📂 مشاهده جزئیات</button>'
+                  + '</div>';
+              } else if (it.kind === 'order') {
+                actions = '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">'
+                  + '<button type="button" onclick="(function(id){var row=(window.__adminInboxOrderCache||[]).find(function(y){return String(y.id)===String(id)});if(!row){showNotification(\'جزئیات پیدا نشد\',\'error\');return;}if(typeof showAdminPurchaseDetail===\'function\')showAdminPurchaseDetail(\'order\',row);})(\''+String(it.id).replace(/\'/g,'')+'\')">📂 مشاهده جزئیات</button>'
+                  + '</div>';
               } else if (it.kind === 'notification' && it.pending) {
                 actions = '<div style="margin-top:8px;"><button type="button" onclick="markNotificationRead(\''+String(it.id)+'\').then(function(){renderAdminInbox();refreshNotifBadge()})">علامت خوانده‌شد</button></div>';
-              } else if (it.kind === 'order') {
-                actions = '<div style="margin-top:8px;font-size:.75rem;opacity:.85">جزئیات در تب محصولات</div>';
               }
               return '<div class="admin-inbox-item'+(it.pending?' unread':'')+'"><div style="font-weight:800;margin-bottom:4px;">'+kafeEscHtml(it.title)+'</div><div style="font-size:.85rem;line-height:1.65;">'+kafeEscHtml(it.body)+'</div>'+actions+'</div>';
             }).join('');
@@ -6861,7 +6899,7 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){lo
     var esc2=window.__kafeEsc||function(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
     var isSub=kind==='subscription';
     var fields=isSub?[
-      ['شناسه درخواست',row.id],['شناسه کاربر',row.user_id],['نام',row.name],['شماره تماس',row.phone],['پلن',row.plan],['مبلغ',row.amount],['وضعیت',row.status],['کد مدیریت',row.admin_code],['یادداشت مدیریت',row.admin_note],['تاریخ ثبت',row.created_at]
+      ['شناسه درخواست',row.id],['شناسه کاربر',row.user_id],['نام',row.name],['شماره تماس',row.phone],['پلن',row.plan],['روز',row.plan_days],['مبلغ',row.amount!=null&&row.amount!==''?(Number(row.amount).toLocaleString('fa-IR')+' تومان'):row.amount],['وضعیت',row.status],['کد مدیریت',row.admin_code],['یادداشت مدیریت',row.admin_note],['تاریخ ثبت',row.created_at]
     ]:[
       ['شناسه سفارش',row.id],['شماره سفارش',row.order_number],['شناسه کاربر',row.user_id],['نام',row.name],['شماره تماس',row.phone],['محصول',row.productName],['قیمت',row.productPrice],['مبلغ نهایی',row.total_amount],['نوع',row.type],['وضعیت',row.status],['وضعیت پرداخت',row.payment_status],['وضعیت ارسال',row.shipping_status],['تاریخ ثبت',row.created_at||row.date],
       ['نام مادر',d.motherName],['کد ملی',d.nationalId],['آدرس',d.address],['کدپستی',d.postalCode],['نام گیرنده',d.receiverName],['شماره گیرنده',d.receiverPhone],['آدرس گیرنده',d.receiverAddress],['یادداشت',d.note]
@@ -6871,7 +6909,12 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){lo
     var actions='';
     if(receiptPath)actions+='<button type="button" onclick="viewCloudReceipt('+kafeHtmlJsArg(String(receiptPath))+')">🧾 مشاهده فیش</button>';
     var done=row.status==='approved'||row.status==='rejected';
-    if(!done) actions+=isSub?'<button type="button" onclick="decideCloudSubscription('+kafeHtmlJsArg(String(row.id))+',\'approved\');document.getElementById(\'kafeAdminPurchaseDetail\').remove()">✅ تأیید</button><button type="button" onclick="decideCloudSubscription('+kafeHtmlJsArg(String(row.id))+',\'rejected\');document.getElementById(\'kafeAdminPurchaseDetail\').remove()">❌ رد</button>':'<button type="button" onclick="decideCloudOrder('+kafeHtmlJsArg(String(row.id))+',\'approved\');document.getElementById(\'kafeAdminPurchaseDetail\').remove()">✅ تأیید</button><button type="button" onclick="decideCloudOrder('+kafeHtmlJsArg(String(row.id))+',\'rejected\');document.getElementById(\'kafeAdminPurchaseDetail\').remove()">❌ رد</button>';
+    if(!done) actions+=isSub?
+      '<button type="button" onclick="decideCloudSubscription('+kafeHtmlJsArg(String(row.id))+',\'approved\').then(function(ok){var el=document.getElementById(\'kafeAdminPurchaseDetail\');if(el)el.remove();if(typeof renderAdminInbox===\'function\')renderAdminInbox();})">✅ تأیید</button>'+
+      '<button type="button" onclick="decideCloudSubscription('+kafeHtmlJsArg(String(row.id))+',\'rejected\').then(function(ok){var el=document.getElementById(\'kafeAdminPurchaseDetail\');if(el)el.remove();if(typeof renderAdminInbox===\'function\')renderAdminInbox();})">❌ رد</button>'
+      :
+      '<button type="button" onclick="decideCloudOrder('+kafeHtmlJsArg(String(row.id))+',\'approved\').then(function(ok){var el=document.getElementById(\'kafeAdminPurchaseDetail\');if(el)el.remove();if(typeof renderAdminInbox===\'function\')renderAdminInbox();})">✅ تأیید</button>'+
+      '<button type="button" onclick="decideCloudOrder('+kafeHtmlJsArg(String(row.id))+',\'rejected\').then(function(ok){var el=document.getElementById(\'kafeAdminPurchaseDetail\');if(el)el.remove();if(typeof renderAdminInbox===\'function\')renderAdminInbox();})">❌ رد</button>';
     actions+='<button type="button" class="danger" onclick="'+(isSub?'deleteCloudSubscription':'deleteCloudOrder')+'('+kafeHtmlJsArg(String(row.id))+');document.getElementById(\'kafeAdminPurchaseDetail\').remove()">🗑️ حذف</button>';
     var w=document.createElement('div');w.id='kafeAdminPurchaseDetail';w.style.cssText='position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:12px;direction:rtl;';
     w.innerHTML='<div style="width:min(760px,96vw);max-height:94vh;overflow:auto;background:#fff;color:#111;border:2px solid #c9a84c;border-radius:16px;padding:16px"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><h3 style="margin:0">'+(isSub?'⭐ جزئیات کامل درخواست اشتراک':'🛒 جزئیات کامل سفارش محصول')+'</h3><button type="button" onclick="this.closest(\'#kafeAdminPurchaseDetail\').remove()">✕</button></div><div style="margin-top:12px">'+body+'</div><div class="admin-item-actions" style="display:flex;flex-wrap:wrap;gap:7px;margin-top:14px">'+actions+'</div></div>';

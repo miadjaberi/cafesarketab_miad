@@ -1,5 +1,3 @@
-fix/media-dashboard-pwa-m1-d1-d2-p1
-M1 media status UI
-D1 admin live stats
-D2 user real stats
-P1 SW cache bump
+fix/inbox-details-i1-i2
+I1 detail button + full select
+I2 no direct approve/reject in list
