@@ -1372,6 +1372,14 @@ async function submitProductOrder() {
             orders.unshift(order);
             try { localStorage.setItem('cafeOrders', JSON.stringify(orders.slice(0,200))); } catch(e) {}
             try {
+              if (typeof window.notifyAdminUsers === 'function') {
+                var oname = (order && (order.customer_name || order.name)) || '';
+                var ophone = (order && (order.customer_phone || order.phone)) || '';
+                var oprod = (order && (order.productName || order.product_name)) || 'محصول';
+                await window.notifyAdminUsers('سفارش جدید: '+oprod+' از '+(oname||ophone||'کاربر'), 'admin_request', order && (order.cloudId || order.id));
+              }
+            } catch (eOrdN) { console.warn('notify admin order', eOrdN); }
+            try {
                 var hist = JSON.parse(localStorage.getItem('userPurchases') || '[]');
                 if (!Array.isArray(hist)) hist = [];
                 hist.unshift({ id: Date.now(), product: productName || (p && p.title) || '', price: p ? p.price : 0, date: new Date().toISOString(), status: 'در انتظار تایید' });
@@ -2763,7 +2771,7 @@ async function submitProductOrder() {
 
         function switchAdminTab(tabId) {
             // تب‌های حساس: دوباره اعتبار مدیر را چک کن
-            var sensitive = {settings:1, products:1, otp:1, users:1, messages:1, modals:1, media:1};
+            var sensitive = {settings:1, products:1, otp:1, users:1, messages:1, modals:1, media:1, inbox:1};
             if (sensitive[tabId]) {
                 verifyOnlineAdmin().then(function(ok){
                     if (!ok) {
@@ -2788,6 +2796,7 @@ async function submitProductOrder() {
                     try { if (typeof window.renderAdminProducts === 'function') window.renderAdminProducts(); else if (typeof renderAdminProducts === 'function') renderAdminProducts(); } catch(e){console.warn(e);}
                     try { if (typeof window.renderAdminOrders === 'function') window.renderAdminOrders(); } catch(e){}
                 }
+                else if (tabId === 'inbox') { if (typeof window.renderAdminInbox === 'function') window.renderAdminInbox('all'); }
                 else if (tabId === 'subscriptions') { if (typeof window.renderAdminSubscriptions === 'function') window.renderAdminSubscriptions(); if (typeof renderVipLockAdmin === 'function') renderVipLockAdmin(); }
                 else if (tabId === 'modals' && typeof renderAdminModals === 'function') renderAdminModals();
                 else if (tabId === 'media' && typeof loadMediaSettings === 'function') loadMediaSettings();
@@ -4282,17 +4291,258 @@ async function submitProductOrder() {
         // ============================================================
         var notifications = [];
 
-        window.showNotifications = function showNotifications() {
-            var count = notifications.length;
-            if (count === 0) {
-                showNotification('📭 هیچ اعلانی وجود ندارد');
-            } else {
-                showNotification('🔔 ' + count + ' اعلان جدید دارید');
-                var badge = document.getElementById('notifBadge');
-                if (badge) badge.textContent = '0';
-                notifications = [];
-            }
+        function kafeEscHtml(v){
+          return String(v == null ? '' : v)
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+            .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
         }
+
+        window.closeUserNotifSheet = function(){
+          var sheet = document.getElementById('userNotifSheet');
+          if (sheet) {
+            sheet.classList.remove('open');
+            sheet.style.display = 'none';
+            sheet.setAttribute('aria-hidden', 'true');
+          }
+        };
+
+        window.refreshNotifBadge = async function refreshNotifBadge(){
+          try {
+            if (!window.supabaseClient) return 0;
+            var sr = await supabaseClient.auth.getSession();
+            var user = sr && sr.data && sr.data.session && sr.data.session.user;
+            if (!user) {
+              var b0 = document.getElementById('notifBadge');
+              var btn0 = document.getElementById('notifBellBtn');
+              if (b0) { b0.textContent = '0'; b0.classList.remove('has-unread'); }
+              if (btn0) btn0.classList.remove('has-unread');
+              return 0;
+            }
+            var q = await supabaseClient.from('notifications')
+              .select('id', { count: 'exact', head: true })
+              .eq('user_id', user.id)
+              .eq('read', false);
+            var n = (typeof q.count === 'number') ? q.count : 0;
+            var badge = document.getElementById('notifBadge');
+            var btn = document.getElementById('notifBellBtn');
+            if (badge) {
+              badge.textContent = String(n);
+              badge.classList.toggle('has-unread', n > 0);
+            }
+            if (btn) btn.classList.toggle('has-unread', n > 0);
+            return n;
+          } catch (e) {
+            console.warn('refreshNotifBadge', e);
+            return 0;
+          }
+        };
+
+        window.loadMyNotifications = async function loadMyNotifications(){
+          if (!window.supabaseClient) return [];
+          var sr = await supabaseClient.auth.getSession();
+          var user = sr && sr.data && sr.data.session && sr.data.session.user;
+          if (!user) return [];
+          var r = await supabaseClient.from('notifications')
+            .select('id,message,type,read,created_at,created_at_ts,related_id,action_url,user_name')
+            .eq('user_id', user.id)
+            .order('created_at_ts', { ascending: false })
+            .limit(50);
+          if (r.error) throw r.error;
+          return r.data || [];
+        };
+
+        window.markNotificationRead = async function markNotificationRead(id){
+          if (!window.supabaseClient || !id) return false;
+          try {
+            var r = await supabaseClient.from('notifications').update({ read: true }).eq('id', id);
+            if (r.error) throw r.error;
+            await window.refreshNotifBadge();
+            return true;
+          } catch (e) {
+            console.warn('markNotificationRead', e);
+            return false;
+          }
+        };
+
+        window.notifyAdminUsers = async function notifyAdminUsers(message, type, relatedId){
+          try {
+            if (!window.supabaseClient) return 0;
+            var ar = await supabaseClient.from('profiles').select('id,name,phone').eq('role', 'admin');
+            if (ar.error || !ar.data || !ar.data.length) return 0;
+            var rows = ar.data.map(function(a){
+              return {
+                user_id: a.id,
+                user_name: a.name || 'مدیر',
+                user_phone: a.phone || '',
+                message: String(message || '').slice(0, 500),
+                type: type || 'admin_request',
+                read: false,
+                related_id: relatedId ? String(relatedId) : null,
+                action_url: '#adminInbox',
+                created_at: new Date().toLocaleString('fa-IR'),
+                created_at_ts: new Date().toISOString()
+              };
+            });
+            var ins = await supabaseClient.from('notifications').insert(rows);
+            if (ins.error) { console.warn('notifyAdminUsers', ins.error); return 0; }
+            return rows.length;
+          } catch (e) {
+            console.warn('notifyAdminUsers', e);
+            return 0;
+          }
+        };
+
+        window.notifyUserById = async function notifyUserById(userId, message, type, relatedId){
+          try {
+            if (!window.supabaseClient || !userId) return false;
+            var ins = await supabaseClient.from('notifications').insert([{
+              user_id: userId,
+              user_name: '',
+              user_phone: '',
+              message: String(message || '').slice(0, 500),
+              type: type || 'user_status',
+              read: false,
+              related_id: relatedId ? String(relatedId) : null,
+              action_url: '',
+              created_at: new Date().toLocaleString('fa-IR'),
+              created_at_ts: new Date().toISOString()
+            }]);
+            if (ins.error) { console.warn('notifyUserById', ins.error); return false; }
+            return true;
+          } catch (e) {
+            console.warn('notifyUserById', e);
+            return false;
+          }
+        };
+
+        window.showNotifications = async function showNotifications() {
+          var list = document.getElementById('userNotifList');
+          var sheet = document.getElementById('userNotifSheet');
+          try {
+            if (!window.supabaseClient) {
+              showNotification('برای دیدن اعلان‌ها وارد حساب شوید', 'error');
+              return;
+            }
+            var rows = await window.loadMyNotifications();
+            notifications = rows;
+            if (list) {
+              if (!rows.length) {
+                list.innerHTML = '<p style="font-size:.85rem;color:#666">📭 اعلانی وجود ندارد</p>';
+              } else {
+                list.innerHTML = rows.map(function(n){
+                  var unread = !n.read;
+                  var when = n.created_at || n.created_at_ts || '';
+                  return '<div class="user-notif-item'+(unread?' unread':'')+'">'
+                    + '<div style="font-size:.9rem;line-height:1.6;">'+kafeEscHtml(n.message||'')+'</div>'
+                    + '<div style="display:flex;justify-content:space-between;gap:8px;margin-top:6px;font-size:.72rem;color:#777;">'
+                    + '<span>'+kafeEscHtml(n.type||'')+' · '+kafeEscHtml(when)+'</span>'
+                    + (unread ? '<button type="button" onclick="markNotificationRead(\''+String(n.id).replace(/'/g,'')+'\').then(function(){showNotifications()})">خواندم</button>' : '<span>خوانده‌شده</span>')
+                    + '</div></div>';
+                }).join('');
+              }
+            }
+            if (sheet) {
+              sheet.style.display = 'flex';
+              sheet.classList.add('open');
+              sheet.setAttribute('aria-hidden', 'false');
+            }
+            await window.refreshNotifBadge();
+          } catch (e) {
+            console.error('showNotifications', e);
+            showNotification('خواندن اعلان‌ها ناموفق بود: '+(e.message||e), 'error');
+          }
+        };
+
+        window.renderAdminInbox = async function renderAdminInbox(filter){
+          filter = filter || 'all';
+          var box = document.getElementById('adminInboxList');
+          if (!box) return;
+          box.innerHTML = '<p style="font-size:.8rem">در حال بارگذاری صندوق ورودی...</p>';
+          try {
+            if (!window.supabaseClient) {
+              box.innerHTML = '<p style="color:#b00020">اتصال سرور نیست</p>';
+              return;
+            }
+            var isAdm = false;
+            try {
+              if (typeof verifyOnlineAdmin === 'function') isAdm = !!(await verifyOnlineAdmin());
+            } catch (eA) {}
+            if (!isAdm) {
+              box.innerHTML = '<p style="color:#b00020">دسترسی مدیریت لازم است</p>';
+              return;
+            }
+            var items = [];
+            if (filter === 'all' || filter === 'subscriptions' || filter === 'unread') {
+              var sr = await supabaseClient.from('subscription_requests')
+                .select('id,name,phone,plan,amount,status,created_at,user_id')
+                .order('created_at', { ascending: false })
+                .limit(40);
+              if (!sr.error) {
+                (sr.data || []).forEach(function(x){
+                  var pending = !x.status || /انتظار|pending|جدید/i.test(String(x.status));
+                  if (filter === 'unread' && !pending) return;
+                  items.push({ kind:'subscription', pending:pending, sort:x.created_at||'', title:'⭐ درخواست اشتراک',
+                    body:(x.name||'')+' · '+(x.phone||'')+' · طرح: '+(x.plan||'')+' · وضعیت: '+(x.status||'—'), id:x.id });
+                });
+              }
+            }
+            if (filter === 'all' || filter === 'orders' || filter === 'unread') {
+              var orq = await supabaseClient.from('orders')
+                .select('id,local_id,name,phone,product_name,status,payment_status,created_at,user_id')
+                .order('created_at', { ascending: false })
+                .limit(40);
+              if (!orq.error) {
+                (orq.data || []).forEach(function(x){
+                  var st = String(x.status||x.payment_status||'');
+                  var pending = !st || /انتظار|pending|جدید|ثبت/i.test(st);
+                  if (filter === 'unread' && !pending) return;
+                  items.push({ kind:'order', pending:pending, sort:x.created_at||'', title:'🛒 سفارش محصول',
+                    body:(x.name||'')+' · '+(x.phone||'')+' · '+(x.product_name||'محصول')+' · '+(st||'—'), id:x.id });
+                });
+              }
+            }
+            if (filter === 'all' || filter === 'unread') {
+              var srSess = await supabaseClient.auth.getSession();
+              var me = srSess && srSess.data && srSess.data.session && srSess.data.session.user;
+              if (me) {
+                var nq = await supabaseClient.from('notifications')
+                  .select('id,message,type,read,created_at,created_at_ts,related_id')
+                  .eq('user_id', me.id)
+                  .order('created_at_ts', { ascending: false })
+                  .limit(30);
+                if (!nq.error) {
+                  (nq.data || []).forEach(function(n){
+                    if (filter === 'unread' && n.read) return;
+                    items.push({ kind:'notification', pending:!n.read, sort:n.created_at_ts||n.created_at||'', title:'🔔 اعلان', body:n.message||'', id:n.id });
+                  });
+                }
+              }
+            }
+            items.sort(function(a,b){ return String(b.sort).localeCompare(String(a.sort)); });
+            if (!items.length) {
+              box.innerHTML = '<p style="font-size:.8rem;color:#555">موردی در صندوق ورودی نیست.</p>';
+              return;
+            }
+            box.innerHTML = items.map(function(it){
+              var actions = '';
+              if (it.kind === 'subscription' && it.pending && typeof window.decideCloudSubscription === 'function') {
+                actions = '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">'
+                  + '<button type="button" onclick="decideCloudSubscription(\''+String(it.id)+'\',\'approved\').then(function(){renderAdminInbox()})">✅ تأیید و فعال‌سازی</button>'
+                  + '<button type="button" onclick="decideCloudSubscription(\''+String(it.id)+'\',\'rejected\').then(function(){renderAdminInbox()})">❌ رد</button></div>';
+              } else if (it.kind === 'notification' && it.pending) {
+                actions = '<div style="margin-top:8px;"><button type="button" onclick="markNotificationRead(\''+String(it.id)+'\').then(function(){renderAdminInbox();refreshNotifBadge()})">علامت خوانده‌شد</button></div>';
+              } else if (it.kind === 'order') {
+                actions = '<div style="margin-top:8px;font-size:.75rem;opacity:.85">جزئیات در تب محصولات</div>';
+              }
+              return '<div class="admin-inbox-item'+(it.pending?' unread':'')+'"><div style="font-weight:800;margin-bottom:4px;">'+kafeEscHtml(it.title)+'</div><div style="font-size:.85rem;line-height:1.65;">'+kafeEscHtml(it.body)+'</div>'+actions+'</div>';
+            }).join('');
+            await window.refreshNotifBadge();
+          } catch (e) {
+            console.error('renderAdminInbox', e);
+            box.innerHTML = '<p style="color:#b00020;font-size:.8rem">خطا: '+kafeEscHtml(e.message||e)+'</p>';
+          }
+        };
+
 
         // ============================================================
         // پر کردن سوالات رمل
@@ -4576,6 +4826,15 @@ async function submitProductOrder() {
             var row={user_id:session.user.id,name:name,phone:phone,plan:plan,plan_id:String(days),plan_days:days,amount:null,receipt_path:path,status:'pending',receipt_note:'',created_at:new Date().toISOString(),updated_at:new Date().toISOString()};
             var r=await supabaseClient.from('subscription_requests').insert([row]).select().single();
             if(r.error)throw r.error;
+            try {
+              if (typeof window.notifyAdminUsers === 'function') {
+                await window.notifyAdminUsers(
+                  'درخواست جدید اشتراک: '+(row.plan||'')+' از '+(row.name||row.phone||'کاربر'),
+                  'admin_request',
+                  r.data && r.data.id
+                );
+              }
+            } catch (eN) { console.warn('notify admin sub', eN); }
             window._subscriptionReceiptFile=null;
             window._subscriptionSelectedPlanDays=null;
             if(btn)btn.textContent='✅ درخواست با موفقیت ارسال شد';
@@ -5582,6 +5841,7 @@ async function submitProductOrder() {
 
   refreshOnlineData().catch(function(e){ console.warn('online sync', e); });
   console.log('✅ Kafe Miad Stage 2 online connection loaded');
+  try { if (typeof window.refreshNotifBadge === 'function') window.refreshNotifBadge(); } catch (eBadge) {}
 })();
 
 
@@ -6576,7 +6836,7 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){lo
     try{var r=await sb().from('subscription_requests').select('*').order('created_at',{ascending:false}).limit(100);if(r.error)throw r.error;var rows=r.data||[];window.__adminSubscriptionRequestsCache=rows;if(reqList)reqList.innerHTML=rows.length?rows.map(function(x){var done=x.status==='approved'||x.status==='rejected';return '<div class="admin-item" style="flex-direction:column;align-items:stretch;gap:7px"><div><strong>⭐ '+esc(x.plan||'اشتراک')+'</strong> — '+esc(x.plan_days||'—')+' روز</div><small style="color:#1A1A1A">'+esc(x.name||'')+' · '+esc(x.phone||'')+' · '+esc(x.status||'در انتظار بررسی')+' · '+esc(fmt(x.created_at))+'</small><div class="admin-item-actions" style="justify-content:flex-start"><button type="button" onclick="showAdminPurchaseDetail(\'subscription\',window.__adminSubscriptionRequestsCache.find(function(y){return String(y.id)===String('+kafeHtmlJsArg(String(x.id))+')}))">📂 جزئیات کامل</button>'+(x.receipt_path?'<button type="button" onclick="viewCloudReceipt('+kafeHtmlJsArg(String(x.receipt_path))+')">🧾 فیش</button>':'')+(done?'':'<button type="button" onclick="decideCloudSubscription('+kafeHtmlJsArg(String(x.id))+',\'approved\')">✅ تأیید و فعال‌سازی</button><button type="button" onclick="decideCloudSubscription('+kafeHtmlJsArg(String(x.id))+',\'rejected\')">❌ رد</button>')+'<button type="button" class="danger" onclick="deleteCloudSubscription('+kafeHtmlJsArg(String(x.id))+')">🗑️ حذف</button></div></div>';}).join(''):'<p style="font-size:.8rem;color:#555">درخواستی ثبت نشده است.</p>';}catch(e){if(reqList)reqList.innerHTML='<p style="color:#b00020;font-size:.8rem">خطا: '+esc(e.message||e)+'</p>';}
     try{var old=JSON.parse(localStorage.getItem('adminSubscriptions')||'[]');if(codeList)codeList.innerHTML=old.length?old.slice(0,50).map(function(x){return '<div class="admin-item"><span>🔑 '+esc(x.code)+' - '+esc(x.days)+' روز</span><button class="danger" onclick="deleteSubscription('+kafeHtmlJsArg(String(x.code))+')">🗑️</button></div>';}).join(''):'<p style="font-size:.8rem;color:#555">کد دستی وجود ندارد.</p>';}catch(e){if(codeList)codeList.innerHTML='<p style="font-size:.8rem;color:#555">کد دستی وجود ندارد.</p>';}
   };
-  window.decideCloudSubscription = async function(id,decision){var s=await admin();if(!s){showNotification('❌ دسترسی مدیریت ندارید','error');return false;}try{var r=await sb().rpc('admin_decide_subscription',{p_request_id:id,p_decision:decision,p_note:null});if(r.error)throw r.error;showNotification(decision==='approved'?'✅ اشتراک تأیید، فعال و نتیجه برای همان کاربر ثبت شد':'❌ درخواست اشتراک رد شد و نتیجه برای کاربر ثبت شد');await window.renderAdminSubscriptions();return true;}catch(e){console.error('admin_decide_subscription',e);showNotification('❌ تصمیم اشتراک ثبت نشد: '+(e.message||e),'error');return false;}};
+  window.decideCloudSubscription = async function(id,decision){var s=await admin();if(!s){showNotification('❌ دسترسی مدیریت ندارید','error');return false;}try{var reqRow=null;try{var rq=await sb().from('subscription_requests').select('id,user_id,name,plan,status').eq('id',id).maybeSingle();reqRow=rq&&rq.data;}catch(eR){}var r=await sb().rpc('admin_decide_subscription',{p_request_id:id,p_decision:decision,p_note:null});if(r.error)throw r.error;try{if(reqRow&&reqRow.user_id&&typeof window.notifyUserById==='function'){var msg=decision==='approved'?('اشتراک شما تأیید و فعال شد'+(reqRow.plan?(' — طرح: '+reqRow.plan):'')):('درخواست اشتراک شما رد شد'+(reqRow.plan?(' — طرح: '+reqRow.plan):''));await window.notifyUserById(reqRow.user_id,msg,decision==='approved'?'subscription_status':'subscription_rejected',id);}}catch(eN){console.warn('notify user sub decision',eN);}showNotification(decision==='approved'?'✅ اشتراک تأیید، فعال و نتیجه برای همان کاربر ثبت شد':'❌ درخواست اشتراک رد شد و نتیجه برای کاربر ثبت شد');await window.renderAdminSubscriptions();if(typeof window.renderAdminInbox==='function')try{await window.renderAdminInbox();}catch(eI){}return true;}catch(e){console.error('admin_decide_subscription',e);showNotification('❌ تصمیم اشتراک ثبت نشد: '+(e.message||e),'error');return false;}};
   window.deleteCloudSubscription = async function(id){var s=await admin();if(!s){showNotification('❌ دسترسی مدیریت ندارید','error');return false;}if(!confirm('این درخواست اشتراک از سرور حذف شود؟'))return false;try{var r=await sb().from('subscription_requests').delete().eq('id',id);if(r.error)throw r.error;showNotification('🗑️ درخواست اشتراک از سرور حذف شد');await window.renderAdminSubscriptions();return true;}catch(e){showNotification('❌ حذف درخواست اشتراک انجام نشد: '+(e.message||e),'error');return false;}};
 
   (function(){
@@ -6586,6 +6846,7 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){lo
       var r = prev.apply(this, arguments);
       if (tab === 'messages') setTimeout(function(){ if (typeof loadAdminConversations === 'function') loadAdminConversations(); }, 0);
       if (tab === 'products') setTimeout(function(){ if (typeof window.renderAdminOrders === 'function') window.renderAdminOrders(); }, 0);
+      if (tab === 'inbox') setTimeout(function(){ if (typeof window.renderAdminInbox === 'function') window.renderAdminInbox('all'); }, 0);
       if (tab === 'subscriptions') setTimeout(function(){ if (typeof window.renderAdminSubscriptions === 'function') window.renderAdminSubscriptions(); }, 0);
       return r;
     };
