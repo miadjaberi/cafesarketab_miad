@@ -1,9 +1,14 @@
 کافه سرکتاب میعاد — شاخه fix/unified-pin-auth-security-2026-10-24
 
-وضعیت این شاخه:
-- index.html و main.js هم‌تراز با main (ورود PIN + phone-pin-auth)
-- بازیابی پس از خرابی موقت index روی شاخه fix
-- تغییرات امنیتی سرور (جدا از این commit): receipts خصوصی، محدودسازی admin_clear_test_data، verify_jwt روی subscription-request
+وضعیت هم‌تراز با main (بازیابی پس از خراب شدن index روی این شاخه):
+- index.html و main.js از main سالم کپی شدند
+- ورود/ثبت‌نام: phone-pin-auth + PIN عددی ۸–۱۲ رقم (از قبل روی main)
+- signInAnonymously در main.js نیست
 
-OTP تلگرام مدیر دست‌نخورده.
+امنیت سرور (از قبل اعمال‌شده، نه در این commit فایل):
+- باکت receipts = private + حذف public read
+- REVOKE EXECUTE روی admin_clear_test_data برای anon/authenticated
+- subscription-request: verify_jwt=true
+
+OTP تلگرام مدیر دست‌نخورده است.
 merge به main فقط پس از تست و تأیید مالک.
