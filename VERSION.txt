@@ -1,14 +1,21 @@
-Kafe Miad V22.9-RC1
-هدف: نسخه اصلاح‌شده برای تست HTTPS / GitHub Pages (نه ادعای صفرخطا)
+کافه سرکتاب میعاد — شاخه fix/unified-pin-auth-security-2026-10-24
 
-تغییرات نسبت به V22.8c:
-- آپلود تصویر محصول: در شکست Storage دیگر Base64 ذخیره نمی‌شود
-- آپلود تصاویر تنظیمات (لوگو/اسپلش/...): شکست = حذف Base64، نه ذخیره محلی حجیم
-- پاک‌سازی LocalStorage فقط کلیدهای مرده سکه/OTP؛ سفارش و اشتراک واقعی پاک نمی‌شود
-- نسخه کش PWA: kafe-miad-v22.9-rc1
+وضعیت هم‌تراز با main (بازیابی پس از خراب شدن index روی این شاخه):
+- index.html و main.js از main سالم کپی شدند
+- ورود/ثبت‌نام: phone-pin-auth + PIN عددی ۸–۱۲ رقم (از قبل روی main)
+- signInAnonymously در main.js نیست
 
-هنوز قبل از انتشار عمومی لازم است:
-- تطبیق anon key با پروژه واقعی Supabase
-- بررسی باکت public-assets و receipts + Policy
-- تست Runtime روی لینک HTTPS
-- تأیید جدول products (local_id / UUID)
+امنیت سرور (از قبل اعمال‌شده، نه در این commit فایل):
+- باکت receipts = private + حذف public read
+- REVOKE EXECUTE روی admin_clear_test_data برای anon/authenticated
+- subscription-request: verify_jwt=true
+
+OTP تلگرام مدیر دست‌نخورده است.
+merge به main فقط پس از تست و تأیید مالک.
+
+Fix auth UX 2026-10-25:
+- پیام خطای PIN خالی با alert + z-index بالاتر اعلان
+- راهنمای مدیر: مسیر PIN فقط کاربر؛ مدیر با OTP تلگرام
+
+Admin entry from register screen:
+- 5 taps on register logo within 3s → Telegram OTP → app + admin panel

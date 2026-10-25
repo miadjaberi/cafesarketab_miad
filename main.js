@@ -41,6 +41,42 @@
   };
 })();
 
+/* ورود مدیر از صفحه ثبت‌نام: ۵ ضربه روی لوگوی ثبت‌نام در ۳ ثانیه → OTP تلگرام → اپ + پنل */
+(function(){
+  var regTaps = [];
+  window.kafeRegisterAdminTap = function() {
+    var now = Date.now();
+    regTaps.push(now);
+    regTaps = regTaps.filter(function(t){ return now - t < 3000; });
+    if (regTaps.length < 5) return;
+    regTaps = [];
+    try {
+      if (typeof window.showNotification === 'function') {
+        window.showNotification('در حال ورود مدیریت…');
+      }
+    } catch (eN) {}
+    if (typeof window.toggleAdmin === 'function') {
+      Promise.resolve(window.toggleAdmin()).catch(function(err){
+        console.error('register admin entry', err);
+        var msg = (err && err.message) ? err.message : 'ورود مدیریت ناموفق بود';
+        try {
+          if (typeof window.authScreenFeedback === 'function') window.authScreenFeedback(msg);
+          else if (typeof window.showNotification === 'function') window.showNotification(msg, 'error');
+          else window.alert(msg);
+        } catch (e2) {}
+      });
+    } else {
+      try {
+        if (typeof window.authScreenFeedback === 'function') {
+          window.authScreenFeedback('ورود مدیریت بارگذاری نشده است.');
+        } else {
+          window.alert('ورود مدیریت بارگذاری نشده است.');
+        }
+      } catch (e3) {}
+    }
+  };
+})();
+
 /* ===== 00-safety.js ===== */
 /* V7.2 GLOBAL SAFETY HELPERS — available before every dashboard/message script */
 (function(){
