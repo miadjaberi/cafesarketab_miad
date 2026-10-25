@@ -1,12 +1,9 @@
 کافه سرکتاب میعاد — شاخه fix/unified-pin-auth-security-2026-10-24
 
-تغییرات:
-- ورود کاربر از طریق phone-pin-auth با PIN عددی ۸–۱۲ رقم
-- فیلد PIN در صفحه ثبت‌نام
-- باکت receipts خصوصی + حذف public read
-- محدودسازی EXECUTE تابع admin_clear_test_data
-- verify_jwt برای subscription-request روشن شد
-- گسترش کلیدهای رسانه‌ای admin در کش تنظیمات
+وضعیت این شاخه:
+- index.html و main.js هم‌تراز با main (ورود PIN + phone-pin-auth)
+- بازیابی پس از خرابی موقت index روی شاخه fix
+- تغییرات امنیتی سرور (جدا از این commit): receipts خصوصی، محدودسازی admin_clear_test_data، verify_jwt روی subscription-request
 
-OTP تلگرام مدیر دست‌نخورده است.
-شاخه main هنوز merge نشده تا تأیید نهایی مالک.
+OTP تلگرام مدیر دست‌نخورده.
+merge به main فقط پس از تست و تأیید مالک.
