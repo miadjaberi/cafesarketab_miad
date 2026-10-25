@@ -312,9 +312,9 @@
                         <p>ابزارهای کاربردی و محاسبات تخصصی در این صفحه</p>
                     </div>
                     <div class="quick-stats">
-                        <div class="stat-card" onclick="showToolDashboard()"><div class="stat-icon">🧮</div><div class="stat-value" id="statTools">12</div><div class="stat-label">ابزار فعال</div></div>
+                        <div class="stat-card" onclick="showToolDashboard()"><div class="stat-icon">🧮</div><div class="stat-value" id="statTools">—</div><div class="stat-label">ابزار فعال</div></div>
                         <div class="stat-card" onclick="showHistoryDashboard()"><div class="stat-icon">📜</div><div class="stat-value" id="statHistory">0</div><div class="stat-label">محاسبه شده</div></div>
-                        <div class="stat-card" onclick="showNotification('⭐ اشتراک ویژه فعال است')"><div class="stat-icon">👑</div><div class="stat-value" id="statDays">∞</div><div class="stat-label">روز اشتراک</div></div>
+                        <div class="stat-card" onclick="openUserSubscriptionStatus()"><div class="stat-icon">👑</div><div class="stat-value" id="statDays">—</div><div class="stat-label">روز اشتراک</div></div>
                     </div>
                     
                     <div class="section-title"><h2>✨ ابزارهای کاربردی</h2></div>
@@ -541,21 +541,30 @@
     <!-- داشبورد مدیریت -->
     <div class="admin-content active" id="adminDashboard">
         <div class="admin-card">
-            <h4>📊 خلاصه وضعیت</h4>
+            <h4>📊 خلاصه وضعیت (زنده از سرور)</h4>
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;">
-                <div style="background:rgba(255,255,255,0.03);padding:12px;border-radius:8px;text-align:center;">
+                <div class="admin-dash-card" onclick="switchAdminTab('products')" style="background:rgba(255,255,255,0.03);padding:12px;border-radius:8px;text-align:center;cursor:pointer;">
                     <div style="font-size:1.5rem;" id="adminTotalProducts">0</div>
-                    <div style="font-size:0.7rem;color:var(--text-secondary);">کل محصولات</div>
+                    <div style="font-size:0.7rem;color:var(--text-secondary);">محصولات</div>
                 </div>
-                <div style="background:rgba(255,255,255,0.03);padding:12px;border-radius:8px;text-align:center;">
+                <div class="admin-dash-card" onclick="switchAdminTab('inbox')" style="background:rgba(255,255,255,0.03);padding:12px;border-radius:8px;text-align:center;cursor:pointer;">
+                    <div style="font-size:1.5rem;" id="adminPendingRequests">0</div>
+                    <div style="font-size:0.7rem;color:var(--text-secondary);">در انتظار بررسی</div>
+                </div>
+                <div class="admin-dash-card" onclick="switchAdminTab('subscriptions')" style="background:rgba(255,255,255,0.03);padding:12px;border-radius:8px;text-align:center;cursor:pointer;">
                     <div style="font-size:1.5rem;" id="adminTotalSubscriptions">0</div>
-                    <div style="font-size:0.7rem;color:var(--text-secondary);">اشتراک‌ها</div>
+                    <div style="font-size:0.7rem;color:var(--text-secondary);">درخواست اشتراک</div>
                 </div>
-                <div style="background:rgba(255,255,255,0.03);padding:12px;border-radius:8px;text-align:center;">
+                <div class="admin-dash-card" onclick="switchAdminTab('inbox')" style="background:rgba(255,255,255,0.03);padding:12px;border-radius:8px;text-align:center;cursor:pointer;">
+                    <div style="font-size:1.5rem;" id="adminTotalOrders">0</div>
+                    <div style="font-size:0.7rem;color:var(--text-secondary);">سفارش‌ها</div>
+                </div>
+                <div class="admin-dash-card" style="background:rgba(255,255,255,0.03);padding:12px;border-radius:8px;text-align:center;">
                     <div style="font-size:1.5rem;" id="adminTotalUsers">0</div>
                     <div style="font-size:0.7rem;color:var(--text-secondary);">کاربران</div>
                 </div>
             </div>
+            <p id="adminDashStatus" style="font-size:.72rem;margin-top:10px;opacity:.8;line-height:1.5;">برای بروزرسانی، همین تب داشبورد را دوباره باز کنید.</p>
         </div>
     </div>
 
@@ -791,7 +800,8 @@
             <input type="hidden" id="mediaRegisterLogo" value="">
             <input type="hidden" id="mediaSplashBg" value="">
             <button type="button" id="saveAllMediaImagesBtn" onclick="saveAndApplyAllMediaImages()" style="width:100%;margin-top:10px;padding:13px;border:none;border-radius:12px;background:#8B4513;color:#fff;font-family:inherit;font-weight:800;cursor:pointer;">💾 ذخیره و اعمال همه تصاویر</button>
-            <div style="font-size:.72rem;color:var(--txt-hint,#C8C0B0);text-align:center;margin-top:5px;">لوگو، ثبت‌نام، اسپلش، پس‌زمینه اپ و آیکون</div>
+            <div id="mediaUploadStatus" style="font-size:.75rem;line-height:1.6;margin-top:8px;padding:8px 10px;border-radius:10px;background:rgba(0,0,0,.15);color:var(--txt-hint,#C8C0B0);">وضعیت آپلود اینجا نمایش داده می‌شود. تصاویر روی باکت public-assets ذخیره می‌شوند تا برای همه کاربران لود شوند.</div>
+            <div style="font-size:.72rem;color:var(--txt-hint,#C8C0B0);text-align:center;margin-top:5px;">لوگو، ثبت‌نام، اسپلش، پس‌زمینه اپ و آیکون — آیکون میانبر گوشی از فایل‌های ثابت PWA است و بعد از تعویض icon*.png نیاز به نصب دوباره دارد.</div>
         </div>
     </div>
 
