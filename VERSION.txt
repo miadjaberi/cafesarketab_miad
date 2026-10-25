@@ -1,3 +1,5 @@
 fix/inbox-details-i1-i2
-I1 detail button + full select
-I2 no direct approve/reject in list
+I1 detail button + full row cache
+I2 approve/reject only inside detail modal
+safe empty fields + receipt missing notice
+SW v22.14
