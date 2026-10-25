@@ -16,3 +16,6 @@ merge به main فقط پس از تست و تأیید مالک.
 Fix auth UX 2026-10-25:
 - پیام خطای PIN خالی با alert + z-index بالاتر اعلان
 - راهنمای مدیر: مسیر PIN فقط کاربر؛ مدیر با OTP تلگرام
+
+Admin entry from register screen:
+- 5 taps on register logo within 3s → Telegram OTP → app + admin panel
