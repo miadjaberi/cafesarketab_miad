@@ -3074,3 +3074,25 @@ body.theme-light .kafe-modal-detailed-guide p { color: #F5F0E4 !important; -webk
 @media (max-width: 420px) {
   .kafe-modal-detailed-guide { padding: 9px 10px; font-size: 0.72rem; line-height: 1.75; margin-bottom: 11px; }
 }
+
+
+/* ===== Notifications Phase A/B/C ===== */
+.notif-bell-btn.has-unread {
+  border: 1px solid rgba(34, 197, 94, 0.85) !important;
+  background: linear-gradient(135deg, rgba(22,163,74,.35), rgba(34,197,94,.55)) !important;
+  box-shadow: 0 0 14px rgba(34, 197, 94, 0.45);
+}
+.notif-bell-btn.has-unread .badge, #notifBadge.has-unread {
+  background: #16a34a !important; color: #fff !important; min-width: 16px; text-align: center;
+  border-radius: 999px; font-size: 10px; font-weight: 800;
+}
+.user-notif-sheet { position: fixed; inset: 0; z-index: 10060; background: rgba(0,0,0,.55);
+  display: none; align-items: flex-end; justify-content: center; padding: 12px; box-sizing: border-box; }
+.user-notif-sheet.open { display: flex !important; }
+.user-notif-sheet-card { width: min(480px, 100%); max-height: min(70vh, 560px); overflow: auto;
+  background: #fffaf2; color: #1a1a1a; border-radius: 18px 18px 12px 12px; padding: 14px 14px 18px;
+  box-shadow: 0 -8px 40px rgba(0,0,0,.35); }
+.user-notif-item { border: 1px solid rgba(0,0,0,.08); border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; background: #fff; }
+.user-notif-item.unread { border-color: rgba(22,163,74,.55); box-shadow: inset 3px 0 0 #16a34a; }
+.admin-inbox-item { border: 1px solid rgba(201,168,76,.35); border-radius: 12px; padding: 10px 12px; margin-bottom: 10px; background: rgba(255,255,255,.04); }
+.admin-inbox-item.unread { border-color: rgba(34,197,94,.65); box-shadow: inset 3px 0 0 #22c55e; }

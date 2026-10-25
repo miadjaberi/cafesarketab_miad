@@ -234,7 +234,7 @@
 
                 <div class="header-right" style="display:flex;flex-direction:column;gap:6px;width:70px;min-width:70px;max-width:70px;flex:0 0 70px;">
                     <div class="header-notifications" style="display:flex;flex-direction:column;gap:6px;width:100%;">
-                        <button class="header-btn" style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;min-height:42px;padding:6px 4px;gap:3px;position:relative;" onclick="showNotifications()">
+                        <button type="button" id="notifBellBtn" class="header-btn notif-bell-btn" style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;min-height:42px;padding:6px 4px;gap:3px;position:relative;" onclick="showNotifications()">
                             <i class="fas fa-bell"></i>
                             <span class="header-label">اعلان‌ها</span>
                             <span class="badge" id="notifBadge">0</span>
@@ -528,6 +528,7 @@
         <button class="admin-tab active" data-tab="dashboard" onclick="switchAdminTab('dashboard')">📊 داشبورد</button>
         <button class="admin-tab" data-tab="modals" onclick="switchAdminTab('modals')">📋 مودال‌ها</button>
         <button class="admin-tab" data-tab="otp" onclick="switchAdminTab('otp')">🔑 OTP</button>
+        <button class="admin-tab" data-tab="inbox" onclick="switchAdminTab('inbox')">📥 صندوق ورودی</button>
         <button class="admin-tab" data-tab="products" onclick="switchAdminTab('products')">📦 محصولات</button>
         <button class="admin-tab" data-tab="discount" onclick="switchAdminTab('discount')">🏷️ تخفیف</button>
                 <button class="admin-tab" data-tab="subscriptions" onclick="switchAdminTab('subscriptions')">⭐ اشتراک‌ها</button>
@@ -649,6 +650,22 @@
             </div>
             <div id="adminOTPList" style="margin-top:14px;"></div>
             <p style="font-size:0.75rem;color:var(--txt-body,#F5F0E4);margin-top:10px;line-height:1.6;">مودال‌های نیازمند اشتراک/OTP: مکاشفه موکلین، استخراج موکل، دلیل الحیران، رمل امام علی، طلسم‌ساز وفق</p>
+        </div>
+    </div>
+
+
+    <div class="admin-content" id="adminInbox">
+        <div class="admin-card">
+            <h4>📥 صندوق ورودی مدیریت</h4>
+            <p style="font-size:.78rem;line-height:1.7;color:var(--txt-hint,#C8C0B0);margin:6px 0 10px">درخواست‌های خرید محصول و اشتراک + اعلان‌ها. بخش کد اشتراک بدون تغییر است.</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+                <button type="button" class="btn" onclick="renderAdminInbox('all')">همه</button>
+                <button type="button" class="btn" onclick="renderAdminInbox('orders')">🛒 سفارش‌ها</button>
+                <button type="button" class="btn" onclick="renderAdminInbox('subscriptions')">⭐ اشتراک‌ها</button>
+                <button type="button" class="btn" onclick="renderAdminInbox('unread')">🟢 خوانده‌نشده</button>
+                <button type="button" class="btn" onclick="refreshNotifBadge()">🔄 بروزرسانی</button>
+            </div>
+            <div id="adminInboxList"><p style="font-size:.8rem;color:#555">در حال بارگذاری...</p></div>
         </div>
     </div>
 
@@ -837,6 +854,17 @@
 </div>
 
 <!-- ===== TOAST ===== -->
+
+<div id="userNotifSheet" class="user-notif-sheet" aria-hidden="true" style="display:none;">
+  <div class="user-notif-sheet-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px;">
+      <strong>🔔 اعلان‌های من</strong>
+      <button type="button" onclick="closeUserNotifSheet()" style="border:0;background:rgba(0,0,0,.08);border-radius:10px;padding:6px 10px;cursor:pointer;">✕</button>
+    </div>
+    <div id="userNotifList"><p style="font-size:.85rem;color:#666">در حال بارگذاری...</p></div>
+  </div>
+</div>
+
 <div id="notification"></div>        
         <!-- ===== MODAL: جزئیات محصول (اینستاگرام) ===== -->
         
