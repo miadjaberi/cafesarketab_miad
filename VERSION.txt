@@ -1,4 +1,3 @@
-fix/plans-session-soft-offline
-3) plan prices
-2) session+terms
-1) soft offline
+fix/user-offline-modals-only
+Center Menu computational modals offline
+Admin OTP untouched

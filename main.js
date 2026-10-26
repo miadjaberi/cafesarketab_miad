@@ -391,6 +391,12 @@
             if (typeof isVipLocked === 'function' && isVipLocked(modalId) && !(await isAdminSession()) && typeof isSubscriptionActive === 'function' && !isSubscriptionActive()) {
                 var lockName = (typeof getModalMeta === 'function' ? (getModalMeta(modalId).title || modalId) : modalId);
                 if (typeof SUBSCRIPTION_MODALS !== 'undefined' && SUBSCRIPTION_MODALS[modalId]) lockName = SUBSCRIPTION_MODALS[modalId];
+                if (typeof window.kafeIsOffline === 'function' && window.kafeIsOffline()) {
+                  if (typeof showNotification === 'function') {
+                    showNotification('این مودال VIP است؛ بدون اشتراک قبلی در آفلاین باز نمی‌شود', 'error');
+                  }
+                  return;
+                }
                 requireSubscription(lockName);
                 return;
             }
@@ -6070,6 +6076,24 @@ async function submitProductOrder() {
   }
   window.addEventListener('online', syncOfflineUi);
   window.addEventListener('offline', syncOfflineUi);
+
+  window.addEventListener('offline', function(){
+    try {
+      var termsOk = false;
+      try { termsOk = localStorage.getItem('kafeTermsAccepted') === '1'; } catch (e) {}
+      var app = document.getElementById('app');
+      var appVisible = app && app.style.display !== 'none' && !app.classList.contains('hidden');
+      if (termsOk && !appVisible && typeof window.enterAppForLocalModals === 'function') {
+        window.enterAppForLocalModals('اتصال قطع شد — از دکمه وسط منو مودال‌ها را باز کنید');
+      }
+      var ban = document.getElementById('offlineBanner');
+      if (ban) {
+        ban.style.display = 'block';
+        ban.textContent = '📡 حالت آفلاین — از دکمه وسط «منو» مودال‌های محاسباتی را باز کنید';
+      }
+    } catch (eOff) {}
+  });
+
   document.addEventListener('DOMContentLoaded', syncOfflineUi);
   setTimeout(syncOfflineUi, 500);
 })();
@@ -6275,6 +6299,66 @@ document.addEventListener('DOMContentLoaded',function(){try{window.applyGalleryI
     el.style.display = display || 'flex';
   }
 
+
+  /* آفلاین کاربر: اپ + دکمه وسط «منو» (مودال‌های محاسباتی) — مسیر مدیر OTP دست‌نخورده */
+  window.enterAppForLocalModals = function enterAppForLocalModals(reason) {
+    try {
+      var terms = document.getElementById('termsScreen');
+      var splash = document.getElementById('splashScreen');
+      var reg = document.getElementById('registerScreen');
+      var app = document.getElementById('app');
+      if (terms) { terms.style.display = 'none'; terms.classList.add('hidden'); }
+      if (splash) { splash.classList.add('hidden'); splash.style.display = 'none'; }
+      if (reg) {
+        reg.classList.remove('active');
+        reg.classList.add('hidden');
+        reg.style.display = 'none';
+      }
+      if (app) {
+        app.style.display = 'block';
+        app.classList.remove('hidden');
+      }
+      var nav = document.getElementById('bottomNav');
+      if (nav) {
+        nav.style.display = '';
+        nav.style.visibility = 'visible';
+        nav.style.pointerEvents = 'auto';
+      }
+      try {
+        if (typeof window.renderModalsHomeGrid === 'function') window.renderModalsHomeGrid();
+        else if (typeof renderModalsHomeGrid === 'function') renderModalsHomeGrid();
+      } catch (eG) {}
+      try {
+        if (typeof window.renderDrawerItems === 'function') window.renderDrawerItems();
+        else if (typeof renderDrawerItems === 'function') renderDrawerItems();
+      } catch (eD) {}
+      try {
+        if (typeof window.scrollToPage === 'function') window.scrollToPage(1);
+        else if (typeof scrollToPage === 'function') scrollToPage(1);
+      } catch (eS) {}
+      var ban = document.getElementById('offlineBanner');
+      if (ban) {
+        ban.style.display = 'block';
+        ban.textContent = '📡 حالت آفلاین — از دکمه وسط «منو» مودال‌های محاسباتی را باز کنید';
+      }
+      try {
+        if (typeof window.refreshUserDashboardStats === 'function') window.refreshUserDashboardStats();
+      } catch (eR) {}
+      if (typeof showNotification === 'function') {
+        showNotification(reason || 'آفلاین: منوی مودال‌های محاسباتی در دسترس است');
+      }
+    } catch (e) {
+      console.warn('enterAppForLocalModals', e);
+    }
+  };
+
+  window.kafeIsOffline = function kafeIsOffline() {
+    try {
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) return true;
+    } catch (e) {}
+    return false;
+  };
+
   window.acceptTermsAndContinue = function(){
     try { localStorage.setItem('kafeTermsAccepted', '1'); } catch (eT) {}
     hideEl('termsScreen');
@@ -6309,10 +6393,20 @@ document.addEventListener('DOMContentLoaded',function(){try{window.applyGalleryI
             try { if (typeof window.refreshUserDashboardStats === 'function') window.refreshUserDashboardStats(); } catch (eR) {}
           } else {
             try{localStorage.removeItem('cafeUser');}catch(e){}
-            var reg0=document.getElementById('registerScreen');if(reg0)reg0.style.display='flex';
+            if (typeof window.kafeIsOffline === 'function' && window.kafeIsOffline() && typeof window.enterAppForLocalModals === 'function') {
+              window.enterAppForLocalModals('آفلاین — منوی مودال‌های محاسباتی در دسترس است');
+            } else {
+              var reg0=document.getElementById('registerScreen');if(reg0)reg0.style.display='flex';
+            }
           }
         }else{
-          var reg4=document.getElementById('registerScreen');if(reg4)reg4.style.display='flex';
+          if (typeof window.kafeIsOffline === 'function' && window.kafeIsOffline()) {
+            if (typeof window.enterAppForLocalModals === 'function') {
+              window.enterAppForLocalModals('آفلاین — منوی مودال‌های محاسباتی در دسترس است');
+            }
+          } else {
+            var reg4=document.getElementById('registerScreen');if(reg4)reg4.style.display='flex';
+          }
         }
       },wait);
     })();
