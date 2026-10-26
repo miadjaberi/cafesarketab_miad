@@ -42,6 +42,8 @@
     <link rel="stylesheet" href="./theme-lock.css">
 </head>
 <body>
+<div id="offlineBanner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:10080;background:#b45309;color:#fff;text-align:center;padding:8px 12px;font-size:0.82rem;font-weight:700;">📡 اتصال نیست — فقط ابزارهای محلی در دسترس‌اند</div>
+
 
 
     <!-- ===== قبول شرایط (قبل از اسپلش — هر بار) ===== -->
@@ -679,6 +681,13 @@
     </div>
 
     <div class="admin-content" id="adminSubscriptions">
+        <div class="admin-card">
+            <h4>💰 قیمت طرح‌های اشتراک (نمایش به کاربر)</h4>
+            <p style="font-size:.75rem;line-height:1.6;opacity:.85;margin:0 0 10px">این قیمت‌ها در صفحه خرید اشتراک نشان داده می‌شوند و هنگام ثبت درخواست در فیلد مبلغ ذخیره می‌شوند.</p>
+            <div id="adminPlanPricesForm" style="display:flex;flex-direction:column;gap:8px;"></div>
+            <button type="button" onclick="saveSubscriptionPlansFromAdmin()" style="margin-top:10px;width:100%;">💾 ذخیره قیمت طرح‌ها</button>
+            <div id="adminPlanPricesStatus" style="font-size:.75rem;margin-top:8px;opacity:.85;"></div>
+        </div>
         <div class="admin-card">
             <h4>⭐ مدیریت اشتراک‌ها</h4>
             <div class="admin-row">
