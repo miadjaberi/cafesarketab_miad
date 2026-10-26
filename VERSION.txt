@@ -1,5 +1,4 @@
-fix/inbox-details-i1-i2
-I1 detail button + full row cache
-I2 approve/reject only inside detail modal
-safe empty fields + receipt missing notice
-SW v22.14
+fix/plans-session-soft-offline
+3) plan prices
+2) session+terms
+1) soft offline

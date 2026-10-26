@@ -2797,7 +2797,7 @@ async function submitProductOrder() {
                     try { if (typeof window.renderAdminOrders === 'function') window.renderAdminOrders(); } catch(e){}
                 }
                 else if (tabId === 'inbox') { if (typeof window.renderAdminInbox === 'function') window.renderAdminInbox('all'); }
-                else if (tabId === 'subscriptions') { if (typeof window.renderAdminSubscriptions === 'function') window.renderAdminSubscriptions(); if (typeof renderVipLockAdmin === 'function') renderVipLockAdmin(); }
+                else if (tabId === 'subscriptions') { if (typeof window.renderAdminSubscriptions === 'function') window.renderAdminSubscriptions(); if (typeof window.renderAdminPlanPricesForm === 'function') window.renderAdminPlanPricesForm(); if (typeof renderVipLockAdmin === 'function') renderVipLockAdmin(); }
                 else if (tabId === 'modals' && typeof renderAdminModals === 'function') renderAdminModals();
                 else if (tabId === 'media' && typeof loadMediaSettings === 'function') loadMediaSettings();
                 else if (tabId === 'dalilImages' && typeof renderDalilImagesAdmin === 'function') renderDalilImagesAdmin();
@@ -4868,12 +4868,114 @@ async function submitProductOrder() {
           if(rs)rs.textContent='✅ فیش انتخاب شد: '+f.name;
           updateSubscriptionFormState();
         }
+
+        /* ===== Subscription plans (price from admin / app_settings) ===== */
+        window.__subscriptionPlans = window.__subscriptionPlans || [
+          { id: '30', days: 30, title: 'یک ماهه', price: 0 },
+          { id: '90', days: 90, title: 'سه ماهه', price: 0 },
+          { id: '180', days: 180, title: 'شش ماهه', price: 0 },
+          { id: '365', days: 365, title: 'یک ساله', price: 0 }
+        ];
+        window.getSubscriptionPlans = function(){
+          return Array.isArray(window.__subscriptionPlans) ? window.__subscriptionPlans : [];
+        };
+        window.getPlanByDays = function(days){
+          days = parseInt(days, 10) || 0;
+          var list = window.getSubscriptionPlans();
+          for (var i = 0; i < list.length; i++) if (parseInt(list[i].days, 10) === days) return list[i];
+          return null;
+        };
+        window.loadSubscriptionPlans = async function loadSubscriptionPlans(){
+          var defaults = [
+            { id: '30', days: 30, title: 'یک ماهه', price: 0 },
+            { id: '90', days: 90, title: 'سه ماهه', price: 0 },
+            { id: '180', days: 180, title: 'شش ماهه', price: 0 },
+            { id: '365', days: 365, title: 'یک ساله', price: 0 }
+          ];
+          try {
+            if (window.supabaseClient) {
+              var r = await supabaseClient.from('app_settings').select('value').eq('key', 'subscription_plans').maybeSingle();
+              if (!r.error && r.data && r.data.value) {
+                var v = r.data.value;
+                if (typeof v === 'string') { try { v = JSON.parse(v); } catch (eP) { v = null; } }
+                if (Array.isArray(v) && v.length) {
+                  window.__subscriptionPlans = v.map(function(p){
+                    return {
+                      id: String(p.id || p.days || ''),
+                      days: parseInt(p.days, 10) || 0,
+                      title: p.title || (p.days + ' روزه'),
+                      price: Number(p.price) || 0
+                    };
+                  }).filter(function(p){ return p.days > 0; });
+                  try { localStorage.setItem('kafeSubscriptionPlans', JSON.stringify(window.__subscriptionPlans)); } catch (eL) {}
+                  return window.__subscriptionPlans;
+                }
+              }
+            }
+          } catch (e) { console.warn('loadSubscriptionPlans', e); }
+          try {
+            var cached = JSON.parse(localStorage.getItem('kafeSubscriptionPlans') || 'null');
+            if (Array.isArray(cached) && cached.length) window.__subscriptionPlans = cached;
+            else window.__subscriptionPlans = defaults;
+          } catch (e2) { window.__subscriptionPlans = defaults; }
+          return window.__subscriptionPlans;
+        };
+        window.saveSubscriptionPlansFromAdmin = async function saveSubscriptionPlansFromAdmin(){
+          var st = document.getElementById('adminPlanPricesStatus');
+          try {
+            var rows = [];
+            var nodes = document.querySelectorAll('#adminPlanPricesForm .admin-plan-row');
+            for (var i = 0; i < nodes.length; i++) {
+              var days = parseInt(nodes[i].getAttribute('data-days'), 10);
+              var titleEl = nodes[i].querySelector('.plan-title');
+              var priceEl = nodes[i].querySelector('.plan-price');
+              rows.push({
+                id: String(days),
+                days: days,
+                title: (titleEl && titleEl.value) ? titleEl.value.trim() : (days + ' روزه'),
+                price: Number(priceEl && priceEl.value) || 0
+              });
+            }
+            if (!rows.length) throw new Error('فرم قیمت خالی است');
+            window.__subscriptionPlans = rows;
+            try { localStorage.setItem('kafeSubscriptionPlans', JSON.stringify(rows)); } catch (eL) {}
+            if (!window.supabaseClient) throw new Error('اتصال سرور نیست');
+            var ur = await supabaseClient.from('app_settings').upsert([{
+              key: 'subscription_plans',
+              value: rows,
+              updated_at: new Date().toISOString()
+            }], { onConflict: 'key' });
+            if (ur.error) throw ur.error;
+            if (st) st.textContent = '✅ قیمت طرح‌ها ذخیره شد';
+            showNotification('✅ قیمت طرح‌های اشتراک ذخیره شد');
+          } catch (e) {
+            console.error(e);
+            if (st) st.textContent = '❌ ' + (e.message || e);
+            showNotification('❌ ذخیره قیمت‌ها ناموفق: ' + (e.message || e), 'error');
+          }
+        };
+        window.renderAdminPlanPricesForm = async function renderAdminPlanPricesForm(){
+          var box = document.getElementById('adminPlanPricesForm');
+          if (!box) return;
+          await window.loadSubscriptionPlans();
+          var list = window.getSubscriptionPlans();
+          box.innerHTML = list.map(function(p){
+            return '<div class="admin-plan-row" data-days="'+p.days+'" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:center;">'
+              + '<label style="font-size:.78rem;grid-column:1/-1;">طرح '+p.days+' روزه</label>'
+              + '<input class="plan-title" type="text" value="'+String(p.title||'').replace(/"/g,'&quot;')+'" placeholder="عنوان">'
+              + '<input class="plan-price" type="number" min="0" step="1000" value="'+(Number(p.price)||0)+'" placeholder="قیمت تومان">'
+              + '</div>';
+          }).join('');
+        };
+
         window._subscriptionSelectedPlanDays=null;
         function selectSubscriptionPlan(days){
           days=parseInt(days,10)||0;
+          var plan=window.getPlanByDays?window.getPlanByDays(days):null;
           var labels={30:'یک ماهه',90:'سه ماهه',180:'شش ماهه',365:'یک ساله'};
-          if(!labels[days])return;
+          if(!plan && !labels[days])return;
           window._subscriptionSelectedPlanDays=days;
+          window._subscriptionSelectedPlanPrice=plan?Number(plan.price)||0:0;
           var buttons=document.querySelectorAll('#subscriptionPlanButtons .subscription-plan-btn');
           for(var i=0;i<buttons.length;i++){
             var active=parseInt(buttons[i].getAttribute('data-plan-days'),10)===days;
@@ -4931,7 +5033,7 @@ async function submitProductOrder() {
             var session=authState&&authState.data&&authState.data.session;
             if(!session||!session.user)throw new Error('ابتدا وارد حساب کاربری شوید؛ ثبت اشتراک انجام نشد.');
             var path=await sbUploadSubscriptionReceipt(receipt,session.user.id);
-            var row={user_id:session.user.id,name:name,phone:phone,plan:plan,plan_id:String(days),plan_days:days,amount:null,receipt_path:path,status:'pending',receipt_note:'',created_at:new Date().toISOString(),updated_at:new Date().toISOString()};
+            var planObj=(window.getPlanByDays&&window.getPlanByDays(days))||null;var planAmount=planObj?Number(planObj.price)||0:(window._subscriptionSelectedPlanPrice||0);var row={user_id:session.user.id,name:name,phone:phone,plan:plan,plan_id:String(days),plan_days:days,amount:planAmount||null,receipt_path:path,status:'pending',receipt_note:'',created_at:new Date().toISOString(),updated_at:new Date().toISOString()};
             var r=await supabaseClient.from('subscription_requests').insert([row]).select().single();
             if(r.error)throw r.error;
             try {
@@ -4957,7 +5059,8 @@ async function submitProductOrder() {
             showNotification('❌ ثبت درخواست اشتراک انجام نشد: '+(e.message||e),'error');
           }finally{window._subscriptionSubmitting=false;}
         }
-        window.openSubscriptionPurchase = function openSubscriptionPurchase() {
+        window.openSubscriptionPurchase = async function openSubscriptionPurchase() {
+            try { if (typeof window.loadSubscriptionPlans === 'function') await window.loadSubscriptionPlans(); } catch (eLP) {}
             var old=document.getElementById('subscriptionModalBox'); if(old) old.remove();
             window._subscriptionSelectedPlanDays=null;
             window._subscriptionReceiptFile=null;
@@ -4992,12 +5095,7 @@ async function submitProductOrder() {
                 '<input id="subscriptionPhone" type="tel" inputmode="numeric" placeholder="09xxxxxxxxx" style="'+field+'" autocomplete="tel">'+
               '</div>'+
               '<div style="font-size:.85rem;color:#E8D5A3;font-weight:800;margin:4px 0 10px;">۳️⃣ انتخاب طرح اشتراک *</div>'+
-              '<div id="subscriptionPlanButtons" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">'+
-                '<button type="button" data-plan-days="30" class="subscription-plan-btn" style="'+planBtn+'" onclick="selectSubscriptionPlan(30)">یک ماهه</button>'+
-                '<button type="button" data-plan-days="90" class="subscription-plan-btn" style="'+planBtn+'" onclick="selectSubscriptionPlan(90)">سه ماهه</button>'+
-                '<button type="button" data-plan-days="180" class="subscription-plan-btn" style="'+planBtn+'" onclick="selectSubscriptionPlan(180)">شش ماهه</button>'+
-                '<button type="button" data-plan-days="365" class="subscription-plan-btn" style="'+planBtn+'" onclick="selectSubscriptionPlan(365)">یک ساله</button>'+
-              '</div>'+
+              '<div id="subscriptionPlanButtons" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"></div>'+
               '<div id="subscriptionPlanStatus" style="margin-top:8px;font-size:.8rem;color:#A9A093;">هنوز طرحی انتخاب نشده است.</div>'+
               '<div style="margin-top:14px;padding:12px;background:#fff;border:1.5px solid #c9a84c;border-radius:14px;">'+
                 '<label style="'+label+'">۴️⃣ فیش واریزی * (حداکثر ۳ مگابایت)</label>'+
@@ -5024,6 +5122,18 @@ async function submitProductOrder() {
             function onField(){ try{ updateSubscriptionFormState(); }catch(e){} }
             if(sn){ sn.addEventListener('input', onField); sn.addEventListener('change', onField); }
             if(sp){ sp.addEventListener('input', onField); sp.addEventListener('change', onField); }
+            try {
+              var pb = document.getElementById('subscriptionPlanButtons');
+              var plans = (window.getSubscriptionPlans && window.getSubscriptionPlans()) || [];
+              if (pb) {
+                pb.innerHTML = plans.map(function(p){
+                  var price = Number(p.price) || 0;
+                  var priceTxt = price > 0 ? (price.toLocaleString('fa-IR') + ' تومان') : 'قیمت اعلام‌نشده';
+                  return '<button type="button" data-plan-days="'+p.days+'" class="subscription-plan-btn" style="'+planBtn+'" onclick="selectSubscriptionPlan('+p.days+')">'
+                    + (p.title || (p.days+' روزه')) + '<br><span style="font-size:.75rem;font-weight:700;opacity:.95">'+priceTxt+'</span></button>';
+                }).join('');
+              }
+            } catch (eFill) { console.warn(eFill); }
             try{ updateSubscriptionFormState(); }catch(e){}
             // جلوگیری از بسته شدن با کلیک روی پس‌زمینه اشتباه
             box.addEventListener('click', function(ev){ if(ev.target===box) box.remove(); });
@@ -5949,8 +6059,24 @@ async function submitProductOrder() {
 
   refreshOnlineData().catch(function(e){ console.warn('online sync', e); });
   console.log('✅ Kafe Miad Stage 2 online connection loaded');
+
+/* Soft offline banner */
+(function(){
+  function syncOfflineUi(){
+    var online = typeof navigator !== 'undefined' ? navigator.onLine : true;
+    var ban = document.getElementById('offlineBanner');
+    if (ban) ban.style.display = online ? 'none' : 'block';
+    try { document.body.classList.toggle('is-offline', !online); } catch (e) {}
+  }
+  window.addEventListener('online', syncOfflineUi);
+  window.addEventListener('offline', syncOfflineUi);
+  document.addEventListener('DOMContentLoaded', syncOfflineUi);
+  setTimeout(syncOfflineUi, 500);
+})();
+
   try { if (typeof window.refreshNotifBadge === 'function') window.refreshNotifBadge(); } catch (eBadge) {}
   try { if (typeof window.refreshUserDashboardStats === 'function') window.refreshUserDashboardStats(); } catch (eDash) {}
+  try { if (typeof window.loadSubscriptionPlans === 'function') window.loadSubscriptionPlans(); } catch (ePlans) {}
 })();
 
 
@@ -6150,49 +6276,70 @@ document.addEventListener('DOMContentLoaded',function(){try{window.applyGalleryI
   }
 
   window.acceptTermsAndContinue = function(){
+    try { localStorage.setItem('kafeTermsAccepted', '1'); } catch (eT) {}
     hideEl('termsScreen');
     var splash=document.getElementById('splashScreen');
-    var started=Date.now(), minSplash=5000, maxSplash=5000;
+    var started=Date.now(), minSplash=1800, maxSplash=4000;
     if(splash){
       splash.classList.remove('waiting','hidden'); splash.style.display='flex';
       var bar=document.getElementById('splashLoaderBar')||splash.querySelector('.splash-loader-bar');
-      if(bar){bar.style.animation='none';void bar.offsetWidth;bar.style.animation='loadBar 5s linear forwards';}
+      if(bar){bar.style.animation='none';void bar.offsetWidth;bar.style.animation='loadBar 1.8s linear forwards';}
     }
-    // نشست ذخیره‌شده به‌تنهایی نباید ورود عادی ایجاد کند؛ PIN باید دوباره بررسی شود.
-    // مسیر مستقل مدیر و OTP تلگرام دست‌نخورده باقی می‌ماند.
-    var sessionPromise=Promise.resolve(null);
+    // اگر نشست معتبر Supabase باشد، مستقیم وارد اپ شو؛ وگرنه صفحه ورود PIN
     (async function(){
-      var session=await Promise.race([sessionPromise,new Promise(function(resolve){setTimeout(function(){resolve(null);},maxSplash);})]);
+      var session=null;
+      try {
+        if (window.supabaseClient) {
+          var sr = await Promise.race([
+            supabaseClient.auth.getSession(),
+            new Promise(function(resolve){ setTimeout(function(){ resolve(null); }, maxSplash); })
+          ]);
+          session = sr && sr.data && sr.data.session ? sr.data.session : null;
+        }
+      } catch (eS) { session = null; }
       var elapsed=Date.now()-started,wait=Math.max(0,minSplash-elapsed);
       setTimeout(async function(){
         if(splash){splash.classList.add('hidden');setTimeout(function(){splash.style.display='none';},180);}
         if(session&&session.user){
           var pr=null;try{pr=await window.supabaseClient.from('profiles').select('id,name,phone,role').eq('id',session.user.id).maybeSingle();}catch(e){}
-          if(pr&&!pr.error&&pr.data){var app=document.getElementById('app');if(app)app.style.display='block';var reg=document.getElementById('registerScreen');if(reg)reg.style.display='none';if(typeof updateUserDisplay==='function')await updateUserDisplay(pr.data);}
-          else{try{localStorage.removeItem('cafeUser');}catch(e){}var reg0=document.getElementById('registerScreen');if(reg0)reg0.style.display='flex';}
-        }else{var reg4=document.getElementById('registerScreen');if(reg4)reg4.style.display='flex';}
+          if(pr&&!pr.error&&pr.data){
+            var app=document.getElementById('app');if(app)app.style.display='block';
+            var reg=document.getElementById('registerScreen');if(reg)reg.style.display='none';
+            if(typeof updateUserDisplay==='function')await updateUserDisplay(pr.data);
+            try { if (typeof window.refreshUserDashboardStats === 'function') window.refreshUserDashboardStats(); } catch (eR) {}
+          } else {
+            try{localStorage.removeItem('cafeUser');}catch(e){}
+            var reg0=document.getElementById('registerScreen');if(reg0)reg0.style.display='flex';
+          }
+        }else{
+          var reg4=document.getElementById('registerScreen');if(reg4)reg4.style.display='flex';
+        }
       },wait);
     })();
   };
 
   // جلوگیری از اسپلش خودکار قبلی
   document.addEventListener('DOMContentLoaded', function(){
-    // مخفی کردن اسپلش تا قبول شرایط
     var splash = document.getElementById('splashScreen');
     if (splash) {
       splash.classList.add('waiting');
       splash.style.display = 'none';
     }
+    var termsAccepted = false;
+    try { termsAccepted = localStorage.getItem('kafeTermsAccepted') === '1'; } catch (e) {}
     var terms = document.getElementById('termsScreen');
-    if (terms) {
+    var reg = document.getElementById('registerScreen');
+    var app = document.getElementById('app');
+    if (reg) reg.style.display = 'none';
+    if (app) app.style.display = 'none';
+    if (termsAccepted) {
+      if (terms) { terms.style.display = 'none'; terms.classList.add('hidden'); }
+      // ادامه همان مسیر بعد از موافقت قبلی
+      try { if (typeof window.acceptTermsAndContinue === 'function') window.acceptTermsAndContinue(); } catch (eA) {}
+    } else if (terms) {
       terms.classList.remove('hidden');
       terms.style.display = 'flex';
     }
-    // ثبت‌نام و اپ مخفی تا بعد از شرایط
-    var reg = document.getElementById('registerScreen');
-    if (reg) reg.style.display = 'none';
-    var app = document.getElementById('app');
-    if (app) app.style.display = 'none';
   }, true);
 })();
 
@@ -6975,7 +7122,7 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){lo
       if (tab === 'messages') setTimeout(function(){ if (typeof loadAdminConversations === 'function') loadAdminConversations(); }, 0);
       if (tab === 'products') setTimeout(function(){ if (typeof window.renderAdminOrders === 'function') window.renderAdminOrders(); }, 0);
       if (tab === 'inbox') setTimeout(function(){ if (typeof window.renderAdminInbox === 'function') window.renderAdminInbox('all'); }, 0);
-      if (tab === 'subscriptions') setTimeout(function(){ if (typeof window.renderAdminSubscriptions === 'function') window.renderAdminSubscriptions(); }, 0);
+      if (tab === 'subscriptions') setTimeout(function(){ if (typeof window.renderAdminSubscriptions === 'function') window.renderAdminSubscriptions(); if (typeof window.renderAdminPlanPricesForm === 'function') window.renderAdminPlanPricesForm(); }, 0);
       return r;
     };
   })();
