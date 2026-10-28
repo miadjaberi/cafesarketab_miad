@@ -21,7 +21,7 @@
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="کافه سرکتاب میعاد">
     <meta name="twitter:description" content="آموزش، محتوا و فروش محصولات">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' data: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.gstatic.com; img-src 'self' data: blob: https://*.supabase.co https://evxxvnlwtbaqpjbjaxdk.supabase.co; connect-src 'self' https://evxxvnlwtbaqpjbjaxdk.supabase.co https://*.supabase.co wss://evxxvnlwtbaqpjbjaxdk.supabase.co wss://*.supabase.co https://cdn.jsdelivr.net https://api.alquran.cloud https://api.quran.com; worker-src 'self'; manifest-src 'self'; media-src 'self' blob:; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://evxxvnlwtbaqpjbjaxdk.supabase.co; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' data: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.gstatic.com; img-src 'self' data: blob: https://*.supabase.co https://evxxvnlwtbaqpjbjaxdk.supabase.co; connect-src 'self' https://evxxvnlwtbaqpjbjaxdk.supabase.co https://*.supabase.co wss://evxxvnlwtbaqpjbjaxdk.supabase.co wss://*.supabase.co https://cdn.jsdelivr.net https://api.alquran.cloud https://api.quran.com; worker-src 'self'; manifest-src 'self'; media-src 'self' blob:; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
     <link rel="icon" href="./favicon.png" type="image/png" sizes="128x128">
     <link rel="apple-touch-icon" href="./apple-touch-icon.png" sizes="180x180">
     <link rel="apple-touch-icon" href="./icon192.png" sizes="192x192">
@@ -786,11 +786,11 @@
             
             <div style="margin-bottom:14px;padding:12px;background:#fff;border-radius:12px;border:2px solid #c9a84c;">
                 <label style="display:block;font-weight:700;color:var(--txt-title,#F0D878);margin-bottom:6px;">📱 آیکون اصلی اپ (صفحه گوشی / PWA)</label>
-                <p style="font-size:0.75rem;color:var(--txt-hint,#C8C0B0);margin-bottom:8px;line-height:1.6;">این تصویر بعد از «افزودن به صفحه اصلی» به‌عنوان آیکون اپ نمایش داده می‌شود. مربع ۱۲۸×۱۲۸ یا ۱۹۲×۱۹۲ پیشنهاد می‌شود.</p>
+                <p style="font-size:0.75rem;color:var(--txt-hint,#C8C0B0);margin-bottom:8px;line-height:1.6;">مربع و ساده باشد. بعد از ذخیره، نصب‌های جدید همین تصویر را به‌عنوان آیکون میانبر می‌گیرند. میانبری که از قبل روی صفحهٔ گوشی است، به‌خاطر محدودیت iOS و اغلب اندروید، فقط با حذف و افزودن دوباره عوض می‌شود. لازم نیست فایل icon192.png را در گیت‌هاب عوض کنید.</p>
                 <input type="file" id="galleryAppIcon" accept="image/*" style="width:100%;padding:10px;margin-bottom:8px;">
                 <img id="previewAppIcon" alt="" style="display:none;max-height:96px;max-width:96px;border-radius:18px;object-fit:cover;border:1px solid #ddd;">
                 <button type="button" id="applyAppIconBtn" onclick="(function(){var s={};try{s=JSON.parse(localStorage.getItem('cafeSettings')||'{}')}catch(e){}var i=s.appIcon||localStorage.getItem('cafeAppIcon');if(i){if(typeof applyAppIcon==='function')applyAppIcon(i);if(typeof saveAndApplyAllMediaImages==='function'){showNotification('در حال ذخیره آیکون روی سرور...');saveAndApplyAllMediaImages();}else showNotification('آیکون اعمال شد');}else{showNotification('ابتدا تصویر آیکون را انتخاب کنید','error');}})()" style="margin-top:8px;width:100%;">📱 اعمال و ذخیره آیکون</button>
-                <p style="font-size:0.72rem;color:var(--txt-hint,#C8C0B0);margin-top:6px;line-height:1.5;">آیکون تب مرورگر عوض می‌شود. آیکون میانبر صفحهٔ گوشی فقط بعد از نصب دوباره از آدرس HTTPS هاست به‌روز می‌شود.</p>
+                <p style="font-size:0.72rem;color:var(--txt-hint,#C8C0B0);margin-top:6px;line-height:1.5;">آیکون تب مرورگر همین حالا عوض می‌شود. برای صفحهٔ اصلی گوشی، میانبر قبلی را حذف کنید و دوباره سایت را اضافه کنید.</p>
             </div>
 
 <div class="admin-row" style="flex-direction:column;align-items:stretch;gap:4px;margin-top:8px;">
@@ -810,7 +810,7 @@
             <input type="hidden" id="mediaSplashBg" value="">
             <button type="button" id="saveAllMediaImagesBtn" onclick="saveAndApplyAllMediaImages()" style="width:100%;margin-top:10px;padding:13px;border:none;border-radius:12px;background:#8B4513;color:#fff;font-family:inherit;font-weight:800;cursor:pointer;">💾 ذخیره و اعمال همه تصاویر</button>
             <div id="mediaUploadStatus" style="font-size:.75rem;line-height:1.6;margin-top:8px;padding:8px 10px;border-radius:10px;background:rgba(0,0,0,.15);color:var(--txt-hint,#C8C0B0);">وضعیت آپلود اینجا نمایش داده می‌شود. تصاویر روی باکت public-assets ذخیره می‌شوند تا برای همه کاربران لود شوند.</div>
-            <div style="font-size:.72rem;color:var(--txt-hint,#C8C0B0);text-align:center;margin-top:5px;">لوگو، ثبت‌نام، اسپلش، پس‌زمینه اپ و آیکون — آیکون میانبر گوشی از فایل‌های ثابت PWA است و بعد از تعویض icon*.png نیاز به نصب دوباره دارد.</div>
+            <div style="font-size:.72rem;color:var(--txt-hint,#C8C0B0);text-align:center;margin-top:5px;">لوگو، ثبت‌نام، اسپلش و پس‌زمینه از سرور برای همه می‌آید. آیکون میانبر هم از همین پنل به Storage می‌رود؛ میانبرهای قبلی تا نصب دوباره عوض نمی‌شوند.</div>
         </div>
     </div>
 
@@ -2065,6 +2065,7 @@
     <script src="./data.js"></script>
     <script src="./main.js"></script>
     <script src="./dalil-images-fix.js"></script>
+    <script src="./pwa-icon-dynamic.js"></script>
     <script src="./tools-extra.js"></script>
     <script src="./app.js"></script>
     <script src="./ui-layer-fix.js"></script>
