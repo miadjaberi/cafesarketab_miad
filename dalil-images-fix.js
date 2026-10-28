@@ -110,6 +110,53 @@
     return getDalilImages();
   }
 
+  function closeDalilLightbox() {
+    var overlay = document.getElementById('dalilLightbox');
+    if (overlay) overlay.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
+  function openDalilLightbox(src, alt) {
+    if (!src) return;
+    var overlay = document.getElementById('dalilLightbox');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'dalilLightbox';
+      overlay.setAttribute('role', 'dialog');
+      overlay.setAttribute('aria-modal', 'true');
+      overlay.style.cssText = [
+        'display:none',
+        'position:fixed',
+        'inset:0',
+        'z-index:1000000',
+        'background:rgba(0,0,0,.94)',
+        'align-items:center',
+        'justify-content:center',
+        'padding:18px 14px 24px',
+        'box-sizing:border-box'
+      ].join(';');
+      overlay.innerHTML =
+        '<button type="button" id="dalilLightboxClose" aria-label="بستن" style="position:absolute;top:max(12px, env(safe-area-inset-top));left:12px;z-index:2;border:0;border-radius:12px;padding:10px 14px;background:#c9a84c;color:#111;font-weight:800;font-size:1rem;cursor:pointer;">بستن</button>' +
+        '<img id="dalilLightboxImg" alt="" style="max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,.45);">';
+      document.body.appendChild(overlay);
+      overlay.addEventListener('click', function (e) {
+        if (e.target === overlay) closeDalilLightbox();
+      });
+      overlay.querySelector('#dalilLightboxClose').addEventListener('click', function (e) {
+        e.stopPropagation();
+        closeDalilLightbox();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeDalilLightbox();
+      });
+    }
+    var img = document.getElementById('dalilLightboxImg');
+    img.src = src;
+    img.alt = alt || 'تصویر دلیل الحیران';
+    overlay.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+
   function showDalilRankImages(rank, type, gender) {
     type = type || (typeof selectedType !== 'undefined' ? selectedType : 'adult');
     gender = gender || (typeof selectedGender !== 'undefined' ? selectedGender : 'male');
@@ -121,7 +168,7 @@
       box = document.createElement('div');
       box.id = 'dalilRankImagesBox';
       box.style.cssText =
-        'display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:12px 0;';
+        'display:flex;flex-direction:column;gap:12px;align-items:stretch;margin:12px 0;';
       var res = document.getElementById('hayranResult');
       if (res && res.parentNode) {
         res.parentNode.insertBefore(box, res.nextSibling);
@@ -130,15 +177,27 @@
       }
     }
     box.innerHTML = '';
-    [d.img1, d.img2].forEach(function (src) {
+    [d.img1, d.img2].forEach(function (src, idx) {
       if (!src) return;
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.style.cssText =
+        'display:block;width:100%;padding:0;border:0;background:transparent;cursor:zoom-in;';
       var im = document.createElement('img');
       im.src = src;
-      im.alt = 'مرتبه ' + rank;
+      im.alt = 'مرتبه ' + rank + ' — تصویر ' + (idx + 1);
       im.style.cssText =
-        'width:48%;max-width:190px;max-height:180px;border-radius:12px;border:2px solid #c9a84c;object-fit:cover;';
+        'display:block;width:100%;max-height:62vh;height:auto;border-radius:14px;border:2px solid #c9a84c;object-fit:contain;background:#111;';
       im.loading = 'lazy';
-      box.appendChild(im);
+      btn.appendChild(im);
+      var cap = document.createElement('div');
+      cap.textContent = 'برای دیدن تمام‌صفحه لمس کنید';
+      cap.style.cssText = 'margin-top:6px;text-align:center;color:#c9a84c;font-size:.75rem;';
+      btn.appendChild(cap);
+      btn.addEventListener('click', function () {
+        openDalilLightbox(src, im.alt);
+      });
+      box.appendChild(btn);
     });
     if (!box.children.length) {
       box.innerHTML =
