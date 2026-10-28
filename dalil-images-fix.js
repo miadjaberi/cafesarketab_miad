@@ -203,13 +203,11 @@
     box.innerHTML = html;
   }
 
-  // Override global functions that main.js defined
   window.getDalilImages = getDalilImages;
   window.dalilImageKey = dalilImageKey;
   window.showDalilRankImages = showDalilRankImages;
   window.renderDalilImagesAdmin = renderDalilImagesAdmin;
 
-  // Listener for file inputs
   document.addEventListener(
     'change',
     function (ev) {
@@ -267,7 +265,6 @@
     true
   );
 
-  // Load from cloud after a short delay
   setTimeout(function () {
     loadDalilImagesFromCloud().then(function () {
       try {
