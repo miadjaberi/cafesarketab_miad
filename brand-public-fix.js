@@ -1,8 +1,4 @@
-/* Brand images — stable for all users
-   1) Apply last-known settings from localStorage immediately (no flash of defaults)
-   2) Fetch cloud admin:cafeSettings once
-   3) Apply splash + appBg + logos + icon together (atomic)
-*/
+/* Brand images — نسخه سبک‌تر (P1): یک بار از local، یک بار از cloud */
 (function () {
   'use strict';
 
@@ -38,16 +34,16 @@
   }
 
   function snapshot(s) {
-    return KEYS.map(function (k) { return k + '=' + (s[k] ? String(s[k]).slice(0, 48) : ''); }).join('|');
+    return KEYS.map(function (k) {
+      return k + '=' + (s[k] ? String(s[k]).slice(0, 40) : '');
+    }).join('|');
   }
 
-  /** همه تصاویر با هم — بدون اینکه یکی زود و یکی دیر بیاید */
   function applyAllBrand(s, force) {
     if (!s || typeof s !== 'object') return false;
     var sig = snapshot(s);
     if (!force && sig === lastApplied) return true;
     lastApplied = sig;
-
     try {
       if (s.headerLogo && isUsableImageUrl(s.headerLogo)) {
         var h = document.getElementById('headerLogoImg');
@@ -81,16 +77,17 @@
           if (app) {
             app.style.setProperty('background-image', 'url("' + s.appBg + '")', 'important');
             app.style.setProperty('background-size', 'cover', 'important');
-            app.style.setProperty('background-position', 'center', 'important');
           }
         } catch (eBg) {}
       }
       if (s.appIcon && isUsableImageUrl(s.appIcon)) {
-        try { localStorage.setItem('cafeAppIcon', s.appIcon); } catch (eI) {}
+        try {
+          localStorage.setItem('cafeAppIcon', s.appIcon);
+        } catch (eI) {}
         try {
           if (typeof applyAppIcon === 'function') applyAppIcon(s.appIcon);
           else {
-            document.querySelectorAll('link[rel="icon"],link[rel="apple-touch-icon"],link[rel="shortcut icon"]').forEach(function (l) {
+            document.querySelectorAll('link[rel="icon"],link[rel="apple-touch-icon"]').forEach(function (l) {
               l.href = s.appIcon;
             });
           }
@@ -100,11 +97,9 @@
       console.warn('applyAllBrand', e);
       return false;
     }
-
     try {
       if (typeof window.applyGalleryImagesToUI === 'function') window.applyGalleryImagesToUI();
     } catch (eG) {}
-
     return true;
   }
 
@@ -125,6 +120,7 @@
   }
 
   window.loadPublicBrandImages = async function loadPublicBrandImages() {
+    if (cloudDone) return true;
     try {
       var client = window.supabaseClient;
       if (!client) return false;
@@ -132,13 +128,15 @@
       if (r.error || !r.data || !r.data.value) return false;
       var val = r.data.value;
       if (typeof val === 'string') {
-        try { val = JSON.parse(val); } catch (e) { return false; }
+        try {
+          val = JSON.parse(val);
+        } catch (e) {
+          return false;
+        }
       }
       var s = mergeCloudIntoLocal(val);
       cloudDone = true;
       applyAllBrand(s, true);
-      // یک تثبیت کوتاه بعد از لود سایر اسکریپت‌ها (نه چند بار پراکنده)
-      setTimeout(function () { applyAllBrand(s, true); }, 600);
       return true;
     } catch (e) {
       console.warn('loadPublicBrandImages', e);
@@ -147,11 +145,12 @@
   };
 
   function boot() {
-    // فوری: اگر قبلاً ذخیره محلی هست، همان را یکجا بگذار تا چشمک نزند
     var local = readLocalSettings();
-    var hasAny = KEYS.some(function (k) { return isUsableImageUrl(local[k]); });
-    if (hasAny) applyAllBrand(local, true);
-
+    if (KEYS.some(function (k) {
+      return isUsableImageUrl(local[k]);
+    })) {
+      applyAllBrand(local, true);
+    }
     var tries = 0;
     function waitClient() {
       tries++;
@@ -159,21 +158,9 @@
         window.loadPublicBrandImages().catch(function () {});
         return;
       }
-      if (tries < 50) setTimeout(waitClient, 200);
+      if (tries < 30) setTimeout(waitClient, 300);
     }
     waitClient();
-
-    // بعد از قبول شرایط / نمایش اپ، یک‌بار دیگر تثبیت
-    document.addEventListener('click', function (ev) {
-      var t = ev.target;
-      if (!t) return;
-      var txt = (t.textContent || '') + (t.className || '');
-      if (/موافقم|acceptTerms/i.test(txt) || (t.onclick && String(t.onclick).indexOf('acceptTerms') >= 0)) {
-        setTimeout(function () {
-          applyAllBrand(readLocalSettings(), true);
-        }, 400);
-      }
-    }, true);
   }
 
   if (document.readyState === 'loading') {
