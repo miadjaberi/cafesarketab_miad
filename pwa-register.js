@@ -1,4 +1,4 @@
-/* SW + Manifest + الگوی سراسری فیلدها (شیری + متن تیره) */
+/* SW + Manifest + فیلدهای سراسری (شیری + تیره + حاشیه گرم) */
 (function () {
   'use strict';
 
@@ -9,15 +9,13 @@
     document.head.appendChild(link);
   }
 
-  /* CSS فایل */
   if (!document.querySelector('link[href*="field-pattern.css"]')) {
     var fp = document.createElement('link');
     fp.rel = 'stylesheet';
-    fp.href = './field-pattern.css?v=22.18';
+    fp.href = './field-pattern.css?v=22.19-warm';
     document.head.appendChild(fp);
   }
 
-  /* همان قانون به‌صورت inline در انتها — تضمین غلبه بر theme-lock */
   if (!document.getElementById('kafeFieldPatternInline')) {
     var st = document.createElement('style');
     st.id = 'kafeFieldPatternInline';
@@ -33,12 +31,12 @@
       'html body .settings-field input, html body .admin-card input, html body .admin-card textarea, html body .search-input-wrap input {',
       '  background:#F3EDE3 !important; background-color:#F3EDE3 !important;',
       '  color:#1A1A1A !important; -webkit-text-fill-color:#1A1A1A !important; caret-color:#1A1A1A !important;',
-      '  border:1px solid rgba(26,26,26,0.22) !important; border-radius:12px !important; opacity:1 !important;',
+      '  border:1.5px solid #C4B5A0 !important; border-radius:12px !important; opacity:1 !important; box-shadow:none !important;',
       '}',
-      'html body input::placeholder, html body textarea::placeholder { color:#6B6560 !important; -webkit-text-fill-color:#6B6560 !important; opacity:1 !important; }',
+      'html body input::placeholder, html body textarea::placeholder { color:#8B7355 !important; -webkit-text-fill-color:#8B7355 !important; opacity:1 !important; }',
       'html body input:focus, html body textarea:focus, html body select:focus {',
-      '  background:#FFFBF5 !important; color:#1A1A1A !important; -webkit-text-fill-color:#1A1A1A !important;',
-      '  border-color:#C9A84C !important; box-shadow:0 0 0 3px rgba(201,168,76,0.28) !important; outline:none !important;',
+      '  background:#FAF6EF !important; color:#1A1A1A !important; -webkit-text-fill-color:#1A1A1A !important;',
+      '  border-color:#6B5344 !important; box-shadow:0 0 0 3px rgba(107,83,68,0.18) !important; outline:none !important;',
       '}',
       'html body select option { background:#F3EDE3 !important; color:#1A1A1A !important; }'
     ].join('\n');

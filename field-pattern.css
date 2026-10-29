@@ -1,7 +1,4 @@
-/* یک روش سراسری — همه فیلدهای ورود متن در کل اپ
-   زمینه شیری + متن مشکی | بدون زرد روی روشن/تیره
-   specificity بالا برای غلبه بر theme-lock *
-*/
+/* فیلدهای سراسری — شیری + متن تیره + حاشیه گرم (بدون خاکستری سرد و بدون طلایی فوکوس) */
 html body input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]),
 html body textarea,
 html body select,
@@ -38,25 +35,26 @@ html body #igOrderForm textarea {
   color: #1A1A1A !important;
   -webkit-text-fill-color: #1A1A1A !important;
   caret-color: #1A1A1A !important;
-  border: 1px solid rgba(26,26,26,0.22) !important;
+  border: 1.5px solid #C4B5A0 !important;
   border-radius: 12px !important;
   opacity: 1 !important;
+  box-shadow: none !important;
 }
 html body input::placeholder,
 html body textarea::placeholder {
-  color: #6B6560 !important;
-  -webkit-text-fill-color: #6B6560 !important;
+  color: #8B7355 !important;
+  -webkit-text-fill-color: #8B7355 !important;
   opacity: 1 !important;
 }
 html body input:focus,
 html body textarea:focus,
 html body select:focus {
-  background: #FFFBF5 !important;
-  background-color: #FFFBF5 !important;
+  background: #FAF6EF !important;
+  background-color: #FAF6EF !important;
   color: #1A1A1A !important;
   -webkit-text-fill-color: #1A1A1A !important;
-  border-color: #C9A84C !important;
-  box-shadow: 0 0 0 3px rgba(201,168,76,0.28) !important;
+  border-color: #6B5344 !important;
+  box-shadow: 0 0 0 3px rgba(107, 83, 68, 0.18) !important;
   outline: none !important;
 }
 html body select option {
