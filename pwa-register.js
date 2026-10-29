@@ -33,6 +33,13 @@
         .catch(function (err) {
           console.warn('Service Worker ثبت نشد:', err);
         });
+
+      var refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', function () {
+        if (refreshing) return;
+        refreshing = true;
+        try { window.location.reload(); } catch (e) {}
+      });
     });
   }
 })();
