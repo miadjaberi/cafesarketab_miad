@@ -1,8 +1,73 @@
-/* Public brand images for all users (not only admin panel)
-   Loads logo/splash/bg/icon URLs from admin:cafeSettings and applies to UI.
+/* Public brand images for all users
+   Accepts https and data:image URLs from admin:cafeSettings.
+   Retries apply so applyDefaultImages cannot stick forever.
 */
 (function () {
   'use strict';
+
+  function isUsableImageUrl(u) {
+    if (!u || typeof u !== 'string') return false;
+    var s = String(u).trim();
+    if (!s) return false;
+    if (s.indexOf('http://') === 0 || s.indexOf('https://') === 0) return true;
+    if (s.indexOf('data:image/') === 0) return true;
+    return false;
+  }
+
+  function applyDirect(s) {
+    if (!s || typeof s !== 'object') return;
+    try {
+      if (s.headerLogo) {
+        var h = document.getElementById('headerLogoImg');
+        if (h) h.src = s.headerLogo;
+      }
+      if (s.registerLogo) {
+        var r = document.getElementById('registerLogoImg') || document.querySelector('#registerScreen img');
+        if (r) r.src = s.registerLogo;
+      }
+      if (s.splashBg) {
+        var spImg = document.getElementById('splashBgImg');
+        if (spImg) {
+          spImg.src = s.splashBg;
+          spImg.style.display = 'block';
+          spImg.style.opacity = '1';
+        }
+        var sp = document.getElementById('splashScreen');
+        if (sp) {
+          sp.style.backgroundImage = 'url("' + s.splashBg + '")';
+          sp.style.backgroundSize = 'cover';
+          sp.style.backgroundPosition = 'center';
+        }
+      }
+      if (s.appBg) {
+        try {
+          document.documentElement.style.setProperty('--app-user-bg', 'url("' + s.appBg + '")');
+          document.body.style.setProperty('background-image', 'url("' + s.appBg + '")', 'important');
+          document.body.style.setProperty('background-size', 'cover', 'important');
+          document.body.style.setProperty('background-position', 'center', 'important');
+          var app = document.getElementById('app');
+          if (app) {
+            app.style.setProperty('background-image', 'url("' + s.appBg + '")', 'important');
+            app.style.setProperty('background-size', 'cover', 'important');
+            app.style.setProperty('background-position', 'center', 'important');
+          }
+        } catch (eBg) {}
+      }
+      if (s.appIcon) {
+        try { localStorage.setItem('cafeAppIcon', s.appIcon); } catch (eI) {}
+        try {
+          if (typeof applyAppIcon === 'function') applyAppIcon(s.appIcon);
+          else {
+            document.querySelectorAll('link[rel="icon"],link[rel="apple-touch-icon"],link[rel="shortcut icon"]').forEach(function (l) {
+              l.href = s.appIcon;
+            });
+          }
+        } catch (eIc) {}
+      }
+    } catch (e) {
+      console.warn('applyDirect brand', e);
+    }
+  }
 
   function applyBrandFromSettingsObject(val) {
     if (!val || typeof val !== 'object') return false;
@@ -10,8 +75,8 @@
     try { s = JSON.parse(localStorage.getItem('cafeSettings') || '{}'); } catch (e) { s = {}; }
     var changed = false;
     ['headerLogo', 'registerLogo', 'splashBg', 'appBg', 'appIcon'].forEach(function (k) {
-      if (val[k] && String(val[k]).indexOf('http') === 0) {
-        s[k] = val[k];
+      if (isUsableImageUrl(val[k])) {
+        s[k] = String(val[k]).trim();
         changed = true;
       }
     });
@@ -23,15 +88,14 @@
     delete s.paymentSheba;
     if (changed) {
       try { localStorage.setItem('cafeSettings', JSON.stringify(s)); } catch (e2) {}
-      try {
-        if (s.appIcon && String(s.appIcon).indexOf('http') === 0) {
-          localStorage.setItem('cafeAppIcon', s.appIcon);
-        }
-      } catch (e3) {}
     }
     try {
       if (typeof window.applyGalleryImagesToUI === 'function') window.applyGalleryImagesToUI();
     } catch (e4) {}
+    applyDirect(s);
+    // دوباره بعد از applyDefaultImages احتمالی
+    setTimeout(function () { applyDirect(s); }, 800);
+    setTimeout(function () { applyDirect(s); }, 2000);
     return changed;
   }
 
@@ -60,14 +124,14 @@
         window.loadPublicBrandImages().catch(function () {});
         return;
       }
-      if (tries < 40) setTimeout(tick, 250);
+      if (tries < 50) setTimeout(tick, 250);
     }
     tick();
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () { setTimeout(schedule, 400); });
+    document.addEventListener('DOMContentLoaded', function () { setTimeout(schedule, 300); });
   } else {
-    setTimeout(schedule, 400);
+    setTimeout(schedule, 300);
   }
 })();
