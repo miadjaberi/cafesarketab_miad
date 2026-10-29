@@ -5,13 +5,12 @@
 const CACHE_VERSION = 'kafe-miad-v22.17-public-brand-bust';
 const SHELL_CACHE = `shell-${CACHE_VERSION}`;
 
-/* فایل‌هایی که بعد از نصب در کش می‌مانند (در صورت وجود روی سرور) */
 const PRECACHE_URLS = [
   './',
   './index.html',
   './styles.css',
   './data.js',
-  './main.js', './tools-extra.js',
+  './main.js', './brand-public-fix.js', './tools-extra.js',
   './dalil-images-fix.js',
   './pwa-icon-dynamic.js',
   './app.js',
@@ -73,17 +72,11 @@ function isStaticAsset(url) {
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
-
   const url = req.url;
-
-  /* Supabase / API: همیشه شبکه — بدون دخالت کش */
   if (isSupabaseOrApi(url)) {
     event.respondWith(fetch(req));
     return;
   }
-
-  /* JavaScript: Network-First تا نسخه قدیمی کد ورود بعد از انتشار اجرا نشود.
-     در قطع شبکه، آخرین نسخه کش‌شده همچنان fallback است. */
   if (/\.js$/i.test(new URL(url).pathname)) {
     event.respondWith(
       fetch(req)
@@ -98,8 +91,6 @@ self.addEventListener('fetch', (event) => {
     );
     return;
   }
-
-  /* سایر فایل‌های استاتیک: Cache-First با به‌روزرسانی پس‌زمینه */
   if (isStaticAsset(url)) {
     event.respondWith(
       caches.match(req).then((cached) => {
@@ -117,8 +108,6 @@ self.addEventListener('fetch', (event) => {
     );
     return;
   }
-
-  /* HTML / navigation: Network-First */
   event.respondWith(
     fetch(req)
       .then((res) => {

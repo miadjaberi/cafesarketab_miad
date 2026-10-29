@@ -10,6 +10,14 @@
     document.head.appendChild(link);
   }
 
+  /* بارگذاری fix برند عمومی برای همه کاربران (لوگو/تصاویر از سرور) */
+  if (!document.querySelector('script[src*="brand-public-fix.js"]')) {
+    var brand = document.createElement('script');
+    brand.src = './brand-public-fix.js';
+    brand.async = true;
+    document.head.appendChild(brand);
+  }
+
   /* Service Worker */
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
