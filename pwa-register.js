@@ -1,4 +1,4 @@
-/* SW + Manifest + field pattern + admin messages fix */
+/* SW + Manifest + field pattern + admin messages + ui-feedback */
 (function () {
   'use strict';
 
@@ -60,6 +60,13 @@
     am.src = './admin-messages-fix.js?v=1';
     am.defer = true;
     document.body ? document.body.appendChild(am) : document.head.appendChild(am);
+  }
+
+  if (!document.querySelector('script[src*="ui-feedback.js"]')) {
+    var fb = document.createElement('script');
+    fb.src = './ui-feedback.js?v=1';
+    fb.defer = true;
+    document.body ? document.body.appendChild(fb) : document.head.appendChild(fb);
   }
 
   if ('serviceWorker' in navigator) {
