@@ -1,31 +1,63 @@
-/* Public brand images for all users
-   Accepts https and data:image URLs from admin:cafeSettings.
-   Retries apply so applyDefaultImages cannot stick forever.
+/* Brand images — stable for all users
+   1) Apply last-known settings from localStorage immediately (no flash of defaults)
+   2) Fetch cloud admin:cafeSettings once
+   3) Apply splash + appBg + logos + icon together (atomic)
 */
 (function () {
   'use strict';
 
+  var KEYS = ['headerLogo', 'registerLogo', 'splashBg', 'appBg', 'appIcon'];
+  var lastApplied = '';
+  var cloudDone = false;
+
   function isUsableImageUrl(u) {
     if (!u || typeof u !== 'string') return false;
     var s = String(u).trim();
-    if (!s) return false;
-    if (s.indexOf('http://') === 0 || s.indexOf('https://') === 0) return true;
-    if (s.indexOf('data:image/') === 0) return true;
-    return false;
+    return (
+      s.indexOf('https://') === 0 ||
+      s.indexOf('http://') === 0 ||
+      s.indexOf('data:image/') === 0
+    );
   }
 
-  function applyDirect(s) {
-    if (!s || typeof s !== 'object') return;
+  function readLocalSettings() {
     try {
-      if (s.headerLogo) {
+      return JSON.parse(localStorage.getItem('cafeSettings') || '{}') || {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function writeLocalSettings(s) {
+    try {
+      var clean = Object.assign({}, s);
+      delete clean.paymentCard;
+      delete clean.paymentSheba;
+      localStorage.setItem('cafeSettings', JSON.stringify(clean));
+    } catch (e) {}
+  }
+
+  function snapshot(s) {
+    return KEYS.map(function (k) { return k + '=' + (s[k] ? String(s[k]).slice(0, 48) : ''); }).join('|');
+  }
+
+  /** همه تصاویر با هم — بدون اینکه یکی زود و یکی دیر بیاید */
+  function applyAllBrand(s, force) {
+    if (!s || typeof s !== 'object') return false;
+    var sig = snapshot(s);
+    if (!force && sig === lastApplied) return true;
+    lastApplied = sig;
+
+    try {
+      if (s.headerLogo && isUsableImageUrl(s.headerLogo)) {
         var h = document.getElementById('headerLogoImg');
         if (h) h.src = s.headerLogo;
       }
-      if (s.registerLogo) {
+      if (s.registerLogo && isUsableImageUrl(s.registerLogo)) {
         var r = document.getElementById('registerLogoImg') || document.querySelector('#registerScreen img');
         if (r) r.src = s.registerLogo;
       }
-      if (s.splashBg) {
+      if (s.splashBg && isUsableImageUrl(s.splashBg)) {
         var spImg = document.getElementById('splashBgImg');
         if (spImg) {
           spImg.src = s.splashBg;
@@ -39,7 +71,7 @@
           sp.style.backgroundPosition = 'center';
         }
       }
-      if (s.appBg) {
+      if (s.appBg && isUsableImageUrl(s.appBg)) {
         try {
           document.documentElement.style.setProperty('--app-user-bg', 'url("' + s.appBg + '")');
           document.body.style.setProperty('background-image', 'url("' + s.appBg + '")', 'important');
@@ -53,7 +85,7 @@
           }
         } catch (eBg) {}
       }
-      if (s.appIcon) {
+      if (s.appIcon && isUsableImageUrl(s.appIcon)) {
         try { localStorage.setItem('cafeAppIcon', s.appIcon); } catch (eI) {}
         try {
           if (typeof applyAppIcon === 'function') applyAppIcon(s.appIcon);
@@ -65,38 +97,31 @@
         } catch (eIc) {}
       }
     } catch (e) {
-      console.warn('applyDirect brand', e);
+      console.warn('applyAllBrand', e);
+      return false;
     }
-  }
 
-  function applyBrandFromSettingsObject(val) {
-    if (!val || typeof val !== 'object') return false;
-    var s = {};
-    try { s = JSON.parse(localStorage.getItem('cafeSettings') || '{}'); } catch (e) { s = {}; }
-    var changed = false;
-    ['headerLogo', 'registerLogo', 'splashBg', 'appBg', 'appIcon'].forEach(function (k) {
-      if (isUsableImageUrl(val[k])) {
-        s[k] = String(val[k]).trim();
-        changed = true;
-      }
-    });
-    if (val.managerPhone) { s.managerPhone = val.managerPhone; changed = true; }
-    if (val.managerHours) { s.managerHours = val.managerHours; changed = true; }
-    if (val.paymentGuide) { s.paymentGuide = val.paymentGuide; changed = true; }
-    if (val.paymentOwner) { s.paymentOwner = val.paymentOwner; changed = true; }
-    delete s.paymentCard;
-    delete s.paymentSheba;
-    if (changed) {
-      try { localStorage.setItem('cafeSettings', JSON.stringify(s)); } catch (e2) {}
-    }
     try {
       if (typeof window.applyGalleryImagesToUI === 'function') window.applyGalleryImagesToUI();
-    } catch (e4) {}
-    applyDirect(s);
-    // دوباره بعد از applyDefaultImages احتمالی
-    setTimeout(function () { applyDirect(s); }, 800);
-    setTimeout(function () { applyDirect(s); }, 2000);
-    return changed;
+    } catch (eG) {}
+
+    return true;
+  }
+
+  function mergeCloudIntoLocal(val) {
+    if (!val || typeof val !== 'object') return readLocalSettings();
+    var s = readLocalSettings();
+    KEYS.forEach(function (k) {
+      if (isUsableImageUrl(val[k])) s[k] = String(val[k]).trim();
+    });
+    if (val.managerPhone) s.managerPhone = val.managerPhone;
+    if (val.managerHours) s.managerHours = val.managerHours;
+    if (val.paymentGuide) s.paymentGuide = val.paymentGuide;
+    if (val.paymentOwner) s.paymentOwner = val.paymentOwner;
+    delete s.paymentCard;
+    delete s.paymentSheba;
+    writeLocalSettings(s);
+    return s;
   }
 
   window.loadPublicBrandImages = async function loadPublicBrandImages() {
@@ -109,29 +134,51 @@
       if (typeof val === 'string') {
         try { val = JSON.parse(val); } catch (e) { return false; }
       }
-      return applyBrandFromSettingsObject(val);
+      var s = mergeCloudIntoLocal(val);
+      cloudDone = true;
+      applyAllBrand(s, true);
+      // یک تثبیت کوتاه بعد از لود سایر اسکریپت‌ها (نه چند بار پراکنده)
+      setTimeout(function () { applyAllBrand(s, true); }, 600);
+      return true;
     } catch (e) {
       console.warn('loadPublicBrandImages', e);
       return false;
     }
   };
 
-  function schedule() {
+  function boot() {
+    // فوری: اگر قبلاً ذخیره محلی هست، همان را یکجا بگذار تا چشمک نزند
+    var local = readLocalSettings();
+    var hasAny = KEYS.some(function (k) { return isUsableImageUrl(local[k]); });
+    if (hasAny) applyAllBrand(local, true);
+
     var tries = 0;
-    function tick() {
+    function waitClient() {
       tries++;
       if (window.supabaseClient) {
         window.loadPublicBrandImages().catch(function () {});
         return;
       }
-      if (tries < 50) setTimeout(tick, 250);
+      if (tries < 50) setTimeout(waitClient, 200);
     }
-    tick();
+    waitClient();
+
+    // بعد از قبول شرایط / نمایش اپ، یک‌بار دیگر تثبیت
+    document.addEventListener('click', function (ev) {
+      var t = ev.target;
+      if (!t) return;
+      var txt = (t.textContent || '') + (t.className || '');
+      if (/موافقم|acceptTerms/i.test(txt) || (t.onclick && String(t.onclick).indexOf('acceptTerms') >= 0)) {
+        setTimeout(function () {
+          applyAllBrand(readLocalSettings(), true);
+        }, 400);
+      }
+    }, true);
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () { setTimeout(schedule, 300); });
+    document.addEventListener('DOMContentLoaded', boot);
   } else {
-    setTimeout(schedule, 300);
+    boot();
   }
 })();
