@@ -1,91 +1,65 @@
-/* الگوی یکدست فیلدهای ورود کاربر (کم‌ریسک — فقط ظاهر)
-   خالی: زمینه شیری | نوشته: تیره خوانا | بدون زرد روی سفید
-   همه مودال‌ها، ثبت‌نام، تنظیمات، ادمین، ابزارها
+/* یک روش سراسری — همه فیلدهای ورود متن در کل اپ
+   زمینه شیری + متن مشکی | بدون زرد روی روشن/تیره
+   specificity بالا برای غلبه بر theme-lock *
 */
-:root {
-  --kafe-field-bg: #F3EDE3;
-  --kafe-field-bg-focus: #FFFBF5;
-  --kafe-field-text: #1A1A1A;
-  --kafe-field-placeholder: #6B6560;
-  --kafe-field-border: rgba(26, 26, 26, 0.18);
-  --kafe-field-border-focus: #C9A84C;
-  --kafe-field-caret: #1A1A1A;
-}
-
-input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]),
-textarea,
-select,
-.modal-glass input,
-.modal-glass textarea,
-.modal-glass select,
-.input-group input,
-.input-group textarea,
-.input-group select,
-.register-input,
-.hub-input,
-.settings-field input,
-.settings-field textarea,
-.admin-card input,
-.admin-card textarea,
-.admin-card select,
-.search-input-wrap input,
-#igOrderForm input,
-#igOrderForm textarea,
-#registerScreen input,
-#registerScreen textarea {
-  background: var(--kafe-field-bg) !important;
-  background-color: var(--kafe-field-bg) !important;
-  color: var(--kafe-field-text) !important;
-  -webkit-text-fill-color: var(--kafe-field-text) !important;
-  caret-color: var(--kafe-field-caret) !important;
-  border: 1px solid var(--kafe-field-border) !important;
-  border-radius: 10px !important;
-}
-
-input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"])::placeholder,
-textarea::placeholder {
-  color: var(--kafe-field-placeholder) !important;
-  -webkit-text-fill-color: var(--kafe-field-placeholder) !important;
-  opacity: 1 !important;
-}
-
-input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]):focus,
-textarea:focus,
-select:focus,
-.modal-glass input:focus,
-.modal-glass textarea:focus,
-.modal-glass select:focus,
-.register-input:focus,
-.hub-input:focus,
-.settings-field input:focus,
-.admin-card input:focus,
-.admin-card textarea:focus,
-.admin-card select:focus {
-  background: var(--kafe-field-bg-focus) !important;
-  background-color: var(--kafe-field-bg-focus) !important;
-  color: var(--kafe-field-text) !important;
-  -webkit-text-fill-color: var(--kafe-field-text) !important;
-  border-color: var(--kafe-field-border-focus) !important;
-  box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.25) !important;
-  outline: none !important;
-}
-
-/* اعلان‌ها و کارت‌های روشن: متن تیره */
-#kafeNotifSheet,
-#kafeNotifSheet *,
-.notif-sheet,
-.notif-sheet * {
+html body input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]),
+html body textarea,
+html body select,
+html body .modal-glass-content input,
+html body .modal-glass-content textarea,
+html body .modal-glass-content select,
+html body .register-box input,
+html body .register-box textarea,
+html body .register-box select,
+html body #settingsPanel input,
+html body #settingsPanel textarea,
+html body #settingsPanel select,
+html body #adminPanel input,
+html body #adminPanel textarea,
+html body #adminPanel select,
+html body #registerScreen input,
+html body #productDetailModal input,
+html body #productDetailModal textarea,
+html body #productDetailModal select,
+html body .input-group input,
+html body .input-group textarea,
+html body .hub-input,
+html body .register-input,
+html body .settings-field input,
+html body .settings-field textarea,
+html body .admin-card input,
+html body .admin-card textarea,
+html body .admin-card select,
+html body .search-input-wrap input,
+html body #igOrderForm input,
+html body #igOrderForm textarea {
+  background: #F3EDE3 !important;
+  background-color: #F3EDE3 !important;
   color: #1A1A1A !important;
   -webkit-text-fill-color: #1A1A1A !important;
+  caret-color: #1A1A1A !important;
+  border: 1px solid rgba(26,26,26,0.22) !important;
+  border-radius: 12px !important;
+  opacity: 1 !important;
 }
-#kafeNotifSheet .muted,
-.notif-sheet .muted,
-.kafe-notif-list small {
-  color: #5A554E !important;
-  -webkit-text-fill-color: #5A554E !important;
+html body input::placeholder,
+html body textarea::placeholder {
+  color: #6B6560 !important;
+  -webkit-text-fill-color: #6B6560 !important;
+  opacity: 1 !important;
 }
-
-select option {
+html body input:focus,
+html body textarea:focus,
+html body select:focus {
+  background: #FFFBF5 !important;
+  background-color: #FFFBF5 !important;
+  color: #1A1A1A !important;
+  -webkit-text-fill-color: #1A1A1A !important;
+  border-color: #C9A84C !important;
+  box-shadow: 0 0 0 3px rgba(201,168,76,0.28) !important;
+  outline: none !important;
+}
+html body select option {
   background: #F3EDE3 !important;
   color: #1A1A1A !important;
 }
