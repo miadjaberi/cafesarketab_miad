@@ -1,4 +1,4 @@
-/* SW + Manifest + فیلد بادمجانی/فیروزه‌ای براق */
+/* SW + Manifest + field pattern + admin messages fix */
 (function () {
   'use strict';
 
@@ -53,6 +53,13 @@
     brand.src = './brand-public-fix.js';
     brand.async = true;
     document.head.appendChild(brand);
+  }
+
+  if (!document.querySelector('script[src*="admin-messages-fix.js"]')) {
+    var am = document.createElement('script');
+    am.src = './admin-messages-fix.js?v=1';
+    am.defer = true;
+    document.body ? document.body.appendChild(am) : document.head.appendChild(am);
   }
 
   if ('serviceWorker' in navigator) {
