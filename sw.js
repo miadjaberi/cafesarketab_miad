@@ -1,5 +1,5 @@
 /* کافه سرکتاب میعاد — Service Worker */
-const CACHE_VERSION = 'kafe-miad-v22.17-public-brand-bust';
+const CACHE_VERSION = 'kafe-miad-v22.22-msg-font-fix';
 const SHELL_CACHE = `shell-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = [
@@ -16,6 +16,8 @@ const PRECACHE_URLS = [
   './theme-atelier.css',
   './assets/splash.jpg',
   './theme-lock.css',
+  './fonts/vazirmatn.css',
+  './fonts/Vazirmatn-wght.woff2',
   './manifest.webmanifest'
 ];
 

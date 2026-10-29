@@ -13,7 +13,7 @@
   if (oldFp) oldFp.remove();
   var fp = document.createElement('link');
   fp.rel = 'stylesheet';
-  fp.href = './field-pattern.css?v=22.20-gloss';
+  fp.href = './field-pattern.css?v=22.22-fix';
   document.head.appendChild(fp);
 
   var oldSt = document.getElementById('kafeFieldPatternInline');
@@ -47,10 +47,35 @@
     (document.body || document.head).appendChild(s);
   }
 
-  addScript('./brand-public-fix.js?v=p1');
-  addScript('./ui-feedback.js?v=p1');
-  addScript('./admin-messages-fix.js?v=p1');
-  addScript('./admin-save-feedback.js?v=p1');
+  function blockMessageRealtime() {
+    var c = window.supabaseClient || window.v12Supabase;
+    if (!c || !c.channel || c.__kafeMsgChannelPatched) return;
+    var orig = c.channel.bind(c);
+    c.channel = function (name) {
+      if (name === 'v18-messages-live') {
+        var d = { on: function () { return d; }, subscribe: function () { return d; }, unsubscribe: function () { return d; } };
+        return d;
+      }
+      return orig.apply(c, arguments);
+    };
+    c.__kafeMsgChannelPatched = true;
+    try {
+      var chans = typeof c.getChannels === 'function' ? c.getChannels() : [];
+      for (var i = 0; i < chans.length; i++) {
+        if (String((chans[i] && chans[i].topic) || '').indexOf('v18-messages-live') !== -1) {
+          try { c.removeChannel(chans[i]); } catch (e) {}
+        }
+      }
+    } catch (e2) {}
+  }
+  blockMessageRealtime();
+  setTimeout(blockMessageRealtime, 200);
+  setTimeout(blockMessageRealtime, 1300);
+
+  addScript('./brand-public-fix.js?v=fix2');
+  addScript('./ui-feedback.js?v=fix2');
+  addScript('./admin-messages-fix.js?v=fix2');
+  addScript('./admin-save-feedback.js?v=fix2');
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {

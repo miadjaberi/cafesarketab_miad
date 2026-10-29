@@ -1,4 +1,5 @@
-/* P2: بازخورد ذخیره در کنترل پنل مدیریت */
+/* بازخورد دکمه‌های مهم: در حال انجام، بعد موفق یا خطا.
+   دکمه OTP تلگرام و مسیر ورود مدیر wrap نمی‌شوند. */
 (function () {
   'use strict';
 
@@ -11,7 +12,17 @@
     'saveSubscriptionPlansFromAdmin',
     'saveMediaSettings',
     'saveAllSettings',
-    'saveProductsSafe'
+    'saveProductsSafe',
+    'saveProductsToServer',
+    'addProduct',
+    'v18SaveProduct',
+    'addSubscription',
+    'v18SendUserMessage',
+    'v18SendAdminReply',
+    'v18CloseConversation',
+    'submitSubscriptionRequest',
+    'decideCloudOrder',
+    'decideCloudSubscription'
   ];
 
   function notify(msg, type) {
@@ -19,6 +30,15 @@
       if (typeof window.kafeFeedback === 'function') window.kafeFeedback(msg, type);
       else if (typeof window.showNotification === 'function') window.showNotification(msg, type === 'error' ? 'error' : undefined);
     } catch (e) {}
+  }
+
+  function domOutcome() {
+    var st = document.getElementById('v18MessageStatus');
+    if (!st || !st.textContent) return null;
+    var t = st.textContent;
+    if (/❌|ناموفق|خطا|وارد کنید|باید وارد/.test(t)) return { type: 'error', msg: t };
+    if (/✅|ثبت شد|بسته شد/.test(t)) return { type: 'ok', msg: t };
+    return null;
   }
 
   function wrapSave(name) {
@@ -35,13 +55,18 @@
           return prevShow.apply(this, arguments);
         };
       }
-      notify('⏳ در حال ذخیره…', 'wait');
+      notify('در حال انجام…', 'wait');
       try {
         var result = await Promise.resolve(orig.apply(self, args));
-        if (!notified) notify('✅ تغییرات ذخیره شد', 'ok');
+        var dom = domOutcome();
+        if (dom && dom.type === 'error') notify(dom.msg, 'error');
+        else if (!notified) {
+          if (dom && dom.type === 'ok') notify(dom.msg, 'ok');
+          else notify('انجام شد', 'ok');
+        }
         return result;
       } catch (e) {
-        notify('❌ ذخیره نشد: ' + ((e && e.message) || e || 'خطا'), 'error');
+        notify('انجام نشد: ' + ((e && e.message) || e || 'خطا'), 'error');
         throw e;
       } finally {
         if (typeof prevShow === 'function') window.showNotification = prevShow;
@@ -56,27 +81,7 @@
   }
 
   tryWrapAll();
-  setTimeout(tryWrapAll, 800);
-  setTimeout(tryWrapAll, 2500);
-
-  document.addEventListener(
-    'click',
-    function (ev) {
-      var btn = ev.target && ev.target.closest && ev.target.closest('button, .btn');
-      if (!btn) return;
-      var t = (btn.textContent || '') + ' ' + (btn.getAttribute('onclick') || '');
-      if (!/ذخیره|اعمال تغییرات|save|Save|اعمال|ثبت تنظیم/.test(t)) return;
-      if (btn.dataset.kafeBusy === '1') return;
-      btn.dataset.kafeBusy = '1';
-      btn.classList.add('kafe-busy');
-      notify('⏳ در حال ذخیره…', 'wait');
-      setTimeout(function () {
-        try {
-          btn.dataset.kafeBusy = '0';
-          btn.classList.remove('kafe-busy');
-        } catch (e) {}
-      }, 1200);
-    },
-    true
-  );
+  setTimeout(tryWrapAll, 600);
+  setTimeout(tryWrapAll, 1800);
+  setTimeout(tryWrapAll, 3500);
 })();
