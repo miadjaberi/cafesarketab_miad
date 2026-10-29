@@ -1,8 +1,7 @@
-/* ثبت Service Worker + لینک Manifest — یک‌بار در صفحه اصلی اضافه شود */
+/* ثبت Service Worker + لینک Manifest */
 (function () {
   'use strict';
 
-  /* Manifest */
   if (!document.querySelector('link[rel="manifest"]')) {
     var link = document.createElement('link');
     link.rel = 'manifest';
@@ -10,13 +9,18 @@
     document.head.appendChild(link);
   }
 
-  /* Service Worker */
+  if (!document.querySelector('script[src*="brand-public-fix.js"]')) {
+    var brand = document.createElement('script');
+    brand.src = './brand-public-fix.js';
+    brand.async = true;
+    document.head.appendChild(brand);
+  }
+
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
       navigator.serviceWorker
         .register('./sw.js', { scope: './' })
         .then(function (reg) {
-          if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') console.log('✅ Service Worker ثبت شد', reg.scope);
           if (reg.waiting) {
             reg.waiting.postMessage({ type: 'SKIP_WAITING' });
           }
@@ -33,6 +37,13 @@
         .catch(function (err) {
           console.warn('Service Worker ثبت نشد:', err);
         });
+
+      var refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', function () {
+        if (refreshing) return;
+        refreshing = true;
+        try { window.location.reload(); } catch (e) {}
+      });
     });
   }
 })();
