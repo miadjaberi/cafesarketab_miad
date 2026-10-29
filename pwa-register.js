@@ -1,4 +1,4 @@
-/* ثبت Service Worker + لینک Manifest */
+/* ثبت Service Worker + لینک Manifest + الگوی فیلدها */
 (function () {
   'use strict';
 
@@ -7,6 +7,14 @@
     link.rel = 'manifest';
     link.href = './manifest.webmanifest';
     document.head.appendChild(link);
+  }
+
+  /* الگوی یکدست فیلد شیری + متن تیره */
+  if (!document.querySelector('link[href*="field-pattern.css"]')) {
+    var fp = document.createElement('link');
+    fp.rel = 'stylesheet';
+    fp.href = './field-pattern.css';
+    document.head.appendChild(fp);
   }
 
   if (!document.querySelector('script[src*="brand-public-fix.js"]')) {
