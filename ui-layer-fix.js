@@ -45,7 +45,6 @@
     var prev = window[name];
     if (typeof prev !== 'function') return;
     window[name] = function () {
-      // اگر در حال باز کردن است، بقیه را ببند
       try {
         if (name === 'toggleUserSettings') {
           var panel = document.getElementById('settingsPanel');
@@ -56,12 +55,7 @@
           var willOpenMenu = drawer && !drawer.classList.contains('active');
           if (willOpenMenu) closeAllLayersExcept('menu');
         } else if (name === 'toggleAdmin') {
-          var admin = document.getElementById('adminPanel');
-          var isOpen = admin && (admin.classList.contains('active') || admin.style.display === 'block');
-          // فقط لایه‌های دیگر را ببند؛ خود ادمین را اینجا نبند
           closeAllLayersExcept('admin');
-          // اگر در حال باز شدن است و display:none اینلاین مانده، پاک نکن —
-          // openAdmin خودش display=block می‌گذارد
         } else if (name === 'openSubOrdersPanel') {
           closeAllLayersExcept('suborders');
         }
@@ -82,6 +76,18 @@
   } else {
     setTimeout(applyWraps, 0);
   }
-  // بعد از لود کامل اسکریپت‌ها دوباره wrap (برای overrideهای بعدی)
   window.addEventListener('load', function () { setTimeout(applyWraps, 50); });
+
+  // Load four-bugs fix patch (hamzad UI, splash, close X, contrast)
+  (function loadFourBugsFix() {
+    try {
+      if (document.querySelector('script[data-kafe-four-bugs]')) return;
+      var s = document.createElement('script');
+      s.src = './fix-four-bugs.js?v=20261031';
+      s.async = true;
+      s.setAttribute('data-kafe-four-bugs', '1');
+      s.onerror = function () { console.warn('fix-four-bugs.js failed to load'); };
+      (document.body || document.documentElement).appendChild(s);
+    } catch (e) { console.warn(e); }
+  })();
 })();
