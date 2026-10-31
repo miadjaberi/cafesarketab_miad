@@ -1,14 +1,27 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>کافه سرکتاب میعاد</title>
-<meta http-equiv="refresh" content="0;url=https://miadjaberi.github.io/cafesarketab_miad/"/>
-<script>location.replace('https://miadjaberi.github.io/cafesarketab_miad/');</script>
-</head>
-<body style="font-family:Tahoma;background:#0d1117;color:#e6edf3;text-align:center;padding:40px">
-<p>در حال انتقال به نسخه اصلی...</p>
-<p><a href="https://miadjaberi.github.io/cafesarketab_miad/" style="color:#c9a84c">اگر منتقل نشدید اینجا را بزنید</a></p>
-</body>
-</html>
+<!-- RESTORED FROM MAIN - full content push in progress via alternative -->
+<html lang="fa" dir="rtl"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>کافه سرکتاب میعاد</title>
+<link rel="stylesheet" href="./styles.css"/>
+<link rel="stylesheet" href="./theme-atelier.css"/>
+<link rel="stylesheet" href="./theme-lock.css"/>
+<link rel="manifest" href="./manifest.webmanifest"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head><body>
+<div id="bootMsg" style="padding:40px;text-align:center;font-family:Tahoma;background:#070B14;color:#F5F0E4;min-height:100vh">
+<p>در حال بارگذاری کامل از main…</p>
+</div>
+<script>
+(async function(){
+  try{
+    var r=await fetch('https://cdn.jsdelivr.net/gh/miadjaberi/cafesarketab_miad@main/index.html?t='+Date.now());
+    var h=await r.text();
+    document.open();document.write(h);document.close();
+  }catch(e){
+    document.getElementById('bootMsg').innerHTML='<p>خطا</p><a href="https://miadjaberi.github.io/cafesarketab_miad/" style="color:#c9a84c">باز کردن سایت اصلی</a>';
+  }
+})();
+</script>
+<script src="./ui-layer-fix.js"></script>
+<script src="./fix-four-bugs.js"></script>
+</body></html>
