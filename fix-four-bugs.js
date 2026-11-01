@@ -1,8 +1,8 @@
-/** fix-four-bugs.js — ✕ → menuDrawer + terms gate + contrast */
+/** fix-four-bugs.js — ✕ → pageModals + terms gate + contrast */
 (function () {
   'use strict';
-  if (window.__KAFE_FOUR_BUGS_SAFE__) return;
-  window.__KAFE_FOUR_BUGS_SAFE__ = true;
+  if (window.__KAFE_FOUR_BUGS_SAFE_V2__) return;
+  window.__KAFE_FOUR_BUGS_SAFE_V2__ = true;
 
   function injectContrastCSS() {
     if (document.getElementById('kafe-four-bugs-css')) return;
@@ -25,21 +25,47 @@
       terms.classList.remove('hidden');terms.style.display='flex';
     }catch(e){}
   }
+  /* ✕ → صفحه منوی مودال‌ها (#pageModals) — نه دراور */
   function openMainModalsMenu(){
-    try{if(typeof window.renderDrawerItems==='function')window.renderDrawerItems();else if(typeof renderDrawerItems==='function')renderDrawerItems()}catch(e){}
     try{
       var overlay=document.getElementById('menuDrawerOverlay'),drawer=document.getElementById('menuDrawer');
-      if(!drawer)return;if(overlay)overlay.classList.add('active');drawer.classList.add('active');document.body.style.overflow='hidden';
+      if(overlay)overlay.classList.remove('active');
+      if(drawer)drawer.classList.remove('active');
+      document.body.style.overflow='';
+    }catch(e){}
+    try{
+      if(typeof window.renderModalsHomeGrid==='function')window.renderModalsHomeGrid();
+      else if(typeof renderModalsHomeGrid==='function')renderModalsHomeGrid();
+    }catch(e){}
+    try{
+      if(typeof window.scrollToPage==='function')window.scrollToPage(1);
+      else {
+        var menuPage=document.getElementById('pageModals');
+        if(menuPage)menuPage.scrollIntoView({behavior:'smooth',inline:'start',block:'nearest'});
+      }
+      if(typeof updateSwipeDots==='function')updateSwipeDots(1);
+      if(typeof updateBottomNav==='function')updateBottomNav(1);
     }catch(e){}
   }
   function patchCloseModalGlass(){
-    var prev=window.closeModalGlass;if(typeof prev!=='function'||prev.__kafeSafeClose)return;
+    var prev=window.closeModalGlass;
+    if(typeof prev==='function'&&prev.__kafeSafeClose)return;
     function safeClose(modalId){
       try{var s=document.getElementById('kafeChannelSupport');if(s)s.remove()}catch(e){}
-      try{prev.apply(this,arguments)}catch(e){try{var m=document.getElementById(modalId);if(m)m.classList.remove('active')}catch(x){}}
-      setTimeout(openMainModalsMenu,120);
+      try{
+        if(typeof prev==='function')prev.apply(this,arguments);
+        else{
+          var m=document.getElementById(modalId);
+          if(m)m.classList.remove('active');
+          document.body.style.overflow='';
+        }
+      }catch(e){
+        try{var m2=document.getElementById(modalId);if(m2)m2.classList.remove('active')}catch(x){}
+      }
+      setTimeout(openMainModalsMenu,100);
     }
-    safeClose.__kafeSafeClose=true;window.closeModalGlass=safeClose;
+    safeClose.__kafeSafeClose=true;
+    window.closeModalGlass=safeClose;
   }
   function patchAcceptTerms(){
     var prev=window.acceptTermsAndContinue;if(typeof prev!=='function'||prev.__kafeSafeAccept)return;
