@@ -1,5 +1,5 @@
 /* کافه سرکتاب میعاد — Service Worker */
-const CACHE_VERSION = 'kafe-miad-v22.26-hamzad-ui';
+const CACHE_VERSION = 'kafe-miad-v22.27-hamzad-ui2';
 const SHELL_CACHE = `shell-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = [
@@ -44,88 +44,22 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-function isSupabaseOrApi(url) {
-  try {
-    const u = new URL(url);
-    return (
-      u.hostname.includes('supabase.co') ||
-      u.hostname.includes('supabase.in') ||
-      u.hostname.includes('api.quran.com') ||
-      u.pathname.includes('/rest/v1/') ||
-      u.pathname.includes('/auth/v1/') ||
-      u.pathname.includes('/storage/v1/') ||
-      u.pathname.includes('/realtime/v1/')
-    );
-  } catch (e) {
-    return false;
-  }
-}
-
-function isStaticAsset(url) {
-  try {
-    const u = new URL(url);
-    return /\.(?:css|js|png|jpg|jpeg|webp|svg|woff2?|ttf|ico|webmanifest)$/i.test(u.pathname);
-  } catch (e) {
-    return false;
-  }
-}
-
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
-  const url = req.url;
-  if (isSupabaseOrApi(url)) {
-    event.respondWith(fetch(req));
-    return;
-  }
-  if (/\.js$/i.test(new URL(url).pathname)) {
-    event.respondWith(
-      fetch(req)
-        .then((res) => {
-          if (res && res.ok) {
-            const copy = res.clone();
-            caches.open(SHELL_CACHE).then((c) => c.put(req, copy)).catch(() => {});
-          }
-          return res;
-        })
-        .catch(() => caches.match(req))
-    );
-    return;
-  }
-  if (isStaticAsset(url)) {
-    event.respondWith(
-      caches.match(req).then((cached) => {
-        const net = fetch(req)
-          .then((res) => {
-            if (res && res.ok) {
-              const copy = res.clone();
-              caches.open(SHELL_CACHE).then((c) => c.put(req, copy)).catch(() => {});
-            }
-            return res;
-          })
-          .catch(() => cached);
-        return cached || net;
-      })
-    );
-    return;
-  }
+  const url = new URL(req.url);
+  if (url.origin !== self.location.origin) return;
+
   event.respondWith(
-    fetch(req)
-      .then((res) => {
-        if (res && res.ok) {
-          const copy = res.clone();
-          caches.open(SHELL_CACHE).then((c) => c.put(req, copy)).catch(() => {});
+    caches.match(req).then((cached) => {
+      const fetchPromise = fetch(req).then((res) => {
+        if (res && res.ok && res.type === 'basic') {
+          const clone = res.clone();
+          caches.open(SHELL_CACHE).then((cache) => cache.put(req, clone));
         }
         return res;
-      })
-      .catch(() =>
-        caches.match(req).then((c) => c || caches.match('./index.html'))
-      )
+      }).catch(() => cached);
+      return cached || fetchPromise;
+    })
   );
-});
-
-self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
 });

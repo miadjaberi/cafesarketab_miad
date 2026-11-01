@@ -89,7 +89,7 @@
         (document.body || document.documentElement).appendChild(s);
       } catch (e) {}
     }
-    inject('./fix-four-bugs.js?v=20261101b', 'four-bugs');
-    inject('./hamzad-ui-fix.js?v=20261101a', 'hamzad-ui');
+    inject('./fix-four-bugs.js?v=20261101c', 'four-bugs');
+    inject('./hamzad-ui-fix.js?v=20261101c', 'hamzad-ui');
   })();
 })();
