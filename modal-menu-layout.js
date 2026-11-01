@@ -5,10 +5,11 @@
  */
 (function () {
   'use strict';
-  if (window.__KAFE_MODAL_MENU_LAYOUT_V4__) return;
-  window.__KAFE_MODAL_MENU_LAYOUT_V4__ = true;
+  if (window.__KAFE_MODAL_MENU_LAYOUT_V5__) return;
+  window.__KAFE_MODAL_MENU_LAYOUT_V5__ = true;
 
   var TITLE_SHORT = {
+    ramlModal: 'قرعه موکلین',
     rastegooModal: 'راستگو و شفا',
     elateBimari12Modal: 'علت بیماری ۱۲',
     dostDoshmaniModal: 'دوست و دشمنی',
@@ -175,7 +176,7 @@
       aghatModal: { title: 'عاقبت ازدواج', icon: '💍' },
       calculatorModal: { title: 'ماشین حساب', icon: '🧮' },
       dalilModal: { title: 'دلیل الحیران', icon: '❓' },
-      ramlModal: { title: 'رمل امام علی', icon: '🎲' },
+      ramlModal: { title: 'قرعه موکلین', icon: '🎲' },
       hamzadModal: { title: 'همزاد قرین', icon: '👥' },
       mokashefeModal: { title: 'مکاشفه موکلین', icon: '🔮' },
       sotareChiniModal: { title: 'ستاره چینی', icon: '⭐' },
@@ -222,6 +223,7 @@
       var meta = null;
       try { if (typeof getModalMeta === 'function') meta = getModalMeta(id); } catch (e) {}
       var title = TITLE_SHORT[id] || (meta && meta.title) || item.title || id;
+      if (id === 'ramlModal') title = 'قرعه موکلین';
       var icon = (meta && meta.icon) || item.icon || '📜';
       html +=
         '<div class="modals-home-item mh-chip" onclick="openModalGlass(\'' + id + '\')">' +
@@ -238,6 +240,7 @@
           var meta = null;
           try { if (typeof getModalMeta === 'function') meta = getModalMeta(m.id); } catch (e) {}
           var title = TITLE_SHORT[m.id] || (meta && meta.title) || m.title || m.id;
+          if (m.id === 'ramlModal') title = 'قرعه موکلین';
           html +=
             '<div class="modals-home-item mh-chip" onclick="openModalGlass(\'' + m.id + '\')">' +
             '<span class="mh-icon">' + ((meta && meta.icon) || m.icon || '📜') + '</span>' +
