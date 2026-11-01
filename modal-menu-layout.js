@@ -1,39 +1,34 @@
-/** modal-menu-layout.js — منوی مودال‌ها: ۳ ستون، خانه اول «برای من»، گروه‌بندی موضوعی */
+/** modal-menu-layout.js — منوی مودال‌ها:
+ *  ظاهر شیشه‌ای + حاشیه طلایی مثل ابزارهای پرکاربرد
+ *  ۳ ستون، اندازه فشرده، گروه‌بندی موضوعی
+ *  خانه اول: برای من (در حال توسعه)
+ */
 (function () {
   'use strict';
-  if (window.__KAFE_MODAL_MENU_LAYOUT__) return;
-  window.__KAFE_MODAL_MENU_LAYOUT__ = true;
+  if (window.__KAFE_MODAL_MENU_LAYOUT_V3__) return;
+  window.__KAFE_MODAL_MENU_LAYOUT_V3__ = true;
 
-  /* ترتیب نهایی: خانه ۱ = برای من (خالی/در حال توسعه)
-     سپس گروه‌های موضوعی کنار هم */
   var ORDERED_IDS = [
-    /* 1 — جایگاه شخصی */
     '__for_me__',
-    /* ازدواج و روابط */
     'aghatModal',
     'marriageAgeModal',
     'sotareChiniModal',
     'mohabbatModal',
-    /* بیماری و شفا */
     'elateBimariModal',
     'elateBimari12Modal',
     'rastegooModal',
-    /* بخت و طالع */
     'bahtModal',
     'setareModal',
     'sababModal',
-    /* افراد و روابط اجتماعی */
     'hamzadModal',
     'amadanModal',
     'dostDoshmaniModal',
-    /* مکاشفه و رمل و جفر */
     'mokashefeModal',
     'mokelModal',
     'ramlModal',
     'dalilModal',
     'asmaniModal',
     'vefqModal',
-    /* ابزار */
     'calculatorModal',
     'developingModal'
   ];
@@ -47,61 +42,103 @@
       document.head.appendChild(st);
     }
     st.textContent = [
-      '#modalsHomeGrid.modals-home-grid, #modalsHomeGrid{',
+      '#pageModals{',
+      '  padding:10px 10px 28px!important;',
+      '  box-sizing:border-box!important;',
+      '}',
+      '#pageModals .modals-home-hero{',
+      '  display:block!important;',
+      '  text-align:center!important;',
+      '  margin:0 0 12px!important;',
+      '  padding:12px 14px!important;',
+      '  border-radius:16px!important;',
+      '  background:rgba(12,16,28,.55)!important;',
+      '  border:1px solid rgba(201,168,76,.35)!important;',
+      '  backdrop-filter:blur(14px) saturate(1.1)!important;',
+      '  -webkit-backdrop-filter:blur(14px) saturate(1.1)!important;',
+      '  box-shadow:0 4px 18px rgba(0,0,0,.25)!important;',
+      '}',
+      '#pageModals .modals-home-hero h2{',
+      '  color:#F0D878!important;-webkit-text-fill-color:#F0D878!important;',
+      '  font-size:1.05rem!important;font-weight:800!important;margin:0 0 4px!important;',
+      '}',
+      '#pageModals .modals-home-hero p{',
+      '  color:#C8C0B0!important;-webkit-text-fill-color:#C8C0B0!important;',
+      '  font-size:.78rem!important;line-height:1.5!important;margin:0!important;',
+      '}',
+      '#modalsHomeGrid.modals-home-grid,#modalsHomeGrid{',
       '  display:grid!important;',
       '  grid-template-columns:repeat(3,minmax(0,1fr))!important;',
       '  gap:10px!important;',
-      '  padding:4px 2px 24px!important;',
+      '  padding:2px 0 20px!important;',
       '  width:100%!important;',
       '  box-sizing:border-box!important;',
+      '  min-height:120px!important;',
       '}',
-      '#modalsHomeGrid .modals-home-item, #modalsHomeGrid .mh-chip{',
+      '#modalsHomeGrid .modals-home-item,#modalsHomeGrid .mh-chip{',
       '  display:flex!important;',
       '  flex-direction:column!important;',
       '  align-items:center!important;',
       '  justify-content:center!important;',
       '  text-align:center!important;',
-      '  gap:6px!important;',
-      '  min-height:88px!important;',
-      '  padding:12px 8px!important;',
-      '  border-radius:16px!important;',
-      '  background:linear-gradient(145deg,rgba(34,57,95,.92),rgba(20,35,67,.96))!important;',
-      '  border:1px solid rgba(201,168,76,.35)!important;',
-      '  box-shadow:0 6px 18px rgba(0,0,0,.25)!important;',
+      '  gap:5px!important;',
+      '  min-height:72px!important;',
+      '  max-height:88px!important;',
+      '  padding:10px 6px!important;',
+      '  border-radius:14px!important;',
+      '  background:rgba(255,255,255,.08)!important;',
+      '  border:1px solid rgba(201,168,76,.38)!important;',
+      '  backdrop-filter:blur(12px) saturate(1.15)!important;',
+      '  -webkit-backdrop-filter:blur(12px) saturate(1.15)!important;',
+      '  box-shadow:0 4px 14px rgba(0,0,0,.22)!important;',
       '  cursor:pointer!important;',
-      '  transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease!important;',
+      '  transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease,background .15s ease!important;',
       '  -webkit-tap-highlight-color:transparent!important;',
+      '  box-sizing:border-box!important;',
       '}',
-      '#modalsHomeGrid .modals-home-item:active, #modalsHomeGrid .mh-chip:active{',
+      '#modalsHomeGrid .modals-home-item:active,#modalsHomeGrid .mh-chip:active{',
       '  transform:scale(0.96)!important;',
-      '  border-color:rgba(240,216,120,.7)!important;',
+      '  border-color:rgba(240,216,120,.75)!important;',
+      '  background:rgba(201,168,76,.14)!important;',
       '}',
-      '#modalsHomeGrid .mh-icon{font-size:1.55rem!important;line-height:1!important;display:block!important;}',
+      '#modalsHomeGrid .mh-icon{',
+      '  font-size:1.35rem!important;',
+      '  line-height:1!important;',
+      '  display:block!important;',
+      '  filter:drop-shadow(0 1px 2px rgba(0,0,0,.35));',
+      '}',
       '#modalsHomeGrid .mh-label{',
-      '  font-size:.72rem!important;',
+      '  font-size:.68rem!important;',
       '  font-weight:700!important;',
       '  color:#F5E9C9!important;',
       '  -webkit-text-fill-color:#F5E9C9!important;',
-      '  line-height:1.35!important;',
+      '  line-height:1.3!important;',
       '  max-width:100%!important;',
       '  overflow:hidden!important;',
       '  display:-webkit-box!important;',
       '  -webkit-line-clamp:2!important;',
       '  -webkit-box-orient:vertical!important;',
+      '  word-break:break-word!important;',
       '}',
       '#modalsHomeGrid .mh-chip.mh-for-me{',
-      '  background:linear-gradient(145deg,rgba(40,40,48,.9),rgba(22,22,28,.95))!important;',
+      '  background:rgba(255,255,255,.04)!important;',
       '  border:1px dashed rgba(201,168,76,.45)!important;',
-      '  opacity:.92!important;',
+      '  opacity:.9!important;',
       '  cursor:default!important;',
       '}',
-      '#modalsHomeGrid .mh-chip.mh-for-me .mh-label{color:#C8C0B0!important;-webkit-text-fill-color:#C8C0B0!important;font-size:.68rem!important;}',
-      '#modalsHomeGrid .mh-chip.mh-for-me .mh-sub{',
-      '  font-size:.6rem!important;color:rgba(200,192,176,.75)!important;margin-top:2px!important;',
+      '#modalsHomeGrid .mh-chip.mh-for-me .mh-label{',
+      '  color:#C8C0B0!important;-webkit-text-fill-color:#C8C0B0!important;',
       '}',
-      '#pageModals .modals-home-hero{text-align:center;margin-bottom:14px;padding:8px 6px;}',
-      '#pageModals .modals-home-hero h2{color:var(--txt-title,#F0D878)!important;font-size:1.1rem!important;margin-bottom:4px!important;}',
-      '#pageModals .modals-home-hero p{color:var(--txt-hint,#C8C0B0)!important;font-size:.8rem!important;line-height:1.5!important;}'
+      '#modalsHomeGrid .mh-chip.mh-for-me .mh-sub{',
+      '  font-size:.58rem!important;',
+      '  color:rgba(200,192,176,.7)!important;',
+      '  -webkit-text-fill-color:rgba(200,192,176,.7)!important;',
+      '  line-height:1.2!important;',
+      '}',
+      '@media (max-width:360px){',
+      '  #modalsHomeGrid .mh-label{font-size:.62rem!important;}',
+      '  #modalsHomeGrid .modals-home-item{min-height:68px!important;padding:8px 4px!important;}',
+      '}'
     ].join('\n');
   }
 
@@ -139,6 +176,10 @@
     };
     Object.keys(fb).forEach(function (k) {
       if (!map[k]) map[k] = { id: k, title: fb[k].title, icon: fb[k].icon };
+      else {
+        if (!map[k].title) map[k].title = fb[k].title;
+        if (!map[k].icon) map[k].icon = fb[k].icon;
+      }
     });
     return map;
   }
@@ -167,7 +208,8 @@
       seen[id] = true;
       var item = lookup[id];
       if (!item) return;
-      var meta = (typeof getModalMeta === 'function') ? getModalMeta(id) : item;
+      var meta = null;
+      try { if (typeof getModalMeta === 'function') meta = getModalMeta(id); } catch (e) {}
       var title = (meta && meta.title) || item.title || id;
       var icon = (meta && meta.icon) || item.icon || '📜';
       html +=
@@ -182,7 +224,8 @@
         modalList.forEach(function (m) {
           if (!m || !m.id || seen[m.id]) return;
           seen[m.id] = true;
-          var meta = (typeof getModalMeta === 'function') ? getModalMeta(m.id) : m;
+          var meta = null;
+          try { if (typeof getModalMeta === 'function') meta = getModalMeta(m.id); } catch (e) {}
           html +=
             '<div class="modals-home-item mh-chip" onclick="openModalGlass(\'' + m.id + '\')">' +
             '<span class="mh-icon">' + ((meta && meta.icon) || m.icon || '📜') + '</span>' +
@@ -199,28 +242,29 @@
     window.renderModalsHomeGrid = renderGroupedGrid;
   }
 
-  function patchCenterMenu() {
-    var prev = window.toggleMenuDrawer;
-    window.toggleMenuDrawer = function () {
-      try {
-        var overlay = document.getElementById('menuDrawerOverlay');
-        var drawer = document.getElementById('menuDrawer');
-        if (overlay) overlay.classList.remove('active');
-        if (drawer) drawer.classList.remove('active');
-        document.body.style.overflow = '';
-      } catch (e) {}
-      try {
-        renderGroupedGrid();
-        if (typeof window.scrollToPage === 'function') window.scrollToPage(1);
-        else {
-          var p = document.getElementById('pageModals');
-          if (p) p.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
-        }
-        if (typeof updateSwipeDots === 'function') updateSwipeDots(1);
-        if (typeof updateBottomNav === 'function') updateBottomNav(1);
-      } catch (e) {
-        if (typeof prev === 'function') return prev.apply(this, arguments);
+  function goToModalsPage() {
+    try {
+      var overlay = document.getElementById('menuDrawerOverlay');
+      var drawer = document.getElementById('menuDrawer');
+      if (overlay) overlay.classList.remove('active');
+      if (drawer) drawer.classList.remove('active');
+      document.body.style.overflow = '';
+    } catch (e) {}
+    renderGroupedGrid();
+    try {
+      if (typeof window.scrollToPage === 'function') window.scrollToPage(1);
+      else {
+        var p = document.getElementById('pageModals');
+        if (p) p.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
       }
+      if (typeof updateSwipeDots === 'function') updateSwipeDots(1);
+      if (typeof updateBottomNav === 'function') updateBottomNav(1);
+    } catch (e) {}
+  }
+
+  function patchCenterMenu() {
+    window.toggleMenuDrawer = function () {
+      goToModalsPage();
     };
   }
 
@@ -234,16 +278,18 @@
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
       setTimeout(run, 0);
-      setTimeout(run, 700);
-      setTimeout(run, 1800);
+      setTimeout(run, 500);
+      setTimeout(run, 1500);
+      setTimeout(run, 3000);
     });
   } else {
     run();
-    setTimeout(run, 700);
-    setTimeout(run, 1800);
+    setTimeout(run, 500);
+    setTimeout(run, 1500);
+    setTimeout(run, 3000);
   }
   window.addEventListener('load', function () {
-    setTimeout(run, 400);
-    setTimeout(run, 1400);
+    setTimeout(run, 300);
+    setTimeout(run, 1200);
   });
 })();
