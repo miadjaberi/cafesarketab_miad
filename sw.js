@@ -1,5 +1,5 @@
 /* کافه سرکتاب میعاد — Service Worker */
-const CACHE_VERSION = 'kafe-miad-v22.31-equal-cards';
+const CACHE_VERSION = 'kafe-miad-v22.32-modal-theme';
 const SHELL_CACHE = `shell-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = [
@@ -16,6 +16,7 @@ const PRECACHE_URLS = [
   './fix-four-bugs.js',
   './hamzad-ui-fix.js',
   './modal-menu-layout.js',
+  './modal-ui-theme.js',
   './theme-atelier.css',
   './assets/splash.jpg',
   './theme-lock.css',
