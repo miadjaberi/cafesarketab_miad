@@ -1,5 +1,5 @@
 /* کافه سرکتاب میعاد — Service Worker */
-const CACHE_VERSION = 'kafe-miad-v22.35-modal-frame';
+const CACHE_VERSION = 'kafe-miad-v22.36-raml-rename';
 const SHELL_CACHE = `shell-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = [
@@ -17,6 +17,7 @@ const PRECACHE_URLS = [
   './hamzad-ui-fix.js',
   './modal-menu-layout.js',
   './modal-ui-theme.js',
+  './rename-raml.js',
   './theme-atelier.css',
   './assets/splash.jpg',
   './theme-lock.css',
