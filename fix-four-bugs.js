@@ -1,13 +1,17 @@
 /**
- * fix-four-bugs.js — کافه سرکتاب میعاد
- * 1) همزاد — نمایش نتیجه یکدست
- * 2) اسپلش گیر کرده (بدون رد کردن شرایط)
- * 3) دکمه ✕ مودال — برگشت امن به منو
- * 4) کنتراست اعلان‌ها و صندوق مدیر
- * 5) شرایط استفاده: هر بار ورود باید قبول شود (نه رد خودکار)
+ * fix-four-bugs.js (نسخه امن — شاخه fix)
+ * هیچ تابع/مودال/صفحه‌ای حذف نمی‌شود.
+ *
+ * دو منو:
+ * - #pageModals  = صفحه سوایپ با عنوان + پس‌زمینه (اغلب بدون کارت در دید)
+ * - #menuDrawer  = منوی کارت‌دار واقعی (دکمه وسط نوار پایین) ← مقصد درست ✕
+ *
+ * ✕: closeModal اصلی + باز کردن #menuDrawer
  */
 (function () {
   'use strict';
+  if (window.__KAFE_FOUR_BUGS_SAFE__) return;
+  window.__KAFE_FOUR_BUGS_SAFE__ = true;
 
   function injectContrastCSS() {
     if (document.getElementById('kafe-four-bugs-css')) return;
@@ -15,53 +19,25 @@
     css.id = 'kafe-four-bugs-css';
     css.textContent = [
       '.modal-glass .result-value, #hamzadNumber, #hamzadResult .result-value {',
-      '  color: #F0D878 !important;',
-      '  -webkit-text-fill-color: #F0D878 !important;',
+      '  color: #F0D878 !important; -webkit-text-fill-color: #F0D878 !important;',
       '  background: linear-gradient(135deg, rgba(201,168,76,0.18), rgba(116,236,255,0.10)) !important;',
-      '  border: 1px solid rgba(201,168,76,0.45) !important;',
-      '}',
+      '  border: 1px solid rgba(201,168,76,0.45) !important; }',
       '.modal-glass .result-description, #hamzadDescription {',
-      '  color: #F5F0E4 !important;',
-      '  -webkit-text-fill-color: #F5F0E4 !important;',
-      '}',
+      '  color: #F5F0E4 !important; -webkit-text-fill-color: #F5F0E4 !important; }',
       '.modal-glass .result-box, #hamzadResult {',
-      '  background: rgba(255,255,255,0.06) !important;',
-      '  border: 1px solid rgba(201,168,76,0.35) !important;',
-      '  color: #F5F0E4 !important;',
-      '}',
-      '.user-notif-sheet-card, .user-notif-sheet-card * {',
-      '  color: #1a1a1a !important;',
-      '  -webkit-text-fill-color: #1a1a1a !important;',
-      '}',
+      '  background: rgba(255,255,255,0.06) !important; border: 1px solid rgba(201,168,76,0.35) !important;',
+      '  color: #F5F0E4 !important; }',
+      '.user-notif-sheet-card, .user-notif-sheet-card * { color: #1a1a1a !important; -webkit-text-fill-color: #1a1a1a !important; }',
       '.user-notif-sheet-card { background: #fffaf2 !important; }',
-      '.user-notif-item { background: #ffffff !important; border-color: rgba(0,0,0,0.12) !important; }',
-      '.user-notif-item.unread { border-color: rgba(22,163,74,0.55) !important; }',
+      '.user-notif-item { background: #ffffff !important; }',
       '.admin-inbox-item { color: #F5F0E4 !important; -webkit-text-fill-color: #F5F0E4 !important; }',
-      '.admin-inbox-item b, .admin-inbox-item strong { color: #F0D878 !important; -webkit-text-fill-color: #F0D878 !important; }',
-      '.admin-inbox-item button, .admin-item-actions button {',
+      '.admin-inbox-item b, .admin-inbox-item strong { color: #F0D878 !important; }',
+      '.admin-inbox-item button, .admin-item-actions button, #kafeAdminPurchaseDetail button {',
       '  color: #111 !important; -webkit-text-fill-color: #111 !important;',
-      '  background: linear-gradient(135deg,#C9A84C,#E8D5A3) !important;',
-      '  border: 0 !important; border-radius: 10px !important; padding: 8px 12px !important;',
-      '  font-weight: 700 !important; cursor: pointer !important;',
-      '}',
-      '.admin-inbox-item button.danger, .admin-item-actions button.danger {',
-      '  background: linear-gradient(135deg,#b91c1c,#ef4444) !important; color: #fff !important;',
-      '  -webkit-text-fill-color: #fff !important;',
-      '}',
-      '#kafeAdminPurchaseDetail, #kafeAdminPurchaseDetail * {',
-      '  color: #111 !important; -webkit-text-fill-color: #111 !important;',
-      '}',
-      '#kafeAdminPurchaseDetail > div { background: #fff !important; color: #111 !important; }',
-      '#kafeAdminPurchaseDetail button {',
-      '  color: #111 !important; -webkit-text-fill-color: #111 !important;',
-      '  background: linear-gradient(135deg,#C9A84C,#E8D5A3) !important;',
-      '  border: 0 !important; border-radius: 10px !important; padding: 8px 12px !important;',
-      '  font-weight: 700 !important; cursor: pointer !important;',
-      '}',
-      '#kafeAdminPurchaseDetail button.danger {',
-      '  background: linear-gradient(135deg,#b91c1c,#ef4444) !important; color: #fff !important;',
-      '  -webkit-text-fill-color: #fff !important;',
-      '}',
+      '  background: linear-gradient(135deg,#C9A84C,#E8D5A3) !important; border: 0 !important;',
+      '  border-radius: 10px !important; padding: 8px 12px !important; font-weight: 700 !important; cursor: pointer !important; }',
+      '#kafeAdminPurchaseDetail, #kafeAdminPurchaseDetail * { color: #111 !important; -webkit-text-fill-color: #111 !important; }',
+      '#kafeAdminPurchaseDetail > div { background: #fff !important; }',
       '#notification { color: #fff !important; -webkit-text-fill-color: #fff !important; }'
     ].join('\n');
     document.head.appendChild(css);
@@ -70,7 +46,6 @@
   function sessionTermsOk() {
     try { return sessionStorage.getItem('kafeTermsSession') === '1'; } catch (e) { return false; }
   }
-
   function setSessionTermsOk() {
     try { sessionStorage.setItem('kafeTermsSession', '1'); } catch (e) {}
     try { localStorage.setItem('kafeTermsAccepted', '1'); } catch (e) {}
@@ -79,101 +54,87 @@
   function enforceTermsGate() {
     if (sessionTermsOk()) return;
     try {
+      if (document.querySelector('.modal-glass.active')) return;
+      if (document.getElementById('menuDrawer') && document.getElementById('menuDrawer').classList.contains('active')) return;
+    } catch (e) {}
+    try {
       var terms = document.getElementById('termsScreen');
       var splash = document.getElementById('splashScreen');
       var reg = document.getElementById('registerScreen');
       var app = document.getElementById('app');
       if (!terms) return;
-      if (splash) {
-        splash.style.display = 'none';
-        splash.classList.add('hidden', 'waiting');
-        splash.classList.remove('active');
-      }
-      if (reg) {
-        reg.style.display = 'none';
-        reg.classList.add('hidden');
-        reg.classList.remove('active');
-      }
-      if (app) {
-        app.style.display = 'none';
-        app.classList.add('hidden');
-      }
+      if (splash) { splash.style.display = 'none'; splash.classList.add('hidden', 'waiting'); }
+      if (reg) { reg.style.display = 'none'; reg.classList.add('hidden'); }
+      if (app) { app.style.display = 'none'; app.classList.add('hidden'); }
       terms.classList.remove('hidden');
       terms.style.display = 'flex';
+    } catch (e2) {}
+  }
+
+  function openMainModalsMenu() {
+    try {
+      if (typeof window.renderDrawerItems === 'function') window.renderDrawerItems();
+      else if (typeof renderDrawerItems === 'function') renderDrawerItems();
     } catch (e) {}
+    try {
+      var overlay = document.getElementById('menuDrawerOverlay');
+      var drawer = document.getElementById('menuDrawer');
+      if (!drawer) return;
+      if (overlay) overlay.classList.add('active');
+      drawer.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    } catch (e2) {}
   }
 
   function patchCloseModalGlass() {
     var prev = window.closeModalGlass;
-    window.closeModalGlass = function (modalId) {
+    if (typeof prev !== 'function') return;
+    if (prev.__kafeSafeClose) return;
+
+    function safeClose(modalId) {
       try {
         var support = document.getElementById('kafeChannelSupport');
         if (support) support.remove();
       } catch (e) {}
       try {
-        if (typeof prev === 'function') prev.apply(this, arguments);
-        else {
-          var m = document.getElementById(modalId);
-          if (m) { m.classList.remove('active'); m.style.display = 'none'; }
-        }
+        prev.apply(this, arguments);
       } catch (e2) {
-        var m2 = document.getElementById(modalId);
-        if (m2) { m2.classList.remove('active'); m2.style.display = 'none'; }
+        try {
+          var m = document.getElementById(modalId);
+          if (m) m.classList.remove('active');
+        } catch (e3) {}
       }
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      if (!sessionTermsOk()) {
-        enforceTermsGate();
-        return;
-      }
-      try {
-        var terms = document.getElementById('termsScreen');
-        var reg = document.getElementById('registerScreen');
-        var splash = document.getElementById('splashScreen');
-        var app = document.getElementById('app');
-        if (app && (app.style.display === 'block' || app.style.display === 'flex')) {
-          if (terms) { terms.style.display = 'none'; terms.classList.add('hidden'); }
-          if (splash) { splash.style.display = 'none'; splash.classList.add('hidden'); }
-          if (reg) { reg.style.display = 'none'; reg.classList.add('hidden'); }
-        }
-      } catch (e3) {}
-    };
+      setTimeout(openMainModalsMenu, 120);
+    }
+    safeClose.__kafeSafeClose = true;
+    window.closeModalGlass = safeClose;
   }
 
   function patchAcceptTerms() {
     var prev = window.acceptTermsAndContinue;
     if (typeof prev !== 'function') return;
-    window.acceptTermsAndContinue = function () {
+    if (prev.__kafeSafeAccept) return;
+    function safeAccept() {
       setSessionTermsOk();
       try {
-        var bar = document.getElementById('splashLoaderBar') ||
-          (document.getElementById('splashScreen') &&
-            document.getElementById('splashScreen').querySelector('.splash-loader-bar'));
+        var bar = document.getElementById('splashLoaderBar');
         if (bar) {
           bar.style.animation = 'none';
           void bar.offsetWidth;
           bar.style.animation = 'loadBar 1.8s linear forwards';
         }
-      } catch (eBar) {}
-      setTimeout(function () {
-        try {
-          var splash = document.getElementById('splashScreen');
-          var still = splash && splash.style.display !== 'none' && !splash.classList.contains('hidden');
-          if (still) {
-            var bar2 = document.getElementById('splashLoaderBar');
-            if (bar2) { bar2.style.animation = 'none'; bar2.style.width = '100%'; }
-          }
-        } catch (e) {}
-      }, 8000);
-      try { return prev.apply(this, arguments); }
-      catch (err) { console.warn('acceptTermsAndContinue error', err); }
-    };
+      } catch (e) {}
+      try { return prev.apply(this, arguments); } catch (err) { console.warn(err); }
+    }
+    safeAccept.__kafeSafeAccept = true;
+    window.acceptTermsAndContinue = safeAccept;
   }
 
   function patchHamzadResultDisplay() {
     var prev = window.calculateHamzad;
     if (typeof prev !== 'function') return;
-    window.calculateHamzad = function () {
+    if (prev.__kafeSafeHamzad) return;
+    function safeHamzad() {
       var ret = prev.apply(this, arguments);
       try {
         var box = document.getElementById('hamzadResult');
@@ -184,31 +145,32 @@
         if (dEl) dEl.classList.add('result-description');
       } catch (e) {}
       return ret;
-    };
+    }
+    safeHamzad.__kafeSafeHamzad = true;
+    window.calculateHamzad = safeHamzad;
   }
 
   function patchAdminDetailContrast() {
     var prev = window.showAdminPurchaseDetail;
     if (typeof prev !== 'function') return;
-    window.showAdminPurchaseDetail = function (kind, row) {
+    if (prev.__kafeSafeAdmin) return;
+    function safeAdmin(kind, row) {
       var ret = prev.apply(this, arguments);
       try {
         var w = document.getElementById('kafeAdminPurchaseDetail');
         if (!w) return ret;
         w.style.zIndex = '99999';
         var card = w.firstElementChild;
-        if (card) { card.style.background = '#ffffff'; card.style.color = '#111111'; }
+        if (card) { card.style.background = '#fff'; card.style.color = '#111'; }
         w.querySelectorAll('button').forEach(function (btn) {
           btn.style.pointerEvents = 'auto';
           btn.style.cursor = 'pointer';
-          if (!btn.classList.contains('danger')) {
-            btn.style.background = 'linear-gradient(135deg,#C9A84C,#E8D5A3)';
-            btn.style.color = '#111';
-          }
         });
       } catch (e) {}
       return ret;
-    };
+    }
+    safeAdmin.__kafeSafeAdmin = true;
+    window.showAdminPurchaseDetail = safeAdmin;
   }
 
   function applyAll() {
@@ -217,31 +179,19 @@
     patchAcceptTerms();
     patchHamzadResultDisplay();
     patchAdminDetailContrast();
-    enforceTermsGate();
-  }
-
-  try {
-    if (!sessionTermsOk()) {
-      setTimeout(enforceTermsGate, 50);
-      setTimeout(enforceTermsGate, 300);
-      setTimeout(enforceTermsGate, 800);
-      setTimeout(enforceTermsGate, 1500);
+    if (!sessionTermsOk() && !document.querySelector('.modal-glass.active')) {
+      enforceTermsGate();
     }
-  } catch (e) {}
+  }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
       setTimeout(applyAll, 0);
-      setTimeout(applyAll, 500);
-      setTimeout(applyAll, 1200);
+      setTimeout(applyAll, 600);
     });
   } else {
     applyAll();
-    setTimeout(applyAll, 500);
+    setTimeout(applyAll, 600);
   }
-
-  window.addEventListener('load', function () {
-    setTimeout(applyAll, 200);
-    if (!sessionTermsOk()) setTimeout(enforceTermsGate, 400);
-  });
+  window.addEventListener('load', function () { setTimeout(applyAll, 300); });
 })();
