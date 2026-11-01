@@ -1,12 +1,12 @@
 /**
  * fix-four-bugs.js (نسخه امن — شاخه fix)
- * اصل: هیچ تابع/مودال/صفحه‌ای حذف نمی‌شود؛ فقط روی قبلی wrap می‌شود.
+ * هیچ تابع/مودال/صفحه‌ای حذف نمی‌شود.
  *
- * وابستگی‌های ریشه‌ای که نباید حذف شوند:
- * - window.closeModalGlass  → حدود ۲۷ مودال در index.html با onclick به آن وصل‌اند
- * - pageModals / pageTools  → صفحات سوایپ اصلی اپ (نه کد مرده)
- * - kafeChannelSupport      → اورلی حمایت کانال هنگام باز کردن مودال
- * - main.js بعد از closeModal → عمداً به pageModals برمی‌گردد
+ * دو منو:
+ * - #pageModals  = صفحه سوایپ با عنوان + پس‌زمینه (اغلب بدون کارت در دید)
+ * - #menuDrawer  = منوی کارت‌دار واقعی (دکمه وسط نوار پایین) ← مقصد درست ✕
+ *
+ * ✕: closeModal اصلی + باز کردن #menuDrawer
  */
 (function () {
   'use strict';
@@ -55,6 +55,7 @@
     if (sessionTermsOk()) return;
     try {
       if (document.querySelector('.modal-glass.active')) return;
+      if (document.getElementById('menuDrawer') && document.getElementById('menuDrawer').classList.contains('active')) return;
     } catch (e) {}
     try {
       var terms = document.getElementById('termsScreen');
@@ -67,6 +68,21 @@
       if (app) { app.style.display = 'none'; app.classList.add('hidden'); }
       terms.classList.remove('hidden');
       terms.style.display = 'flex';
+    } catch (e2) {}
+  }
+
+  function openMainModalsMenu() {
+    try {
+      if (typeof window.renderDrawerItems === 'function') window.renderDrawerItems();
+      else if (typeof renderDrawerItems === 'function') renderDrawerItems();
+    } catch (e) {}
+    try {
+      var overlay = document.getElementById('menuDrawerOverlay');
+      var drawer = document.getElementById('menuDrawer');
+      if (!drawer) return;
+      if (overlay) overlay.classList.add('active');
+      drawer.classList.add('active');
+      document.body.style.overflow = 'hidden';
     } catch (e2) {}
   }
 
@@ -86,9 +102,9 @@
         try {
           var m = document.getElementById(modalId);
           if (m) m.classList.remove('active');
-          document.body.style.overflow = '';
         } catch (e3) {}
       }
+      setTimeout(openMainModalsMenu, 120);
     }
     safeClose.__kafeSafeClose = true;
     window.closeModalGlass = safeClose;
