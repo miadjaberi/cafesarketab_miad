@@ -1,12 +1,21 @@
 /** modal-menu-layout.js — منوی مودال‌ها:
  *  ظاهر شیشه‌ای + حاشیه طلایی مثل ابزارهای پرکاربرد
- *  ۳ ستون، اندازه فشرده، گروه‌بندی موضوعی
+ *  ۳ ستون، ارتفاع یکسان، گروه‌بندی موضوعی
  *  خانه اول: برای من (در حال توسعه)
  */
 (function () {
   'use strict';
-  if (window.__KAFE_MODAL_MENU_LAYOUT_V3__) return;
-  window.__KAFE_MODAL_MENU_LAYOUT_V3__ = true;
+  if (window.__KAFE_MODAL_MENU_LAYOUT_V4__) return;
+  window.__KAFE_MODAL_MENU_LAYOUT_V4__ = true;
+
+  var TITLE_SHORT = {
+    rastegooModal: 'راستگو و شفا',
+    elateBimari12Modal: 'علت بیماری ۱۲',
+    dostDoshmaniModal: 'دوست و دشمنی',
+    calculatorModal: 'ماشین حساب',
+    mokashefeModal: 'مکاشفه موکلین',
+    mohabbatModal: 'محبت زن به مرد'
+  };
 
   var ORDERED_IDS = [
     '__for_me__',
@@ -81,10 +90,11 @@
       '  align-items:center!important;',
       '  justify-content:center!important;',
       '  text-align:center!important;',
-      '  gap:5px!important;',
-      '  min-height:72px!important;',
-      '  max-height:88px!important;',
-      '  padding:10px 6px!important;',
+      '  gap:4px!important;',
+      '  height:78px!important;',
+      '  min-height:78px!important;',
+      '  max-height:78px!important;',
+      '  padding:8px 5px!important;',
       '  border-radius:14px!important;',
       '  background:rgba(255,255,255,.08)!important;',
       '  border:1px solid rgba(201,168,76,.38)!important;',
@@ -108,8 +118,9 @@
       '  filter:drop-shadow(0 1px 2px rgba(0,0,0,.35));',
       '}',
       '#modalsHomeGrid .mh-label{',
-      '  font-size:.68rem!important;',
+      '  font-size:.65rem!important;',
       '  font-weight:700!important;',
+      '  height:2.6em!important;',
       '  color:#F5E9C9!important;',
       '  -webkit-text-fill-color:#F5E9C9!important;',
       '  line-height:1.3!important;',
@@ -137,7 +148,7 @@
       '}',
       '@media (max-width:360px){',
       '  #modalsHomeGrid .mh-label{font-size:.62rem!important;}',
-      '  #modalsHomeGrid .modals-home-item{min-height:68px!important;padding:8px 4px!important;}',
+      '  #modalsHomeGrid .modals-home-item,#modalsHomeGrid .mh-chip{height:74px!important;min-height:74px!important;max-height:74px!important;padding:7px 4px!important;}',
       '}'
     ].join('\n');
   }
@@ -210,7 +221,7 @@
       if (!item) return;
       var meta = null;
       try { if (typeof getModalMeta === 'function') meta = getModalMeta(id); } catch (e) {}
-      var title = (meta && meta.title) || item.title || id;
+      var title = TITLE_SHORT[id] || (meta && meta.title) || item.title || id;
       var icon = (meta && meta.icon) || item.icon || '📜';
       html +=
         '<div class="modals-home-item mh-chip" onclick="openModalGlass(\'' + id + '\')">' +
@@ -226,10 +237,11 @@
           seen[m.id] = true;
           var meta = null;
           try { if (typeof getModalMeta === 'function') meta = getModalMeta(m.id); } catch (e) {}
+          var title = TITLE_SHORT[m.id] || (meta && meta.title) || m.title || m.id;
           html +=
             '<div class="modals-home-item mh-chip" onclick="openModalGlass(\'' + m.id + '\')">' +
             '<span class="mh-icon">' + ((meta && meta.icon) || m.icon || '📜') + '</span>' +
-            '<span class="mh-label">' + ((meta && meta.title) || m.title || m.id) + '</span>' +
+            '<span class="mh-label">' + title + '</span>' +
             '</div>';
         });
       }
