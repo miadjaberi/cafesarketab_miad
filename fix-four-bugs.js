@@ -1,10 +1,10 @@
 /**
  * fix-four-bugs.js — کافه سرکتاب میعاد
- * مشکلات:
  * 1) همزاد — نمایش نتیجه یکدست
- * 2) لود اولیه / اسپلش گیر کرده
+ * 2) اسپلش گیر کرده (بدون رد کردن شرایط)
  * 3) دکمه ✕ مودال — برگشت امن به منو
- * 4) کنتراست متن اعلان‌ها و صندوق مدیر
+ * 4) کنتراست اعلان‌ها و صندوق مدیر
+ * 5) شرایط استفاده: هر بار ورود باید قبول شود (نه رد خودکار)
  */
 (function () {
   'use strict';
@@ -67,6 +67,42 @@
     document.head.appendChild(css);
   }
 
+  function sessionTermsOk() {
+    try { return sessionStorage.getItem('kafeTermsSession') === '1'; } catch (e) { return false; }
+  }
+
+  function setSessionTermsOk() {
+    try { sessionStorage.setItem('kafeTermsSession', '1'); } catch (e) {}
+    try { localStorage.setItem('kafeTermsAccepted', '1'); } catch (e) {}
+  }
+
+  function enforceTermsGate() {
+    if (sessionTermsOk()) return;
+    try {
+      var terms = document.getElementById('termsScreen');
+      var splash = document.getElementById('splashScreen');
+      var reg = document.getElementById('registerScreen');
+      var app = document.getElementById('app');
+      if (!terms) return;
+      if (splash) {
+        splash.style.display = 'none';
+        splash.classList.add('hidden', 'waiting');
+        splash.classList.remove('active');
+      }
+      if (reg) {
+        reg.style.display = 'none';
+        reg.classList.add('hidden');
+        reg.classList.remove('active');
+      }
+      if (app) {
+        app.style.display = 'none';
+        app.classList.add('hidden');
+      }
+      terms.classList.remove('hidden');
+      terms.style.display = 'flex';
+    } catch (e) {}
+  }
+
   function patchCloseModalGlass() {
     var prev = window.closeModalGlass;
     window.closeModalGlass = function (modalId) {
@@ -86,44 +122,51 @@
       }
       document.body.style.overflow = '';
       document.body.style.position = '';
+      if (!sessionTermsOk()) {
+        enforceTermsGate();
+        return;
+      }
       try {
         var terms = document.getElementById('termsScreen');
         var reg = document.getElementById('registerScreen');
         var splash = document.getElementById('splashScreen');
         var app = document.getElementById('app');
-        var termsVisible = terms && terms.style.display !== 'none' && !terms.classList.contains('hidden');
-        var regVisible = reg && (reg.style.display === 'flex' || reg.style.display === 'block') && !reg.classList.contains('hidden');
-        if ((termsVisible || regVisible) && app) {
+        if (app && (app.style.display === 'block' || app.style.display === 'flex')) {
           if (terms) { terms.style.display = 'none'; terms.classList.add('hidden'); }
-          if (reg) { reg.style.display = 'none'; reg.classList.add('hidden'); }
           if (splash) { splash.style.display = 'none'; splash.classList.add('hidden'); }
-          app.style.display = 'block';
+          if (reg) { reg.style.display = 'none'; reg.classList.add('hidden'); }
         }
       } catch (e3) {}
     };
   }
 
-  function patchSplashSafety() {
+  function patchAcceptTerms() {
     var prev = window.acceptTermsAndContinue;
     if (typeof prev !== 'function') return;
     window.acceptTermsAndContinue = function () {
-      var finished = false;
-      function finishSafe() {
-        if (finished) return;
-        finished = true;
+      setSessionTermsOk();
+      try {
+        var bar = document.getElementById('splashLoaderBar') ||
+          (document.getElementById('splashScreen') &&
+            document.getElementById('splashScreen').querySelector('.splash-loader-bar'));
+        if (bar) {
+          bar.style.animation = 'none';
+          void bar.offsetWidth;
+          bar.style.animation = 'loadBar 1.8s linear forwards';
+        }
+      } catch (eBar) {}
+      setTimeout(function () {
         try {
           var splash = document.getElementById('splashScreen');
-          if (splash) { splash.classList.add('hidden'); splash.style.display = 'none'; }
-          var bar = document.getElementById('splashLoaderBar');
-          if (bar) { bar.style.animation = 'none'; bar.style.width = '100%'; }
+          var still = splash && splash.style.display !== 'none' && !splash.classList.contains('hidden');
+          if (still) {
+            var bar2 = document.getElementById('splashLoaderBar');
+            if (bar2) { bar2.style.animation = 'none'; bar2.style.width = '100%'; }
+          }
         } catch (e) {}
-      }
-      setTimeout(finishSafe, 5000);
+      }, 8000);
       try { return prev.apply(this, arguments); }
-      catch (err) {
-        console.warn('acceptTermsAndContinue error', err);
-        finishSafe();
-      }
+      catch (err) { console.warn('acceptTermsAndContinue error', err); }
     };
   }
 
@@ -171,20 +214,34 @@
   function applyAll() {
     injectContrastCSS();
     patchCloseModalGlass();
-    patchSplashSafety();
+    patchAcceptTerms();
     patchHamzadResultDisplay();
     patchAdminDetailContrast();
+    enforceTermsGate();
   }
+
+  try {
+    if (!sessionTermsOk()) {
+      setTimeout(enforceTermsGate, 50);
+      setTimeout(enforceTermsGate, 300);
+      setTimeout(enforceTermsGate, 800);
+      setTimeout(enforceTermsGate, 1500);
+    }
+  } catch (e) {}
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
       setTimeout(applyAll, 0);
-      setTimeout(applyAll, 800);
-      setTimeout(applyAll, 2000);
+      setTimeout(applyAll, 500);
+      setTimeout(applyAll, 1200);
     });
   } else {
     applyAll();
-    setTimeout(applyAll, 800);
+    setTimeout(applyAll, 500);
   }
-  window.addEventListener('load', function () { setTimeout(applyAll, 300); });
+
+  window.addEventListener('load', function () {
+    setTimeout(applyAll, 200);
+    if (!sessionTermsOk()) setTimeout(enforceTermsGate, 400);
+  });
 })();
