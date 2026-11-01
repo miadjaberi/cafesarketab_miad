@@ -1,5 +1,5 @@
 /* کافه سرکتاب میعاد — Service Worker */
-const CACHE_VERSION = 'kafe-miad-v22.25-x-drawer-menu';
+const CACHE_VERSION = 'kafe-miad-v22.26-hamzad-ui';
 const SHELL_CACHE = `shell-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = [
@@ -14,6 +14,7 @@ const PRECACHE_URLS = [
   './pwa-register.js',
   './ui-layer-fix.js',
   './fix-four-bugs.js',
+  './hamzad-ui-fix.js',
   './theme-atelier.css',
   './assets/splash.jpg',
   './theme-lock.css',

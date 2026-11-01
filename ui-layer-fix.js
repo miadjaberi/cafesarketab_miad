@@ -78,16 +78,18 @@
   }
   window.addEventListener('load', function () { setTimeout(applyWraps, 50); });
 
-  // Load four-bugs fix patch (hamzad UI, splash, close X, contrast)
-  (function loadFourBugsFix() {
-    try {
-      if (document.querySelector('script[data-kafe-four-bugs]')) return;
-      var s = document.createElement('script');
-      s.src = './fix-four-bugs.js?v=20261031';
-      s.async = true;
-      s.setAttribute('data-kafe-four-bugs', '1');
-      s.onerror = function () { console.warn('fix-four-bugs.js failed to load'); };
-      (document.body || document.documentElement).appendChild(s);
-    } catch (e) { console.warn(e); }
+  (function loadKafePatches() {
+    function inject(src, key) {
+      try {
+        if (document.querySelector('script[data-kafe-patch="'+key+'"]')) return;
+        var s = document.createElement('script');
+        s.src = src;
+        s.async = true;
+        s.setAttribute('data-kafe-patch', key);
+        (document.body || document.documentElement).appendChild(s);
+      } catch (e) {}
+    }
+    inject('./fix-four-bugs.js?v=20261101b', 'four-bugs');
+    inject('./hamzad-ui-fix.js?v=20261101a', 'hamzad-ui');
   })();
 })();
