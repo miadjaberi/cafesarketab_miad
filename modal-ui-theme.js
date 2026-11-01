@@ -1,12 +1,14 @@
-/** modal-ui-theme.js V2
- * - لوگوی هدر واقعی در همه مودال‌ها
- * - فشرده: بدون اسکرول اضافه / راهنما کوچک
- * - پس‌زمینه شفاف‌تر + حاشیه طلایی واضح (صفحه اصلی دیده شود)
+/** modal-ui-theme.js V3
+ * شفاف شفاف مثل نمونه cafesai:
+ * - بدون تاری / بدون بلور سنگین روی کل صفحه
+ * - صفحه اصلی + هدر کاملاً دیده می‌شود
+ * - فیلد شیشه‌ای، متن سفید، لیبل طلایی، راهنما بادمجانی
+ * - لوگوی هدر واقعی
  */
 (function () {
   'use strict';
-  if (window.__KAFE_MODAL_UI_THEME_V2__) return;
-  window.__KAFE_MODAL_UI_THEME_V2__ = true;
+  if (window.__KAFE_MODAL_UI_THEME_V3__) return;
+  window.__KAFE_MODAL_UI_THEME_V3__ = true;
 
   var EGGPLANT = '#C77DBA';
 
@@ -19,87 +21,76 @@
       document.head.appendChild(st);
     }
     st.textContent = [
-      '.modal-glass{',
-      '  background:rgba(5,7,13,.35)!important;',
+      '.modal-glass,',
+      '.modal-glass.active{',
+      '  background:transparent!important;',
+      '  background-color:transparent!important;',
       '  background-image:none!important;',
-      '  backdrop-filter:blur(2px)!important;',
-      '  -webkit-backdrop-filter:blur(2px)!important;',
+      '  backdrop-filter:none!important;',
+      '  -webkit-backdrop-filter:none!important;',
       '}',
       '.modal-glass .modal-glass-content{',
-      '  background:rgba(10,14,24,.42)!important;',
-      '  border:1.5px solid rgba(201,168,76,.55)!important;',
-      '  backdrop-filter:blur(16px) saturate(1.2)!important;',
-      '  -webkit-backdrop-filter:blur(16px) saturate(1.2)!important;',
-      '  box-shadow:0 8px 28px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.06)!important;',
+      '  background:rgba(8,12,22,.28)!important;',
+      '  border:1.5px solid rgba(201,168,76,.5)!important;',
+      '  backdrop-filter:blur(10px) saturate(1.15)!important;',
+      '  -webkit-backdrop-filter:blur(10px) saturate(1.15)!important;',
+      '  box-shadow:0 10px 32px rgba(0,0,0,.28)!important;',
       '  border-radius:18px!important;',
-      '  max-height:min(88vh,720px)!important;',
+      '  max-height:min(82vh,680px)!important;',
       '  overflow-y:auto!important;',
       '  -webkit-overflow-scrolling:touch!important;',
+      '  margin:auto 12px calc(var(--bottom-nav-height,64px) + 12px)!important;',
+      '  width:calc(100% - 24px)!important;',
+      '  max-width:420px!important;',
       '}',
       '.modal-glass .modal-glass-header{',
       '  display:flex!important;',
       '  align-items:center!important;',
       '  gap:8px!important;',
       '  padding:10px 12px 8px!important;',
-      '  border-bottom:1px solid rgba(201,168,76,.28)!important;',
-      '  min-height:0!important;',
+      '  border-bottom:1px solid rgba(201,168,76,.25)!important;',
+      '  background:transparent!important;',
       '}',
       '.modal-glass .modal-glass-logo{',
-      '  display:flex!important;',
-      '  align-items:center!important;',
-      '  justify-content:center!important;',
-      '  width:36px!important;',
-      '  height:36px!important;',
-      '  flex-shrink:0!important;',
-      '  font-size:0!important;',
-      '  filter:drop-shadow(0 0 8px rgba(201,168,76,.4))!important;',
-      '  opacity:1!important;',
-      '  visibility:visible!important;',
-      '  overflow:hidden!important;',
-      '  border-radius:50%!important;',
+      '  display:flex!important;align-items:center!important;justify-content:center!important;',
+      '  width:34px!important;height:34px!important;flex-shrink:0!important;',
+      '  font-size:0!important;overflow:hidden!important;border-radius:50%!important;',
+      '  filter:drop-shadow(0 0 6px rgba(201,168,76,.35))!important;',
+      '  opacity:1!important;visibility:visible!important;',
       '}',
       '.modal-glass .modal-glass-logo img{',
-      '  width:36px!important;',
-      '  height:36px!important;',
-      '  object-fit:contain!important;',
-      '  border-radius:50%!important;',
-      '  display:block!important;',
+      '  width:34px!important;height:34px!important;object-fit:contain!important;',
+      '  border-radius:50%!important;display:block!important;',
       '}',
       '.modal-glass .modal-glass-title{',
-      '  flex:1!important;',
-      '  color:#F0D878!important;',
-      '  -webkit-text-fill-color:#F0D878!important;',
-      '  font-size:.95rem!important;',
-      '  font-weight:800!important;',
-      '  line-height:1.25!important;',
+      '  flex:1!important;color:#F0D878!important;-webkit-text-fill-color:#F0D878!important;',
+      '  font-size:.92rem!important;font-weight:800!important;line-height:1.25!important;',
       '}',
       '.modal-glass .modal-glass-close{',
-      '  color:#F5F0E4!important;',
-      '  -webkit-text-fill-color:#F5F0E4!important;',
-      '  background:rgba(255,255,255,.08)!important;',
+      '  color:#F5F0E4!important;-webkit-text-fill-color:#F5F0E4!important;',
+      '  background:rgba(255,255,255,.1)!important;',
       '  border:1px solid rgba(201,168,76,.35)!important;',
-      '  border-radius:10px!important;',
-      '  width:32px!important;height:32px!important;',
-      '  font-size:1rem!important;',
-      '  flex-shrink:0!important;',
+      '  border-radius:10px!important;width:32px!important;height:32px!important;',
+      '  font-size:1rem!important;flex-shrink:0!important;',
       '}',
       '.modal-glass .modal-glass-body{',
       '  padding:10px 12px 12px!important;',
+      '  background:transparent!important;',
       '}',
       '.modal-glass .modal-guide,',
       '.modal-glass .modal-guide-box,',
       '.modal-glass [class*="guide"]{',
       '  background:rgba(255,255,255,.06)!important;',
-      '  border:1px solid rgba(199,125,186,.3)!important;',
+      '  border:1px solid rgba(199,125,186,.28)!important;',
       '  border-radius:10px!important;',
-      '  padding:8px 10px!important;',
+      '  padding:7px 10px!important;',
       '  margin-bottom:10px!important;',
-      '  backdrop-filter:blur(8px)!important;',
-      '  -webkit-backdrop-filter:blur(8px)!important;',
+      '  backdrop-filter:blur(6px)!important;',
+      '  -webkit-backdrop-filter:blur(6px)!important;',
       '  color:#C77DBA!important;',
       '  -webkit-text-fill-color:#C77DBA!important;',
-      '  font-size:.78rem!important;',
-      '  line-height:1.45!important;',
+      '  font-size:.76rem!important;',
+      '  line-height:1.4!important;',
       '  font-weight:600!important;',
       '}',
       '.modal-glass .modal-guide i,',
@@ -140,8 +131,8 @@
       '#hamzadModal #calendar{',
       '  width:100%!important;',
       '  box-sizing:border-box!important;',
-      '  background:rgba(255,255,255,.09)!important;',
-      '  border:1px solid rgba(201,168,76,.4)!important;',
+      '  background:rgba(255,255,255,.12)!important;',
+      '  border:1px solid rgba(201,168,76,.42)!important;',
       '  border-radius:12px!important;',
       '  color:#FFFFFF!important;',
       '  -webkit-text-fill-color:#FFFFFF!important;',
@@ -149,50 +140,44 @@
       '  font-size:.95rem!important;',
       '  padding:10px 11px!important;',
       '  font-family:inherit!important;',
-      '  backdrop-filter:blur(8px)!important;',
-      '  -webkit-backdrop-filter:blur(8px)!important;',
-      '  box-shadow:inset 0 1px 0 rgba(255,255,255,.07)!important;',
+      '  backdrop-filter:blur(6px)!important;',
+      '  -webkit-backdrop-filter:blur(6px)!important;',
+      '  box-shadow:inset 0 1px 0 rgba(255,255,255,.08)!important;',
       '  appearance:auto!important;',
       '  -webkit-appearance:menulist!important;',
       '  min-height:0!important;',
       '}',
       '.modal-glass input::placeholder,',
       '.modal-glass textarea::placeholder{',
-      '  color:rgba(255,255,255,.42)!important;',
-      '  -webkit-text-fill-color:rgba(255,255,255,.42)!important;',
-      '  font-weight:500!important;',
-      '  opacity:1!important;',
+      '  color:rgba(255,255,255,.45)!important;',
+      '  -webkit-text-fill-color:rgba(255,255,255,.45)!important;',
+      '  font-weight:500!important;opacity:1!important;',
       '}',
       '.modal-glass input:focus,',
       '.modal-glass textarea:focus,',
       '.modal-glass select:focus{',
       '  outline:none!important;',
-      '  border-color:rgba(240,216,120,.7)!important;',
+      '  border-color:rgba(240,216,120,.75)!important;',
       '  box-shadow:0 0 0 2px rgba(201,168,76,.2)!important;',
-      '  background:rgba(255,255,255,.13)!important;',
+      '  background:rgba(255,255,255,.16)!important;',
       '}',
       '.modal-glass select option{background:#121824!important;color:#fff!important;}',
       '.modal-glass .input-group,',
       '.modal-glass .form-group{margin-bottom:10px!important;}',
       '.modal-glass .result-box,',
       '.modal-glass .result-card{',
-      '  background:rgba(12,16,28,.5)!important;',
+      '  background:rgba(12,16,28,.4)!important;',
       '  border:1px solid rgba(201,168,76,.3)!important;',
       '  border-radius:14px!important;',
-      '  backdrop-filter:blur(8px)!important;',
+      '  backdrop-filter:blur(6px)!important;',
       '  padding:10px!important;',
       '}',
-      '#hamzadModal .date-row,',
-      '#hamzadModal .hamzad-date-row{',
-      '  display:grid!important;',
-      '  grid-template-columns:1fr 1fr 1fr!important;',
-      '  gap:8px!important;',
-      '  margin-bottom:10px!important;',
+      '#hamzadModal .date-row,#hamzadModal .hamzad-date-row{',
+      '  display:grid!important;grid-template-columns:1fr 1fr 1fr!important;',
+      '  gap:8px!important;margin-bottom:10px!important;',
       '}',
-      '.modal-glass .btn,',
-      '.modal-glass button.btn{',
-      '  padding:12px 14px!important;',
-      '  font-size:.95rem!important;',
+      '.modal-glass .btn,.modal-glass button.btn{',
+      '  padding:12px 14px!important;font-size:.95rem!important;',
       '}',
       '.modal-glass .tab-btn{color:#F5F0E4!important;border-color:rgba(201,168,76,.3)!important;padding:8px 10px!important;font-size:.82rem!important;}',
       '.modal-glass .tab-btn.active{color:#120E06!important;-webkit-text-fill-color:#120E06!important;}'
@@ -230,9 +215,7 @@
           existing.alt = 'لوگو';
           logo.appendChild(existing);
         }
-        if (existing.getAttribute('src') !== src) {
-          existing.src = src;
-        }
+        if (existing.getAttribute('src') !== src) existing.src = src;
         logo.style.display = 'flex';
         logo.style.visibility = 'visible';
         logo.style.opacity = '1';
@@ -248,17 +231,17 @@
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
       setTimeout(run, 0);
-      setTimeout(run, 600);
-      setTimeout(run, 1800);
+      setTimeout(run, 500);
+      setTimeout(run, 1500);
     });
   } else {
     run();
-    setTimeout(run, 600);
-    setTimeout(run, 1800);
+    setTimeout(run, 500);
+    setTimeout(run, 1500);
   }
   window.addEventListener('load', function () {
     setTimeout(run, 300);
-    setTimeout(run, 1200);
+    setTimeout(run, 1000);
   });
   document.addEventListener('click', function () {
     setTimeout(applyHeaderLogoToModals, 80);
