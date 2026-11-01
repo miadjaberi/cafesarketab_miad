@@ -36,8 +36,8 @@
 
   function closeAllLayersExcept(keep) {
     if (keep !== 'settings') closeSettings();
-    if (keep !== 'menu') closeMenu();
     if (keep !== 'admin') closeAdmin();
+    if (keep !== 'menu') closeMenu();
     if (keep !== 'suborders') closeSubOrders();
   }
 
@@ -89,8 +89,8 @@
         (document.body || document.documentElement).appendChild(s);
       } catch (e) {}
     }
-    inject('./fix-four-bugs.js?v=20261101e', 'four-bugs');
-    inject('./hamzad-ui-fix.js?v=20261101e', 'hamzad-ui');
-    inject('./modal-menu-layout.js?v=20261101e', 'modal-menu');
+    inject('./fix-four-bugs.js?v=20261101f', 'four-bugs');
+    inject('./hamzad-ui-fix.js?v=20261101f', 'hamzad-ui');
+    inject('./modal-menu-layout.js?v=20261101f', 'modal-menu');
   })();
 })();
