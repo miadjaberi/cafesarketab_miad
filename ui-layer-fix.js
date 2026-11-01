@@ -89,9 +89,9 @@
         (document.body || document.documentElement).appendChild(s);
       } catch (e) {}
     }
-    inject('./fix-four-bugs.js?v=20261101i', 'four-bugs');
-    inject('./hamzad-ui-fix.js?v=20261101i', 'hamzad-ui');
-    inject('./modal-menu-layout.js?v=20261101i', 'modal-menu');
-    inject('./modal-ui-theme.js?v=20261101i', 'modal-theme');
+    inject('./fix-four-bugs.js?v=20261101j', 'four-bugs');
+    inject('./hamzad-ui-fix.js?v=20261101j', 'hamzad-ui');
+    inject('./modal-menu-layout.js?v=20261101j', 'modal-menu');
+    inject('./modal-ui-theme.js?v=20261101j', 'modal-theme');
   })();
 })();
