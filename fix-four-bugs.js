@@ -25,7 +25,6 @@
       terms.classList.remove('hidden');terms.style.display='flex';
     }catch(e){}
   }
-  /* ✕ → صفحه منوی مودال‌ها (#pageModals) — نه دراور */
   function openMainModalsMenu(){
     try{
       var overlay=document.getElementById('menuDrawerOverlay'),drawer=document.getElementById('menuDrawer');
