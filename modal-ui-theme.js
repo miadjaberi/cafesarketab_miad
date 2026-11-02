@@ -1,11 +1,8 @@
-/** modal-ui-theme.js V7
- * حذف قطعی حاشیه زرد/طلایی دور تمام پنجره‌های مودال
- * + استایل اینلاین برای شکست theme-lock و styles.css
- */
+/** modal-ui-theme.js V8 — تمیز، مرتب، خوانا، بدون شلوغی */
 (function () {
   'use strict';
-  if (window.__KAFE_MODAL_UI_THEME_V7__) return;
-  window.__KAFE_MODAL_UI_THEME_V7__ = true;
+  if (window.__KAFE_MODAL_UI_THEME_V8__) return;
+  window.__KAFE_MODAL_UI_THEME_V8__ = true;
 
   function injectThemeCSS() {
     var id = 'kafe-modal-ui-theme-css';
@@ -15,7 +12,6 @@
       st.id = id;
       document.head.appendChild(st);
     }
-    /* این استایل آخر head می‌ماند تا بر theme-lock بچربد */
     try { document.head.appendChild(st); } catch (e) {}
     st.textContent = [
       'body.kafe-modal-open #pageModals,',
@@ -24,81 +20,118 @@
       'body.kafe-modal-open .modals-home-hero{',
       '  opacity:0!important;visibility:hidden!important;pointer-events:none!important;',
       '}',
-      '.modal-glass,.modal-glass.active,',
-      'div.modal-glass,div.modal-glass.active{',
-      '  background:rgba(0,0,0,.14)!important;background-color:rgba(0,0,0,.14)!important;',
-      '  background-image:none!important;backdrop-filter:blur(1px)!important;',
-      '  -webkit-backdrop-filter:blur(1px)!important;',
+
+      /* اوورلی ساده */
+      '.modal-glass,.modal-glass.active,div.modal-glass,div.modal-glass.active{',
+      '  background:rgba(0,0,0,.35)!important;',
+      '  backdrop-filter:blur(4px)!important;-webkit-backdrop-filter:blur(4px)!important;',
       '  align-items:center!important;justify-content:center!important;',
-      '  padding:12px 12px calc(var(--bottom-nav-height,64px) + 12px)!important;',
-      '  box-sizing:border-box!important;',
-      '  border:none!important;outline:none!important;',
+      '  padding:16px 14px calc(var(--bottom-nav-height,64px) + 16px)!important;',
+      '  box-sizing:border-box!important;border:none!important;outline:none!important;',
       '}',
-      /* ===== حذف کامل خط زرد دور پنجره ===== */
+
+      /* کارت اصلی — بدون خط زرد، تمیز */
       '.modal-glass .modal-glass-content,',
       '.modal-glass > .modal-glass-content,',
       'div.modal-glass .modal-glass-content,',
-      'div.modal-glass > div.modal-glass-content,',
       '.modal-glass-content{',
-      '  background:rgba(12,16,28,.22)!important;',
-      '  border:0!important;',
-      '  border-width:0!important;',
-      '  border-style:none!important;',
-      '  border-color:transparent!important;',
-      '  border-top:0!important;border-right:0!important;border-bottom:0!important;border-left:0!important;',
-      '  outline:none!important;',
-      '  outline-width:0!important;',
-      '  box-shadow:0 12px 36px rgba(0,0,0,.28)!important;',
-      '  border-radius:28px!important;',
-      '  border-top-left-radius:28px!important;border-top-right-radius:28px!important;',
-      '  border-bottom-left-radius:28px!important;border-bottom-right-radius:28px!important;',
-      '  backdrop-filter:blur(12px) saturate(1.1)!important;',
-      '  -webkit-backdrop-filter:blur(12px) saturate(1.1)!important;',
-      '  max-height:min(88vh,780px)!important;min-height:0!important;',
+      '  background:rgba(16,20,32,.82)!important;',
+      '  border:none!important;border-width:0!important;outline:none!important;',
+      '  border-radius:20px!important;',
+      '  box-shadow:0 16px 48px rgba(0,0,0,.45)!important;',
+      '  backdrop-filter:blur(18px) saturate(1.15)!important;',
+      '  -webkit-backdrop-filter:blur(18px) saturate(1.15)!important;',
+      '  max-height:min(86vh,720px)!important;',
+      '  width:calc(100% - 8px)!important;max-width:400px!important;',
+      '  margin:0 auto!important;padding:0!important;',
       '  overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;',
-      '  margin:0 auto!important;width:calc(100% - 10px)!important;max-width:440px!important;padding:0!important;',
       '}',
+
+      /* هدر جمع‌وجور */
       '.modal-glass .modal-glass-header{',
-      '  display:flex!important;align-items:center!important;gap:8px!important;',
-      '  padding:12px 14px 10px!important;',
+      '  display:flex!important;align-items:center!important;gap:10px!important;',
+      '  padding:14px 16px 12px!important;',
       '  border-bottom:1px solid rgba(255,255,255,.08)!important;',
-      '  background:transparent!important;border-radius:28px 28px 0 0!important;',
+      '  background:transparent!important;',
       '}',
       '.modal-glass .modal-glass-logo{',
+      '  width:32px!important;height:32px!important;flex-shrink:0!important;',
       '  display:flex!important;align-items:center!important;justify-content:center!important;',
-      '  width:36px!important;height:36px!important;flex-shrink:0!important;font-size:0!important;',
-      '  overflow:hidden!important;border-radius:50%!important;',
-      '  opacity:1!important;visibility:visible!important;',
+      '  font-size:0!important;overflow:hidden!important;border-radius:50%!important;',
       '}',
       '.modal-glass .modal-glass-logo img{',
-      '  width:36px!important;height:36px!important;object-fit:contain!important;',
-      '  border-radius:50%!important;display:block!important;',
+      '  width:32px!important;height:32px!important;object-fit:contain!important;border-radius:50%!important;display:block!important;',
       '}',
       '.modal-glass .modal-glass-title{',
       '  flex:1!important;color:#F0D878!important;-webkit-text-fill-color:#F0D878!important;',
-      '  font-size:.95rem!important;font-weight:800!important;line-height:1.25!important;text-align:right!important;',
+      '  font-size:.92rem!important;font-weight:800!important;line-height:1.3!important;',
+      '  text-align:right!important;margin:0!important;',
       '}',
       '.modal-glass .modal-glass-close{',
-      '  color:#F5F0E4!important;-webkit-text-fill-color:#F5F0E4!important;',
-      '  background:rgba(255,255,255,.1)!important;border:1px solid rgba(255,255,255,.12)!important;',
-      '  border-radius:12px!important;width:34px!important;height:34px!important;',
-      '  font-size:1rem!important;flex-shrink:0!important;',
+      '  width:32px!important;height:32px!important;border-radius:10px!important;',
+      '  background:rgba(255,255,255,.08)!important;border:none!important;',
+      '  color:#eee!important;font-size:1rem!important;flex-shrink:0!important;',
+      '  cursor:pointer!important;',
       '}',
-      '.modal-glass .modal-glass-body{padding:12px 14px 16px!important;background:transparent!important;}',
-      '.modal-glass .modal-guide,.modal-glass .modal-guide-box,.modal-glass [class*="guide"]{',
-      '  background:rgba(255,255,255,.07)!important;border:1px solid rgba(199,125,186,.25)!important;',
-      '  border-radius:14px!important;padding:10px 12px!important;margin-bottom:12px!important;',
-      '  color:#C77DBA!important;-webkit-text-fill-color:#C77DBA!important;',
-      '  font-size:.78rem!important;line-height:1.5!important;font-weight:600!important;',
+      /* دکمه‌های اضافه هدر (پاک‌کردن و ...) جمع */
+      '.modal-glass .modal-glass-header button:not(.modal-glass-close){',
+      '  width:32px!important;height:32px!important;border-radius:10px!important;',
+      '  padding:0!important;font-size:.85rem!important;',
+      '}',
+
+      /* بدنه با فاصله منظم */
+      '.modal-glass .modal-glass-body{',
+      '  padding:12px 16px 18px!important;background:transparent!important;',
+      '}',
+
+      /* راهنما — کوتاه و کم‌حجم */
+      '.modal-glass .modal-guide,',
+      '.modal-glass .modal-guide-box,',
+      '.modal-glass [class*="guide"]{',
+      '  background:rgba(199,125,186,.1)!important;',
+      '  border:none!important;',
+      '  border-radius:12px!important;',
+      '  padding:8px 12px!important;',
+      '  margin:0 0 12px!important;',
+      '  color:#D4A0C8!important;-webkit-text-fill-color:#D4A0C8!important;',
+      '  font-size:.72rem!important;line-height:1.55!important;font-weight:500!important;',
       '}',
       '.modal-glass .modal-guide i,.modal-glass .modal-guide *{',
-      '  color:#C77DBA!important;-webkit-text-fill-color:#C77DBA!important;font-size:inherit!important;',
+      '  color:#D4A0C8!important;-webkit-text-fill-color:#D4A0C8!important;font-size:inherit!important;',
       '}',
-      '.modal-glass .input-group label,.modal-glass .form-group label,.modal-glass label{',
-      '  display:block!important;margin-bottom:5px!important;',
-      '  color:#F0D878!important;-webkit-text-fill-color:#F0D878!important;',
-      '  font-weight:700!important;font-size:.82rem!important;',
+
+      /* تب‌ها — ردیف تمیز */
+      '.modal-glass .tab-buttons,',
+      '.modal-glass .tabs,',
+      '.modal-glass [class*="tab-row"]{',
+      '  display:flex!important;gap:8px!important;margin-bottom:12px!important;',
       '}',
+      '.modal-glass .tab-btn{',
+      '  flex:1!important;',
+      '  padding:10px 8px!important;',
+      '  border-radius:12px!important;',
+      '  border:1px solid rgba(255,255,255,.12)!important;',
+      '  background:rgba(255,255,255,.06)!important;',
+      '  color:#E8E0D0!important;-webkit-text-fill-color:#E8E0D0!important;',
+      '  font-size:.8rem!important;font-weight:700!important;',
+      '  cursor:pointer!important;',
+      '}',
+      '.modal-glass .tab-btn.active{',
+      '  background:linear-gradient(135deg,#C9A84C,#A8872A)!important;',
+      '  border-color:transparent!important;',
+      '  color:#1a1408!important;-webkit-text-fill-color:#1a1408!important;',
+      '}',
+
+      /* لیبل */
+      '.modal-glass .input-group label,',
+      '.modal-glass .form-group label,',
+      '.modal-glass label{',
+      '  display:block!important;margin:0 0 6px!important;',
+      '  color:#E8D5A3!important;-webkit-text-fill-color:#E8D5A3!important;',
+      '  font-weight:700!important;font-size:.8rem!important;',
+      '}',
+
+      /* فیلدها — خوانا: زمینه روشن + متن تیره */
       '.modal-glass input[type=text],.modal-glass input[type=number],.modal-glass input[type=tel],',
       '.modal-glass input[type=email],.modal-glass input[type=password],.modal-glass input[type=date],',
       '.modal-glass input[type=search],.modal-glass textarea,.modal-glass select,',
@@ -106,85 +139,89 @@
       '.modal-glass .form-group input,.modal-glass .form-group select,.modal-glass .form-group textarea,',
       '#hamzadModal input,#hamzadModal select,#hamzadModal select.hamzad-date-select,#hamzadModal #calendar{',
       '  width:100%!important;box-sizing:border-box!important;',
-      '  background:rgba(255,255,255,.14)!important;border:1px solid rgba(255,255,255,.18)!important;',
-      '  border-radius:14px!important;color:#FFFFFF!important;-webkit-text-fill-color:#FFFFFF!important;',
-      '  font-weight:700!important;font-size:.95rem!important;padding:11px 12px!important;',
-      '  font-family:inherit!important;backdrop-filter:blur(6px)!important;',
-      '  -webkit-backdrop-filter:blur(6px)!important;min-height:0!important;',
+      '  background:#F7F3EA!important;',
+      '  color:#1a1a1a!important;-webkit-text-fill-color:#1a1a1a!important;',
+      '  border:none!important;border-radius:12px!important;',
+      '  font-weight:600!important;font-size:.92rem!important;',
+      '  padding:12px 14px!important;font-family:inherit!important;',
+      '  min-height:44px!important;',
       '  appearance:auto!important;-webkit-appearance:menulist!important;',
       '}',
       '.modal-glass input::placeholder,.modal-glass textarea::placeholder{',
-      '  color:rgba(255,255,255,.45)!important;-webkit-text-fill-color:rgba(255,255,255,.45)!important;',
+      '  color:#8a8578!important;-webkit-text-fill-color:#8a8578!important;',
       '  font-weight:500!important;opacity:1!important;',
       '}',
       '.modal-glass input:focus,.modal-glass textarea:focus,.modal-glass select:focus{',
-      '  outline:none!important;border-color:rgba(255,255,255,.35)!important;',
-      '  box-shadow:0 0 0 2px rgba(255,255,255,.08)!important;background:rgba(255,255,255,.18)!important;',
+      '  outline:none!important;',
+      '  box-shadow:0 0 0 2px rgba(201,168,76,.45)!important;',
+      '  background:#FFFEF9!important;',
       '}',
-      '.modal-glass select option{background:#121824!important;color:#fff!important;}',
+      '.modal-glass select option{background:#fff!important;color:#1a1a1a!important;}',
       '.modal-glass .input-group,.modal-glass .form-group{margin-bottom:12px!important;}',
-      '.modal-glass .result-box,.modal-glass .result-card,.modal-glass .result-description,',
-      '.modal-glass .result-text,.modal-glass .result-value,.modal-glass #ramlAnswer,',
-      '.modal-glass #ramlResult,.modal-glass [id$="Result"],.modal-glass [id$="Answer"]{',
-      '  max-height:none!important;height:auto!important;overflow:visible!important;',
-      '  overflow-y:visible!important;-webkit-line-clamp:unset!important;line-clamp:unset!important;',
-      '  display:block!important;white-space:pre-wrap!important;word-wrap:break-word!important;',
-      '  text-overflow:unset!important;',
+
+      /* دکمه محاسبه */
+      '.modal-glass .btn,.modal-glass button.btn{',
+      '  width:100%!important;',
+      '  padding:13px 14px!important;',
+      '  margin-top:4px!important;',
+      '  border:none!important;border-radius:12px!important;',
+      '  background:linear-gradient(135deg,#D4B45A,#A8872A)!important;',
+      '  color:#1a1408!important;-webkit-text-fill-color:#1a1408!important;',
+      '  font-size:.95rem!important;font-weight:800!important;',
+      '  box-shadow:0 4px 14px rgba(168,135,42,.35)!important;',
+      '}',
+
+      /* نتیجه — فقط وقتی نمایش است جا بگیرد */
+      '.modal-glass .result-box[style*="display: none"],',
+      '.modal-glass .result-box[style*="display:none"]{',
+      '  display:none!important;margin:0!important;padding:0!important;height:0!important;border:none!important;',
       '}',
       '.modal-glass .result-box,.modal-glass .result-card{',
-      '  background:rgba(12,16,28,.35)!important;border:1px solid rgba(255,255,255,.1)!important;',
-      '  border-radius:16px!important;padding:12px!important;margin-top:12px!important;',
+      '  background:rgba(255,255,255,.06)!important;',
+      '  border:none!important;border-radius:12px!important;',
+      '  padding:12px!important;margin-top:12px!important;',
       '}',
-      '.modal-glass .result-description{',
+      '.modal-glass .result-description,.modal-glass .result-value,.modal-glass .result-text{',
       '  color:#F5F0E4!important;-webkit-text-fill-color:#F5F0E4!important;',
-      '  line-height:1.85!important;font-size:.9rem!important;text-align:justify!important;',
+      '  line-height:1.75!important;font-size:.88rem!important;',
+      '  max-height:none!important;overflow:visible!important;',
+      '  white-space:pre-wrap!important;word-wrap:break-word!important;',
+      '  -webkit-line-clamp:unset!important;line-clamp:unset!important;',
       '}',
+
       '#hamzadModal .date-row,#hamzadModal .hamzad-date-row{',
       '  display:grid!important;grid-template-columns:1fr 1fr 1fr!important;',
       '  gap:8px!important;margin-bottom:12px!important;',
-      '}',
-      '.modal-glass .btn,.modal-glass button.btn{padding:13px 14px!important;font-size:.95rem!important;border-radius:14px!important;}',
-      '.modal-glass .tab-btn{color:#F5F0E4!important;border-color:rgba(255,255,255,.15)!important;padding:8px 10px!important;font-size:.82rem!important;border-radius:12px!important;}',
-      '.modal-glass .tab-btn.active{color:#120E06!important;-webkit-text-fill-color:#120E06!important;}'
+      '}'
     ].join('\n');
   }
 
-  /** استایل اینلاین — بر هر CSS دیگر غالب است */
-  function stripYellowFrame() {
+  function stripFrame() {
     try {
       document.querySelectorAll('.modal-glass').forEach(function (modal) {
         modal.style.setProperty('border', 'none', 'important');
         modal.style.setProperty('outline', 'none', 'important');
-        var content = modal.querySelector('.modal-glass-content');
-        if (!content) return;
-        content.style.setProperty('border', 'none', 'important');
-        content.style.setProperty('border-width', '0', 'important');
-        content.style.setProperty('border-style', 'none', 'important');
-        content.style.setProperty('border-color', 'transparent', 'important');
-        content.style.setProperty('outline', 'none', 'important');
-        content.style.setProperty('border-radius', '28px', 'important');
-        content.style.setProperty('box-shadow', '0 12px 36px rgba(0,0,0,0.28)', 'important');
+        var c = modal.querySelector('.modal-glass-content');
+        if (!c) return;
+        c.style.setProperty('border', 'none', 'important');
+        c.style.setProperty('outline', 'none', 'important');
+        c.style.setProperty('border-radius', '20px', 'important');
       });
     } catch (e) {}
   }
 
-  function syncModalOpenClass() {
+  function syncOpen() {
     try {
-      var any = document.querySelector('.modal-glass.active');
-      if (any) document.body.classList.add('kafe-modal-open');
+      if (document.querySelector('.modal-glass.active')) document.body.classList.add('kafe-modal-open');
       else document.body.classList.remove('kafe-modal-open');
     } catch (e) {}
   }
 
-  function applyHeaderLogoToModals() {
+  function applyLogo() {
     var src = './icon192.png';
     try {
       var img = document.getElementById('headerLogoImg');
       if (img && img.src) src = img.src;
-      else {
-        var brand = document.querySelector('#headerBrandLogo img, .brand-logo-img');
-        if (brand && brand.src) src = brand.src;
-      }
     } catch (e) {}
     try {
       document.querySelectorAll('.modal-glass').forEach(function (modal) {
@@ -198,59 +235,46 @@
           if (title) header.insertBefore(logo, title);
           else header.insertBefore(logo, header.firstChild);
         }
-        var existing = logo.querySelector('img');
-        if (!existing) {
+        var im = logo.querySelector('img');
+        if (!im) {
           logo.textContent = '';
-          existing = document.createElement('img');
-          existing.alt = 'لوگو';
-          logo.appendChild(existing);
+          im = document.createElement('img');
+          im.alt = 'لوگو';
+          logo.appendChild(im);
         }
-        if (existing.getAttribute('src') !== src) existing.src = src;
-        logo.style.display = 'flex';
-        logo.style.visibility = 'visible';
-        logo.style.opacity = '1';
+        if (im.getAttribute('src') !== src) im.src = src;
       });
     } catch (e) {}
   }
 
-  function patchOpenClose() {
-    try {
-      var prevOpen = window.openModalGlass;
-      if (typeof prevOpen === 'function' && !prevOpen.__kafeBgPatchedV7) {
-        window.openModalGlass = function () {
-          var r = prevOpen.apply(this, arguments);
-          setTimeout(function () {
-            injectThemeCSS();
-            stripYellowFrame();
-            syncModalOpenClass();
-            applyHeaderLogoToModals();
-          }, 20);
-          setTimeout(stripYellowFrame, 100);
-          setTimeout(stripYellowFrame, 300);
-          return r;
-        };
-        window.openModalGlass.__kafeBgPatchedV7 = true;
-        window.openModalGlass.__kafeBgPatched = true;
-      }
-      var prevClose = window.closeModalGlass;
-      if (typeof prevClose === 'function' && !prevClose.__kafeBgPatchedV7) {
-        window.closeModalGlass = function () {
-          var r = prevClose.apply(this, arguments);
-          setTimeout(syncModalOpenClass, 30);
-          return r;
-        };
-        window.closeModalGlass.__kafeBgPatchedV7 = true;
-        window.closeModalGlass.__kafeBgPatched = true;
-      }
-    } catch (e) {}
+  function patch() {
+    var prevOpen = window.openModalGlass;
+    if (typeof prevOpen === 'function' && !prevOpen.__kafeV8) {
+      window.openModalGlass = function () {
+        var r = prevOpen.apply(this, arguments);
+        setTimeout(function () { injectThemeCSS(); stripFrame(); syncOpen(); applyLogo(); }, 20);
+        setTimeout(stripFrame, 150);
+        return r;
+      };
+      window.openModalGlass.__kafeV8 = true;
+    }
+    var prevClose = window.closeModalGlass;
+    if (typeof prevClose === 'function' && !prevClose.__kafeV8) {
+      window.closeModalGlass = function () {
+        var r = prevClose.apply(this, arguments);
+        setTimeout(syncOpen, 30);
+        return r;
+      };
+      window.closeModalGlass.__kafeV8 = true;
+    }
   }
 
   function run() {
     injectThemeCSS();
-    stripYellowFrame();
-    patchOpenClose();
-    syncModalOpenClass();
-    applyHeaderLogoToModals();
+    stripFrame();
+    patch();
+    syncOpen();
+    applyLogo();
   }
 
   if (document.readyState === 'loading') {
@@ -260,14 +284,8 @@
   } else {
     run(); setTimeout(run, 500); setTimeout(run, 1500);
   }
-  window.addEventListener('load', function () {
-    setTimeout(run, 300); setTimeout(run, 1000);
-  });
+  window.addEventListener('load', function () { setTimeout(run, 400); });
   document.addEventListener('click', function () {
-    setTimeout(function () {
-      stripYellowFrame();
-      syncModalOpenClass();
-      applyHeaderLogoToModals();
-    }, 40);
+    setTimeout(function () { stripFrame(); syncOpen(); applyLogo(); }, 40);
   }, true);
 })();
