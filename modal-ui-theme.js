@@ -195,6 +195,23 @@
       '#hamzadModal .date-row,#hamzadModal .hamzad-date-row{',
       '  display:grid!important;grid-template-columns:1fr 1fr 1fr!important;',
       '  gap:8px!important;margin-bottom:12px!important;',
+      '}',
+
+      /* راهنمای پنجره — جمع‌وجور، فونت ریز، تا فرم دیده بماند */
+      'html body .modal-glass .kafe-modal-detailed-guide,',
+      'html body .kafe-modal-detailed-guide{',
+      '  padding:6px 9px!important;margin:4px 0 8px!important;',
+      '  max-height:88px!important;overflow:auto!important;',
+      '  font-size:.7rem!important;line-height:1.45!important;',
+      '  border-radius:10px!important;',
+      '}',
+      'html body .kafe-modal-detailed-guide .kafe-modal-guide-title{',
+      '  font-size:.72rem!important;line-height:1.3!important;margin:0 0 2px!important;',
+      '  font-weight:800!important;color:#F0D878!important;-webkit-text-fill-color:#F0D878!important;',
+      '}',
+      'html body .kafe-modal-detailed-guide p,',
+      'html body .kafe-modal-detailed-guide p *{',
+      '  font-size:.68rem!important;line-height:1.45!important;margin:0!important;font-weight:500!important;',
       '}'
     ].join('\n');
   }

@@ -334,21 +334,22 @@ body.theme-light button.btn, body.theme-light .modal-glass .btn {
 }
 
 
-/* ========== CONTRAST FIX: پنل‌های روشن = متن تیره ========== */
+/* ========== CONTRAST FIX: پنل خرید تیره شیشه‌ای = متن روشن ========== */
 #subOrdersPanel,
 #subOrdersPanel *,
 #subOrdersStatusBox,
 #subOrdersStatusText,
 #subOrdersList,
 #subOrdersList * {
-  color: #1A1A1A !important;
-  -webkit-text-fill-color: #1A1A1A !important;
+  color: #F7F1E4 !important;
+  -webkit-text-fill-color: #F7F1E4 !important;
 }
 #subOrdersPanel strong,
-#subOrdersPanel [style*="font-weight:800"],
+#subOrdersPanel .sub-orders-status-title,
+#subOrdersPanel .sub-orders-list-title,
 #subOrdersStatusBox > div:first-child {
-  color: #6B5210 !important;
-  -webkit-text-fill-color: #6B5210 !important;
+  color: #F0D878 !important;
+  -webkit-text-fill-color: #F0D878 !important;
 }
 #subOrdersPanel .btn,
 #subOrdersPanel button.btn {
