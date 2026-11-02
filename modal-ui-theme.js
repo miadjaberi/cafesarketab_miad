@@ -1,12 +1,14 @@
-/** modal-ui-theme.js V10
- * کارت پنجره: نارنجی/کهربایی متعادل، براق و روغنی (بدون شفافیت)
- * بدون تداخل با رنگ فیلد / متن / عنوان / نتیجه
- * حذف نشان نسخه از صفحه اصلی و مودال‌ها (فقط اسپلیش بماند)
+/** modal-ui-theme.js V11
+ * کارت: نارنجی متعادل، براق/روغنی/استیلی — بدون شفافیت
+ * فیلد روشن + متن تیره + لیبل طلایی + نتیجه روشن بدون تداخل
+ * V700.7 فقط در اسپلیش؛ از صفحه اصلی و مودال‌ها حذف
  */
 (function () {
   'use strict';
-  if (window.__KAFE_MODAL_UI_THEME_V10__) return;
-  window.__KAFE_MODAL_UI_THEME_V10__ = true;
+  if (window.__KAFE_MODAL_UI_THEME_V11__) return;
+  window.__KAFE_MODAL_UI_THEME_V11__ = true;
+
+  var CARD_BG = 'linear-gradient(160deg,#C4843E 0%,#A86A2E 28%,#8B5524 62%,#6F421C 100%)';
 
   function injectThemeCSS() {
     var id = 'kafe-modal-ui-theme-css';
@@ -18,8 +20,8 @@
     }
     try { document.head.appendChild(st); } catch (e) {}
     st.textContent = [
-      /* نسخه فقط در اسپلیش */
-      '#appVersionBadge{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;}',
+      /* نسخه فقط اسپلیش */
+      '#appVersionBadge{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;height:0!important;overflow:hidden!important;}',
       'body.kafe-modal-open #pageModals,',
       'body.kafe-modal-open #modalsHomeGrid,',
       'body.kafe-modal-open .modals-home-grid,',
@@ -34,16 +36,16 @@
       '  padding:16px 14px calc(var(--bottom-nav-height,64px) + 16px)!important;',
       '  box-sizing:border-box!important;border:none!important;outline:none!important;',
       '}',
-      /* کارت — نارنجی کهربایی متعادل، براق/روغنی/استیلی */
+      /* کارت نارنجی براق روغنی */
       '.modal-glass .modal-glass-content,',
       '.modal-glass > .modal-glass-content,',
       'div.modal-glass .modal-glass-content,',
       '.modal-glass-content{',
-      '  background:linear-gradient(155deg,#3A2A1C 0%,#2A1C12 42%,#3D2B1A 78%,#2E2014 100%)!important;',
-      '  background-color:#2A1C12!important;',
+      '  background:' + CARD_BG + '!important;',
+      '  background-color:#A86A2E!important;',
       '  border:none!important;border-width:0!important;outline:none!important;',
       '  border-radius:20px!important;',
-      '  box-shadow:0 16px 48px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,200,120,.18), inset 0 -1px 0 rgba(0,0,0,.25)!important;',
+      '  box-shadow:0 18px 44px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,230,180,.35), inset 0 -12px 28px rgba(0,0,0,.18), inset 0 20px 40px rgba(255,200,120,.08)!important;',
       '  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;',
       '  max-height:min(86vh,720px)!important;',
       '  width:calc(100% - 8px)!important;max-width:400px!important;',
@@ -53,7 +55,7 @@
       '.modal-glass .modal-glass-header{',
       '  display:flex!important;align-items:center!important;gap:10px!important;',
       '  padding:14px 16px 12px!important;',
-      '  border-bottom:1px solid rgba(255,200,120,.12)!important;',
+      '  border-bottom:1px solid rgba(255,230,180,.2)!important;',
       '  background:transparent!important;',
       '}',
       '.modal-glass .modal-glass-logo{',
@@ -65,50 +67,50 @@
       '  width:32px!important;height:32px!important;object-fit:contain!important;border-radius:50%!important;display:block!important;',
       '}',
       '.modal-glass .modal-glass-title{',
-      '  flex:1!important;color:#F0D878!important;-webkit-text-fill-color:#F0D878!important;',
+      '  flex:1!important;color:#FFF1C4!important;-webkit-text-fill-color:#FFF1C4!important;',
       '  font-size:.92rem!important;font-weight:800!important;line-height:1.3!important;',
       '  text-align:right!important;margin:0!important;',
+      '  text-shadow:0 1px 2px rgba(0,0,0,.35)!important;',
       '}',
       '.modal-glass .modal-glass-close{',
       '  width:32px!important;height:32px!important;border-radius:10px!important;',
-      '  background:rgba(255,255,255,.08)!important;border:none!important;',
-      '  color:#eee!important;font-size:1rem!important;flex-shrink:0!important;cursor:pointer!important;',
+      '  background:rgba(0,0,0,.18)!important;border:none!important;',
+      '  color:#fff!important;font-size:1rem!important;flex-shrink:0!important;cursor:pointer!important;',
       '}',
       '.modal-glass .modal-glass-header button:not(.modal-glass-close){',
       '  width:32px!important;height:32px!important;border-radius:10px!important;',
       '  padding:0!important;font-size:.85rem!important;',
       '}',
       '.modal-glass .modal-glass-body{padding:12px 16px 18px!important;background:transparent!important;}',
-      /* راهنما — بدون تغییر رنگ نسبت به قبل */
       '.modal-glass .modal-guide,.modal-glass .modal-guide-box,.modal-glass [class*="guide"]{',
-      '  background:rgba(199,125,186,.1)!important;border:none!important;border-radius:12px!important;',
+      '  background:rgba(0,0,0,.18)!important;border:none!important;border-radius:12px!important;',
       '  padding:8px 12px!important;margin:0 0 12px!important;',
-      '  color:#D4A0C8!important;-webkit-text-fill-color:#D4A0C8!important;',
+      '  color:#F3D6EE!important;-webkit-text-fill-color:#F3D6EE!important;',
       '  font-size:.72rem!important;line-height:1.55!important;font-weight:500!important;',
       '}',
       '.modal-glass .modal-guide i,.modal-glass .modal-guide *{',
-      '  color:#D4A0C8!important;-webkit-text-fill-color:#D4A0C8!important;font-size:inherit!important;',
+      '  color:#F3D6EE!important;-webkit-text-fill-color:#F3D6EE!important;font-size:inherit!important;',
       '}',
       '.modal-glass .tab-buttons,.modal-glass .tabs,.modal-glass [class*="tab-row"]{',
       '  display:flex!important;gap:8px!important;margin-bottom:12px!important;',
       '}',
       '.modal-glass .tab-btn{',
       '  flex:1!important;padding:10px 8px!important;border-radius:12px!important;',
-      '  border:1px solid rgba(255,255,255,.12)!important;background:rgba(255,255,255,.06)!important;',
-      '  color:#E8E0D0!important;-webkit-text-fill-color:#E8E0D0!important;',
+      '  border:1px solid rgba(255,255,255,.22)!important;background:rgba(0,0,0,.15)!important;',
+      '  color:#FFF6E0!important;-webkit-text-fill-color:#FFF6E0!important;',
       '  font-size:.8rem!important;font-weight:700!important;cursor:pointer!important;',
       '}',
       '.modal-glass .tab-btn.active{',
-      '  background:linear-gradient(135deg,#C9A84C,#A8872A)!important;border-color:transparent!important;',
+      '  background:linear-gradient(135deg,#F0D878,#C9A84C)!important;border-color:transparent!important;',
       '  color:#1a1408!important;-webkit-text-fill-color:#1a1408!important;',
       '}',
-      /* لیبل طلایی — بدون تغییر */
       '.modal-glass .input-group label,.modal-glass .form-group label,.modal-glass label{',
       '  display:block!important;margin:0 0 6px!important;',
-      '  color:#E8D5A3!important;-webkit-text-fill-color:#E8D5A3!important;',
+      '  color:#FFF1C4!important;-webkit-text-fill-color:#FFF1C4!important;',
       '  font-weight:700!important;font-size:.8rem!important;',
+      '  text-shadow:0 1px 2px rgba(0,0,0,.3)!important;',
       '}',
-      /* فیلدها روشن + متن تیره — بدون تغییر */
+      /* فیلدها: روشن + متن تیره — بدون تداخل */
       '.modal-glass input[type=text],.modal-glass input[type=number],.modal-glass input[type=tel],',
       '.modal-glass input[type=email],.modal-glass input[type=password],.modal-glass input[type=date],',
       '.modal-glass input[type=search],.modal-glass textarea,.modal-glass select,',
@@ -126,17 +128,17 @@
       '  color:#8a8578!important;-webkit-text-fill-color:#8a8578!important;font-weight:500!important;opacity:1!important;',
       '}',
       '.modal-glass input:focus,.modal-glass textarea:focus,.modal-glass select:focus{',
-      '  outline:none!important;box-shadow:0 0 0 2px rgba(201,168,76,.45)!important;background:#FFFEF9!important;',
+      '  outline:none!important;box-shadow:0 0 0 2px rgba(255,230,150,.55)!important;background:#FFFEF9!important;',
       '}',
       '.modal-glass select option{background:#fff!important;color:#1a1a1a!important;}',
       '.modal-glass .input-group,.modal-glass .form-group{margin-bottom:12px!important;}',
       '.modal-glass .btn,.modal-glass button.btn{',
       '  width:100%!important;padding:13px 14px!important;margin-top:4px!important;',
       '  border:none!important;border-radius:12px!important;',
-      '  background:linear-gradient(135deg,#D4B45A,#A8872A)!important;',
+      '  background:linear-gradient(135deg,#F0D878,#C9A84C)!important;',
       '  color:#1a1408!important;-webkit-text-fill-color:#1a1408!important;',
       '  font-size:.95rem!important;font-weight:800!important;',
-      '  box-shadow:0 4px 14px rgba(168,135,42,.35)!important;',
+      '  box-shadow:0 4px 14px rgba(0,0,0,.25)!important;',
       '}',
       '.modal-glass .result-box[style*="display: none"],.modal-glass .result-box[style*="display:none"]{',
       '  display:none!important;margin:0!important;padding:0!important;height:0!important;border:none!important;',
@@ -145,9 +147,8 @@
       '  background:rgba(0,0,0,.22)!important;border:none!important;border-radius:12px!important;',
       '  padding:12px!important;margin-top:12px!important;',
       '}',
-      /* نتیجه — بدون تغییر رنگ */
       '.modal-glass .result-description,.modal-glass .result-value,.modal-glass .result-text{',
-      '  color:#F5F0E4!important;-webkit-text-fill-color:#F5F0E4!important;',
+      '  color:#FFF8E8!important;-webkit-text-fill-color:#FFF8E8!important;',
       '  line-height:1.75!important;font-size:.88rem!important;',
       '  max-height:none!important;overflow:visible!important;',
       '  white-space:pre-wrap!important;word-wrap:break-word!important;',
@@ -167,6 +168,7 @@
         b.style.setProperty('display', 'none', 'important');
         b.style.setProperty('visibility', 'hidden', 'important');
         b.style.setProperty('opacity', '0', 'important');
+        b.style.setProperty('height', '0', 'important');
       }
     } catch (e) {}
   }
@@ -183,7 +185,7 @@
         c.style.setProperty('border', 'none', 'important');
         c.style.setProperty('outline', 'none', 'important');
         c.style.setProperty('border-radius', '20px', 'important');
-        c.style.setProperty('background', 'linear-gradient(155deg,#3A2A1C 0%,#2A1C12 42%,#3D2B1A 78%,#2E2014 100%)', 'important');
+        c.style.setProperty('background', CARD_BG, 'important');
         c.style.setProperty('backdrop-filter', 'none', 'important');
       });
     } catch (e) {}
@@ -228,23 +230,23 @@
 
   function patch() {
     var prevOpen = window.openModalGlass;
-    if (typeof prevOpen === 'function' && !prevOpen.__kafeV10) {
+    if (typeof prevOpen === 'function' && !prevOpen.__kafeV11) {
       window.openModalGlass = function () {
         var r = prevOpen.apply(this, arguments);
         setTimeout(function () { injectThemeCSS(); stripFrame(); syncOpen(); applyLogo(); hideVersionBadge(); }, 20);
         setTimeout(stripFrame, 150);
         return r;
       };
-      window.openModalGlass.__kafeV10 = true;
+      window.openModalGlass.__kafeV11 = true;
     }
     var prevClose = window.closeModalGlass;
-    if (typeof prevClose === 'function' && !prevClose.__kafeV10) {
+    if (typeof prevClose === 'function' && !prevClose.__kafeV11) {
       window.closeModalGlass = function () {
         var r = prevClose.apply(this, arguments);
         setTimeout(syncOpen, 30);
         return r;
       };
-      window.closeModalGlass.__kafeV10 = true;
+      window.closeModalGlass.__kafeV11 = true;
     }
   }
 
