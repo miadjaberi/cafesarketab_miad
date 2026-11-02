@@ -89,11 +89,12 @@
         (document.body || document.documentElement).appendChild(s);
       } catch (e) {}
     }
-    inject('./fix-four-bugs.js?v=20261102g', 'four-bugs');
-    inject('./hamzad-ui-fix.js?v=20261102g', 'hamzad-ui');
-    inject('./modal-menu-layout.js?v=20261102g', 'modal-menu');
-    inject('./modal-ui-theme.js?v=20261102g', 'modal-theme');
-    inject('./rename-raml.js?v=20261102g', 'rename-raml');
-    inject('./ui-unify-v1.js?v=20261102g', 'ui-unify');
+    inject('./boot-flow-fix.js?v=20261102h', 'boot-flow');
+    inject('./fix-four-bugs.js?v=20261102h', 'four-bugs');
+    inject('./hamzad-ui-fix.js?v=20261102h', 'hamzad-ui');
+    inject('./modal-menu-layout.js?v=20261102h', 'modal-menu');
+    inject('./modal-ui-theme.js?v=20261102h', 'modal-theme');
+    inject('./rename-raml.js?v=20261102h', 'rename-raml');
+    inject('./ui-unify-v1.js?v=20261102h', 'ui-unify');
   })();
 })();
