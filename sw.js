@@ -1,5 +1,5 @@
 /* کافه سرکتاب میعاد — Service Worker */
-const CACHE_VERSION = 'kafe-miad-v22.37-no-gold-border';
+const CACHE_VERSION = 'kafe-miad-v22.38-ui-unify';
 const SHELL_CACHE = `shell-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = [
@@ -18,6 +18,7 @@ const PRECACHE_URLS = [
   './modal-menu-layout.js',
   './modal-ui-theme.js',
   './rename-raml.js',
+  './ui-unify-v1.js',
   './theme-atelier.css',
   './assets/splash.jpg',
   './theme-lock.css',
