@@ -612,7 +612,7 @@
         .settings-field label { display:block; color: var(--txt-body, #F5F0E4); font-size:0.8rem; margin-bottom:4px; }
         .settings-field input { width:100%; padding:10px 14px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,215,0,0.15); border-radius:10px; color:#f0e6d3; font-size:0.85rem; font-family:inherit; outline:none; }
         .settings-field input:focus { border-color:#c9a84c; box-shadow:0 0 0 3px rgba(201,168,76,0.3); }
-        .settings-field input[readonly] { opacity:0.6; cursor:default; }
+        .settings-field input[readonly] { opacity:1; cursor:default; }
         .color-themes { display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; }
         .color-btn { width:44px; height:44px; border-radius:50%; border:3px solid transparent; cursor:pointer; transition:all 0.3s ease; box-shadow:0 2px 8px rgba(0,0,0,0.2); }
         .color-btn:hover { transform:scale(1.1); }
@@ -3036,19 +3036,20 @@ header .header-brand {
 /* KAFE_MODAL_DETAILED_GLASS_GUIDES_V1 — راهنمای شیشه‌ای کوچک، هم‌سبک کارت خوشامدگویی */
 .kafe-modal-detailed-guide {
   position: relative;
-  overflow: hidden;
+  overflow: auto;
   isolation: isolate;
-  margin: 8px 0 14px;
-  padding: 11px 12px;
+  margin: 4px 0 8px;
+  padding: 6px 8px;
+  max-height: 72px;
   border: 1px solid rgba(255, 215, 0, 0.24);
-  border-radius: 14px;
+  border-radius: 10px;
   background: linear-gradient(135deg, rgba(201,168,76,0.13), rgba(255,255,255,0.045));
-  box-shadow: 0 4px 18px rgba(0,0,0,0.16), inset 0 1px 0 rgba(255,255,255,0.06);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.06);
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   color: var(--txt-body, #F5F0E4);
-  font-size: 0.76rem;
-  line-height: 1.85;
+  font-size: 0.64rem;
+  line-height: 1.4;
   text-align: right;
 }
 .kafe-modal-detailed-guide::before {
@@ -3065,18 +3066,21 @@ header .header-brand {
 }
 .kafe-modal-guide-title {
   color: #F0D878;
-  font-size: 0.78rem;
+  font-size: 0.66rem;
   font-weight: 800;
-  margin-bottom: 3px;
+  margin-bottom: 1px;
+  line-height: 1.3;
 }
 .kafe-modal-detailed-guide p {
   margin: 0;
   color: #F5F0E4 !important;
   -webkit-text-fill-color: #F5F0E4 !important;
+  font-size: 0.62rem !important;
+  line-height: 1.4 !important;
 }
 body.theme-light .kafe-modal-detailed-guide p { color: #F5F0E4 !important; -webkit-text-fill-color: #F5F0E4 !important; }
 @media (max-width: 420px) {
-  .kafe-modal-detailed-guide { padding: 9px 10px; font-size: 0.72rem; line-height: 1.75; margin-bottom: 11px; }
+  .kafe-modal-detailed-guide { padding: 5px 7px; font-size: 0.6rem; line-height: 1.35; margin-bottom: 6px; }
 }
 
 
@@ -3100,3 +3104,173 @@ body.theme-light .kafe-modal-detailed-guide p { color: #F5F0E4 !important; -webk
 .user-notif-item.unread { border-color: rgba(22,163,74,.55); box-shadow: inset 3px 0 0 #16a34a; }
 .admin-inbox-item { border: 1px solid rgba(201,168,76,.35); border-radius: 12px; padding: 10px 12px; margin-bottom: 10px; background: rgba(255,255,255,.04); }
 .admin-inbox-item.unread { border-color: rgba(34,197,94,.65); box-shadow: inset 3px 0 0 #22c55e; }
+
+/* KAFE_UI_POLISH_V22.46 — راهنمای کوچک، خرید وسط‌چین شیشه‌ای، متن خوانای تنظیمات */
+html body .modal-glass .kafe-modal-detailed-guide,
+html body .kafe-modal-detailed-guide {
+  padding: 6px 9px !important;
+  margin: 4px 0 8px !important;
+  max-height: 88px !important;
+  overflow: auto !important;
+  font-size: 0.7rem !important;
+  line-height: 1.45 !important;
+  border-radius: 10px !important;
+}
+html body .kafe-modal-detailed-guide .kafe-modal-guide-title {
+  font-size: 0.72rem !important;
+  line-height: 1.3 !important;
+  margin: 0 0 2px !important;
+}
+html body .kafe-modal-detailed-guide p {
+  font-size: 0.68rem !important;
+  line-height: 1.45 !important;
+  margin: 0 !important;
+}
+
+#subOrdersPanel {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 8600 !important;
+  background: rgba(0, 0, 0, 0.78) !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 16px 14px calc(var(--bottom-nav-height, 64px) + 16px) !important;
+  box-sizing: border-box !important;
+}
+#subOrdersPanel .sub-orders-sheet {
+  position: relative !important;
+  top: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  right: auto !important;
+  width: min(440px, 100%) !important;
+  max-width: 440px !important;
+  max-height: min(82vh, 720px) !important;
+  overflow: auto !important;
+  margin: 0 auto !important;
+  padding: 16px 16px 18px !important;
+  border-radius: 24px !important;
+  border: 2px solid #c9a84c !important;
+  background: rgba(11, 17, 32, 0.72) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(1.2) !important;
+  backdrop-filter: blur(18px) saturate(1.2) !important;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  color: #F7F1E4 !important;
+  animation: subOrdersPop 0.28s ease !important;
+}
+@keyframes subOrdersPop {
+  from { transform: scale(0.94); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+#subOrdersPanel .sub-orders-head {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 12px !important;
+  padding-bottom: 10px !important;
+  border-bottom: 1px dashed rgba(201, 168, 76, 0.55) !important;
+}
+#subOrdersPanel .sub-orders-close {
+  border: 1px solid rgba(201, 168, 76, 0.7) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: #F0D878 !important;
+  -webkit-text-fill-color: #F0D878 !important;
+  border-radius: 10px !important;
+  padding: 6px 12px !important;
+  cursor: pointer !important;
+}
+#subOrdersStatusBox,
+#subOrdersPanel .sub-orders-status {
+  padding: 12px !important;
+  background: rgba(255, 255, 255, 0.07) !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(201, 168, 76, 0.45) !important;
+  margin-bottom: 12px !important;
+}
+#subOrdersPanel .sub-orders-status-title,
+#subOrdersPanel .sub-orders-list-title {
+  font-weight: 800 !important;
+  color: #F0D878 !important;
+  -webkit-text-fill-color: #F0D878 !important;
+  margin-bottom: 6px !important;
+}
+#subOrdersPanel .sub-order-card {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(201, 168, 76, 0.32) !important;
+  border-radius: 12px !important;
+  padding: 10px 12px !important;
+  margin-bottom: 8px !important;
+}
+html body #subOrdersPanel,
+html body #subOrdersPanel #subOrdersStatusText,
+html body #subOrdersPanel #subOrdersList,
+html body #subOrdersPanel #subOrdersList *,
+html body #subOrdersPanel .sub-order-card,
+html body #subOrdersPanel .sub-order-card * {
+  color: #F7F1E4 !important;
+  -webkit-text-fill-color: #F7F1E4 !important;
+}
+html body #subOrdersPanel strong,
+html body #subOrdersPanel .sub-orders-status-title,
+html body #subOrdersPanel .sub-orders-list-title {
+  color: #F0D878 !important;
+  -webkit-text-fill-color: #F0D878 !important;
+}
+html body #subOrdersPanel .btn,
+html body #subOrdersPanel button.btn {
+  color: #120E06 !important;
+  -webkit-text-fill-color: #120E06 !important;
+}
+
+html body #settingsPanel .settings-field input,
+html body #settingsPanel .settings-field input[readonly],
+html body #settingsPanel input[type="text"],
+html body #settingsPanel input[type="tel"],
+html body #settingsPanel input[type="password"],
+html body #settingsPanel input[type="email"],
+html body #settingsPanel textarea,
+html body #settingsPanel .settings-input {
+  opacity: 1 !important;
+  color: #14110C !important;
+  -webkit-text-fill-color: #14110C !important;
+  background: #FFF8E8 !important;
+  background-color: #FFF8E8 !important;
+  font-weight: 700 !important;
+  font-size: 0.95rem !important;
+  caret-color: #14110C !important;
+}
+html body #settingsPanel .settings-field label {
+  opacity: 1 !important;
+  color: #F0D878 !important;
+  -webkit-text-fill-color: #F0D878 !important;
+  font-weight: 800 !important;
+}
+html body #settingsPanel .settings-section > p,
+html body #settingsPanel .settings-contact-fixed,
+html body #settingsPanel .settings-contact-fixed p,
+html body #settingsPanel .settings-history-card,
+html body #settingsPanel .settings-history-card span,
+html body #settingsPanel .settings-history-card strong,
+html body #settingsPanel .settings-empty,
+html body #settingsPanel .v18-msg-status,
+html body #settingsPanel .settings-history-item,
+html body #settingsPanel .settings-history-item * {
+  opacity: 1 !important;
+  color: #FFF6DE !important;
+  -webkit-text-fill-color: #FFF6DE !important;
+  font-weight: 700 !important;
+}
+html body.theme-light #settingsPanel .settings-section > p,
+html body.theme-light #settingsPanel .settings-contact-fixed,
+html body.theme-light #settingsPanel .settings-contact-fixed p,
+html body.theme-light #settingsPanel .settings-history-card,
+html body.theme-light #settingsPanel .settings-history-card span,
+html body.theme-light #settingsPanel .settings-history-card strong,
+html body.theme-light #settingsPanel .settings-empty,
+html body.theme-light #settingsPanel .v18-msg-status,
+html body.theme-light #settingsPanel .settings-field label {
+  color: #1A1208 !important;
+  -webkit-text-fill-color: #1A1208 !important;
+  opacity: 1 !important;
+  font-weight: 700 !important;
+}

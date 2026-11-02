@@ -16,7 +16,6 @@
     if (!st) {
       st = document.createElement('style');
       st.id = id;
-      document.head.appendChild(st);
     }
     st.textContent = [
       '#utilityToolsGrid.utility-tools-grid,#utilityToolsGrid{',
@@ -57,9 +56,11 @@
       '}',
       '#settingsPanel input[type=text],#settingsPanel input[type=tel],#settingsPanel input[type=password],',
       '#settingsPanel input[type=number],#settingsPanel input[type=email],#settingsPanel input[type=search],',
-      '#settingsPanel textarea,#settingsPanel select,#settingsPanel .settings-input{',
-      '  background:rgba(255,255,255,.92)!important;color:#1a1a1a!important;-webkit-text-fill-color:#1a1a1a!important;',
-      '  border:1px solid rgba(201,168,76,.4)!important;border-radius:12px!important;font-weight:600!important;font-size:.95rem!important;',
+      '#settingsPanel textarea,#settingsPanel select,#settingsPanel .settings-input,',
+      'html body #settingsPanel .settings-field input,html body #settingsPanel .settings-field input[readonly]{',
+      '  background:#FFF8E8!important;background-color:#FFF8E8!important;color:#14110C!important;-webkit-text-fill-color:#14110C!important;',
+      '  border:1px solid rgba(201,168,76,.55)!important;border-radius:12px!important;font-weight:700!important;font-size:.95rem!important;',
+      '  opacity:1!important;caret-color:#14110C!important;',
       '}',
       '#settingsPanel input::placeholder,#settingsPanel textarea::placeholder{',
       '  color:rgba(40,40,40,.45)!important;-webkit-text-fill-color:rgba(40,40,40,.45)!important;',
@@ -73,6 +74,18 @@
       '#settingsPanel .theme-btn.active,#settingsPanel .font-btn.active,#settingsPanel .theme-option.active{',
       '  background:rgba(201,168,76,.28)!important;border-color:rgba(240,216,120,.7)!important;',
       '  color:#FFF8E0!important;-webkit-text-fill-color:#FFF8E0!important;',
+      '}',
+      'html body #settingsPanel .settings-section > p,html body #settingsPanel .settings-hint,',
+      'html body #settingsPanel .settings-contact-fixed,html body #settingsPanel .settings-contact-fixed p,',
+      'html body #settingsPanel .settings-history-card,html body #settingsPanel .settings-history-card span,',
+      'html body #settingsPanel .settings-history-card strong,html body #settingsPanel .settings-empty,',
+      'html body #settingsPanel .v18-msg-status{',
+      '  opacity:1!important;color:#FFF6DE!important;-webkit-text-fill-color:#FFF6DE!important;font-weight:700!important;',
+      '}',
+      'html body.theme-light #settingsPanel .settings-section > p,html body.theme-light #settingsPanel .settings-hint,',
+      'html body.theme-light #settingsPanel .settings-contact-fixed,html body.theme-light #settingsPanel .settings-contact-fixed p,',
+      'html body.theme-light #settingsPanel .settings-empty,html body.theme-light #settingsPanel .settings-field label{',
+      '  opacity:1!important;color:#1A1208!important;-webkit-text-fill-color:#1A1208!important;font-weight:700!important;',
       '}',
       '#subscriptionModalBox{',
       '  background:rgba(0,0,0,.18)!important;backdrop-filter:blur(2px)!important;-webkit-backdrop-filter:blur(2px)!important;',
@@ -93,6 +106,7 @@
       '#kafeAdminBusyOverlay{position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;direction:rtl;}',
       '#kafeAdminBusyOverlay .kafe-busy-card{background:rgba(18,22,34,.92);border:1px solid rgba(201,168,76,.35);border-radius:16px;padding:18px 22px;color:#F5E9C9;font-weight:700;font-size:.9rem;box-shadow:0 10px 30px rgba(0,0,0,.4);text-align:center;min-width:160px;}'
     ].join('\n');
+    document.head.appendChild(st);
   }
 
   function patchSubscriptionModal() {

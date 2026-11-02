@@ -36,10 +36,10 @@
     <!-- Main styles (original already expected this file) -->
     <!-- Small extracted style blocks -->
     
-    <link rel="stylesheet" href="./styles.css" />
-    <link rel="stylesheet" href="./theme-atelier.css" />
+    <link rel="stylesheet" href="./styles.css?v=22.46" />
+    <link rel="stylesheet" href="./theme-atelier.css?v=22.46" />
     <link rel="manifest" href="./manifest.webmanifest" />
-    <link rel="stylesheet" href="./theme-lock.css">
+    <link rel="stylesheet" href="./theme-lock.css?v=22.46">
 </head>
 <body>
 <div id="offlineBanner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:10080;background:#b45309;color:#fff;text-align:center;padding:8px 12px;font-size:0.82rem;font-weight:700;">📡 اتصال نیست — فقط ابزارهای محلی در دسترس‌اند</div>
@@ -441,7 +441,7 @@
 
     <div class="settings-section" id="userThemeSection">
         <h4>🎨 ظاهر برنامه</h4>
-        <p style="font-size:0.78rem;opacity:0.85;line-height:1.6;margin-bottom:10px;">پیش‌فرض: طلایی تیره فلزی. در صورت تمایل می‌توانید تم روشن را انتخاب کنید.</p>
+        <p class="settings-hint">پیش‌فرض: طلایی تیره فلزی. در صورت تمایل می‌توانید تم روشن را انتخاب کنید.</p>
         <div class="theme-toggle-row" style="display:flex;gap:8px;flex-wrap:wrap;">
             <button type="button" class="btn theme-choice-btn" id="themeBtnDark" onclick="setAppThemeMode('dark')" style="flex:1;min-width:120px;">🌙 تیره طلایی</button>
             <button type="button" class="btn theme-choice-btn" id="themeBtnLight" onclick="setAppThemeMode('light')" style="flex:1;min-width:120px;">☀️ تم روشن</button>
@@ -856,19 +856,19 @@
 
 
 <!-- ===== پنل اشتراک و سفارشات کاربر ===== -->
-<div id="subOrdersPanel" style="display:none;position:fixed;inset:0;z-index:5600;background:rgba(5,7,13,0.72);">
-  <div class="sub-orders-sheet" style="position:absolute;bottom:0;left:0;right:0;max-height:90vh;overflow:auto;background:#FFFCF5;border-radius:22px 22px 0 0;padding:16px;border:2px solid #c9a84c;border-bottom:none;color:#1A1A1A;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-      <strong style="color:#6B5210;font-size:1.1rem;">⭐ خرید</strong>
-      <button type="button" onclick="closeSubOrdersPanel()" style="border:1px solid #c9a84c;background:#fff;color:#1A1A1A;border-radius:8px;padding:6px 12px;">✕</button>
+<div id="subOrdersPanel" onclick="if(event.target===this)closeSubOrdersPanel()" style="display:none;">
+  <div class="sub-orders-sheet">
+    <div class="sub-orders-head">
+      <strong>⭐ خرید</strong>
+      <button type="button" class="sub-orders-close" onclick="closeSubOrdersPanel()">✕</button>
     </div>
-    <div id="subOrdersStatusBox" style="padding:14px;background:linear-gradient(135deg,#fff8e7,#ffe9a8);border-radius:14px;border:1px solid #c9a84c;margin-bottom:14px;color:#1A1A1A;">
-      <div style="font-weight:800;color:#6B5210;margin-bottom:6px;">وضعیت اشتراک</div>
-      <div id="subOrdersStatusText" style="color:#1A1A1A;font-size:0.9rem;line-height:1.7;">در حال بررسی...</div>
-      <button type="button" class="btn" style="width:100%;margin-top:10px;padding:12px;" onclick="openSubscriptionPurchase();closeSubOrdersPanel();">⭐ خرید اشتراک</button>
+    <div id="subOrdersStatusBox" class="sub-orders-status">
+      <div class="sub-orders-status-title">وضعیت اشتراک</div>
+      <div id="subOrdersStatusText">در حال بررسی...</div>
+      <button type="button" class="btn" onclick="openSubscriptionPurchase();closeSubOrdersPanel();">⭐ خرید اشتراک</button>
     </div>
-    <div style="margin-bottom:10px;font-weight:700;color:#6B5210;">📦 خریدهای محصول من</div>
-    <div id="subOrdersList" style="min-height:60px;color:#1A1A1A;"></div>
+    <div class="sub-orders-list-title">📦 خریدهای محصول من</div>
+    <div id="subOrdersList"></div>
   </div>
 </div>
 

@@ -7094,7 +7094,7 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){lo
   // Purchase page: server is the source of truth. localStorage is not used for displayed history/status.
   window.openSubOrdersPanel = async function(){
     var p=document.getElementById('subOrdersPanel'); if(!p)return;
-    p.style.display='block';
+    p.style.display='flex';
     var st=document.getElementById('subOrdersStatusText'), list=document.getElementById('subOrdersList');
     if(st)st.innerHTML='در حال دریافت وضعیت واقعی از سرور...';
     if(list)list.innerHTML='<p style="padding:12px;text-align:center;">در حال دریافت خریدها...</p>';
@@ -7117,10 +7117,10 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){lo
       var arr=orders.data||[];
       if(list){
         if(orders.error) list.innerHTML='<p style="padding:12px;">خطا در دریافت خریدهای محصول.</p>';
-        else if(!arr.length) list.innerHTML='<p style="padding:12px;background:#fff;border-radius:10px;">هنوز خرید محصولی ثبت نشده است.</p>';
+        else if(!arr.length) list.innerHTML='<p class="sub-order-card">هنوز خرید محصولی ثبت نشده است.</p>';
         else list.innerHTML=arr.map(function(o){
           var price=o.total_amount!=null?o.total_amount:o.productPrice;
-          return '<div class="settings-history-item" style="background:#fff;color:#1A1A1A;border-color:#e0d5e8;">'+
+          return '<div class="sub-order-card">'+
             '<div class="row"><strong>'+esc(o.productName||'محصول')+'</strong><span>'+esc(o.status||o.payment_status||'در انتظار بررسی')+'</span></div>'+
             '<div class="muted">تاریخ خرید: '+esc(fmt(o.created_at||o.date))+'</div>'+ (price!=null&&price!==''?'<div class="muted">مبلغ: '+esc(Number(price).toLocaleString('fa-IR'))+' تومان</div>':'')+
             (o.order_number?'<div class="muted">شماره خرید: '+esc(o.order_number)+'</div>':'')+'</div>';
