@@ -1,13 +1,45 @@
 <!DOCTYPE html>
-<!-- کافه سرکتاب میعاد — V700.7 RESTORED -->
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8" />
-<meta http-equiv="refresh" content="0;url=https://raw.githubusercontent.com/miadjaberi/cafesarketab_miad/e06e7cda9acb/index.html" />
-<title>در حال بازیابی…</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>کافه سرکتاب میعاد</title>
+<meta name="theme-color" content="#070B14">
+<script>
+(function(){
+  var N = 5;
+  var parts = new Array(N);
+  var done = 0;
+  function fail(msg){
+    document.body.innerHTML = '<p style="color:#F0D878;text-align:center;padding:40px;font-family:Tahoma">'+(msg||'خطا در بازیابی')+'</p>';
+  }
+  function tryWrite(){
+    try {
+      var html = atob(parts.join(''));
+      document.open();
+      document.write(html);
+      document.close();
+    } catch(e) { fail('خطا: '+e); }
+  }
+  for (var i=0;i<N;i++){
+    (function(i){
+      var x = new XMLHttpRequest();
+      x.open('GET', './_restore/p'+i+'.b64?v=1', true);
+      x.onload = function(){
+        if (x.status>=200 && x.status<300) {
+          parts[i] = x.responseText.replace(/\s+/g,'');
+          done++;
+          if (done===N) tryWrite();
+        } else fail('بارگذاری بخش '+i+' ناموفق');
+      };
+      x.onerror = function(){ fail('شبکه: بخش '+i); };
+      x.send();
+    })(i);
+  }
+})();
+</script>
 </head>
-<body style="background:#070B14;color:#F0D878;text-align:center;padding:40px;font-family:Tahoma">
-<p>در حال بازیابی نسخه سالم…</p>
-<p><a href="https://github.com/miadjaberi/cafesarketab_miad/blob/e06e7cda9acb/index.html" style="color:#F0D878">اگر باز نشد این لینک را بزن</a></p>
+<body style="background:#070B14;color:#F0D878;font-family:Tahoma;text-align:center;padding:40px">
+<p>در حال بازیابی کافه سرکتاب میعاد…</p>
 </body>
 </html>
