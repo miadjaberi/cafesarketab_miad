@@ -1,11 +1,11 @@
-/** modal-ui-theme.js V6
- * حاشیه زرد/طلایی دور پنجره مودال کامل حذف شد
- * گوشه گرد، شفاف، پاسخ کامل، لوگو هدر
+/** modal-ui-theme.js V7
+ * حذف قطعی حاشیه زرد/طلایی دور تمام پنجره‌های مودال
+ * + استایل اینلاین برای شکست theme-lock و styles.css
  */
 (function () {
   'use strict';
-  if (window.__KAFE_MODAL_UI_THEME_V6__) return;
-  window.__KAFE_MODAL_UI_THEME_V6__ = true;
+  if (window.__KAFE_MODAL_UI_THEME_V7__) return;
+  window.__KAFE_MODAL_UI_THEME_V7__ = true;
 
   function injectThemeCSS() {
     var id = 'kafe-modal-ui-theme-css';
@@ -15,6 +15,8 @@
       st.id = id;
       document.head.appendChild(st);
     }
+    /* این استایل آخر head می‌ماند تا بر theme-lock بچربد */
+    try { document.head.appendChild(st); } catch (e) {}
     st.textContent = [
       'body.kafe-modal-open #pageModals,',
       'body.kafe-modal-open #modalsHomeGrid,',
@@ -22,28 +24,36 @@
       'body.kafe-modal-open .modals-home-hero{',
       '  opacity:0!important;visibility:hidden!important;pointer-events:none!important;',
       '}',
-      '.modal-glass,.modal-glass.active{',
+      '.modal-glass,.modal-glass.active,',
+      'div.modal-glass,div.modal-glass.active{',
       '  background:rgba(0,0,0,.14)!important;background-color:rgba(0,0,0,.14)!important;',
       '  background-image:none!important;backdrop-filter:blur(1px)!important;',
       '  -webkit-backdrop-filter:blur(1px)!important;',
       '  align-items:center!important;justify-content:center!important;',
       '  padding:12px 12px calc(var(--bottom-nav-height,64px) + 12px)!important;',
       '  box-sizing:border-box!important;',
+      '  border:none!important;outline:none!important;',
       '}',
-      /* بدون هیچ حاشیه زرد/طلایی دور کادر */
-      '.modal-glass .modal-glass-content{',
+      /* ===== حذف کامل خط زرد دور پنجره ===== */
+      '.modal-glass .modal-glass-content,',
+      '.modal-glass > .modal-glass-content,',
+      'div.modal-glass .modal-glass-content,',
+      'div.modal-glass > div.modal-glass-content,',
+      '.modal-glass-content{',
       '  background:rgba(12,16,28,.22)!important;',
-      '  border:none!important;',
+      '  border:0!important;',
       '  border-width:0!important;',
       '  border-style:none!important;',
       '  border-color:transparent!important;',
+      '  border-top:0!important;border-right:0!important;border-bottom:0!important;border-left:0!important;',
       '  outline:none!important;',
+      '  outline-width:0!important;',
+      '  box-shadow:0 12px 36px rgba(0,0,0,.28)!important;',
       '  border-radius:28px!important;',
       '  border-top-left-radius:28px!important;border-top-right-radius:28px!important;',
       '  border-bottom-left-radius:28px!important;border-bottom-right-radius:28px!important;',
       '  backdrop-filter:blur(12px) saturate(1.1)!important;',
       '  -webkit-backdrop-filter:blur(12px) saturate(1.1)!important;',
-      '  box-shadow:0 12px 36px rgba(0,0,0,.28)!important;',
       '  max-height:min(88vh,780px)!important;min-height:0!important;',
       '  overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;',
       '  margin:0 auto!important;width:calc(100% - 10px)!important;max-width:440px!important;padding:0!important;',
@@ -139,6 +149,25 @@
     ].join('\n');
   }
 
+  /** استایل اینلاین — بر هر CSS دیگر غالب است */
+  function stripYellowFrame() {
+    try {
+      document.querySelectorAll('.modal-glass').forEach(function (modal) {
+        modal.style.setProperty('border', 'none', 'important');
+        modal.style.setProperty('outline', 'none', 'important');
+        var content = modal.querySelector('.modal-glass-content');
+        if (!content) return;
+        content.style.setProperty('border', 'none', 'important');
+        content.style.setProperty('border-width', '0', 'important');
+        content.style.setProperty('border-style', 'none', 'important');
+        content.style.setProperty('border-color', 'transparent', 'important');
+        content.style.setProperty('outline', 'none', 'important');
+        content.style.setProperty('border-radius', '28px', 'important');
+        content.style.setProperty('box-shadow', '0 12px 36px rgba(0,0,0,0.28)', 'important');
+      });
+    } catch (e) {}
+  }
+
   function syncModalOpenClass() {
     try {
       var any = document.querySelector('.modal-glass.active');
@@ -187,24 +216,30 @@
   function patchOpenClose() {
     try {
       var prevOpen = window.openModalGlass;
-      if (typeof prevOpen === 'function' && !prevOpen.__kafeBgPatched) {
+      if (typeof prevOpen === 'function' && !prevOpen.__kafeBgPatchedV7) {
         window.openModalGlass = function () {
           var r = prevOpen.apply(this, arguments);
-          setTimeout(syncModalOpenClass, 30);
-          setTimeout(syncModalOpenClass, 200);
-          setTimeout(applyHeaderLogoToModals, 80);
+          setTimeout(function () {
+            injectThemeCSS();
+            stripYellowFrame();
+            syncModalOpenClass();
+            applyHeaderLogoToModals();
+          }, 20);
+          setTimeout(stripYellowFrame, 100);
+          setTimeout(stripYellowFrame, 300);
           return r;
         };
+        window.openModalGlass.__kafeBgPatchedV7 = true;
         window.openModalGlass.__kafeBgPatched = true;
       }
       var prevClose = window.closeModalGlass;
-      if (typeof prevClose === 'function' && !prevClose.__kafeBgPatched) {
+      if (typeof prevClose === 'function' && !prevClose.__kafeBgPatchedV7) {
         window.closeModalGlass = function () {
           var r = prevClose.apply(this, arguments);
           setTimeout(syncModalOpenClass, 30);
-          setTimeout(syncModalOpenClass, 200);
           return r;
         };
+        window.closeModalGlass.__kafeBgPatchedV7 = true;
         window.closeModalGlass.__kafeBgPatched = true;
       }
     } catch (e) {}
@@ -212,6 +247,7 @@
 
   function run() {
     injectThemeCSS();
+    stripYellowFrame();
     patchOpenClose();
     syncModalOpenClass();
     applyHeaderLogoToModals();
@@ -228,7 +264,10 @@
     setTimeout(run, 300); setTimeout(run, 1000);
   });
   document.addEventListener('click', function () {
-    setTimeout(syncModalOpenClass, 50);
-    setTimeout(applyHeaderLogoToModals, 80);
+    setTimeout(function () {
+      stripYellowFrame();
+      syncModalOpenClass();
+      applyHeaderLogoToModals();
+    }, 40);
   }, true);
 })();
