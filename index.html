@@ -1,1 +1,49 @@
-PLACEHOLDER_INDEX
+<!DOCTYPE html>
+<!-- کافه سرکتاب میعاد — V700.8 bootstrap -->
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=5.0, viewport-fit=cover" />
+<title>کافه سرکتاب میعاد — V700.8</title>
+<meta name="theme-color" content="#070B14">
+<script>
+/* بارگذاری نسخه کامل اپ از کامیت سالم + پچ مودال اشتراک از main */
+(function () {
+  var GOOD = 'https://cdn.jsdelivr.net/gh/miadjaberi/cafesarketab_miad@8d13aa2320ffe8f0352611577cb7a775fbd59c8a/';
+  var FIX = 'https://cdn.jsdelivr.net/gh/miadjaberi/cafesarketab_miad@main/kafe-sub-modal-fix.js?v=2';
+  // اگر همین دامنه github.io هستیم، مستقیم به فایل‌های همین ریپو برو (بعد از اینکه index کامل برگشت)
+  // فعلاً از نسخهٔ سالم شناخته‌شده استفاده می‌کنیم و پچ را تزریق می‌کنیم
+  function injectFix() {
+    try {
+      var s = document.createElement('script');
+      s.src = FIX;
+      s.async = true;
+      (document.head || document.documentElement).appendChild(s);
+    } catch (e) {}
+  }
+  // اگر صفحهٔ کامل از قبل لود شده (مثلاً از کش) فقط پچ را بزن
+  if (document.getElementById('registerScreen') || document.getElementById('termsScreen')) {
+    injectFix();
+    return;
+  }
+  // در غیر این صورت به نسخهٔ کامل سالم برو، با پارامتر برای دور زدن کش
+  var target = GOOD + 'index.html?v=7008fix';
+  // تلاش برای لود HTML کامل و جایگزینی (ممکن است CORS مانع شود — در آن صورت redirect)
+  fetch(target).then(function (r) { return r.text(); }).then(function (html) {
+    document.open();
+    document.write(html);
+    document.close();
+    setTimeout(injectFix, 300);
+    setTimeout(injectFix, 1200);
+    setTimeout(injectFix, 3000);
+  }).catch(function () {
+    location.replace(target);
+  });
+})();
+</script>
+</head>
+<body style="background:#070B14;color:#F0D878;font-family:Tahoma,sans-serif;text-align:center;padding:40px">
+<p>در حال بارگذاری کافه سرکتاب میعاد…</p>
+<p><a href="https://cdn.jsdelivr.net/gh/miadjaberi/cafesarketab_miad@8d13aa2320ffe8f0352611577cb7a775fbd59c8a/index.html" style="color:#F0D878">اگر خودکار باز نشد، اینجا را بزن</a></p>
+</body>
+</html>
