@@ -1,14 +1,14 @@
-/** modal-ui-theme.js V11
- * کارت: نارنجی متعادل، براق/روغنی/استیلی — بدون شفافیت
- * فیلد روشن + متن تیره + لیبل طلایی + نتیجه روشن بدون تداخل
- * V700.7 فقط در اسپلیش؛ از صفحه اصلی و مودال‌ها حذف
+/** modal-ui-theme.js V12 — استاندارد نهایی طبق نمونه
+ * پس‌زمینه سرمه‌ای #0b1120 | حاشیه طلایی | راهنما فیروزه‌ای
+ * فیلد تیره + متن سفید | دکمه طلایی | بدون شفافیت
  */
 (function () {
   'use strict';
-  if (window.__KAFE_MODAL_UI_THEME_V11__) return;
-  window.__KAFE_MODAL_UI_THEME_V11__ = true;
+  if (window.__KAFE_MODAL_UI_THEME_V12__) return;
+  window.__KAFE_MODAL_UI_THEME_V12__ = true;
 
-  var CARD_BG = 'linear-gradient(160deg,#C4843E 0%,#A86A2E 28%,#8B5524 62%,#6F421C 100%)';
+  var CARD_BG = '#0b1120';
+  var OVERLAY_BG = 'rgba(0,0,0,0.8)';
 
   function injectThemeCSS() {
     var id = 'kafe-modal-ui-theme-css';
@@ -20,7 +20,6 @@
     }
     try { document.head.appendChild(st); } catch (e) {}
     st.textContent = [
-      /* نسخه فقط اسپلیش */
       '#appVersionBadge{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;height:0!important;overflow:hidden!important;}',
       'body.kafe-modal-open #pageModals,',
       'body.kafe-modal-open #modalsHomeGrid,',
@@ -28,89 +27,112 @@
       'body.kafe-modal-open .modals-home-hero{',
       '  opacity:0!important;visibility:hidden!important;pointer-events:none!important;',
       '}',
-      /* اوورلی مات جدا */
+
+      /* اوورلی تیره مات */
       '.modal-glass,.modal-glass.active,div.modal-glass,div.modal-glass.active{',
-      '  background:#0B0E16!important;background-color:#0B0E16!important;background-image:none!important;',
+      '  background:' + OVERLAY_BG + '!important;',
+      '  background-color:' + OVERLAY_BG + '!important;',
+      '  background-image:none!important;',
       '  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;',
       '  align-items:center!important;justify-content:center!important;',
       '  padding:16px 14px calc(var(--bottom-nav-height,64px) + 16px)!important;',
       '  box-sizing:border-box!important;border:none!important;outline:none!important;',
       '}',
-      /* کارت نارنجی براق روغنی */
+
+      /* کارت سرمه‌ای + حاشیه طلایی */
       '.modal-glass .modal-glass-content,',
       '.modal-glass > .modal-glass-content,',
       'div.modal-glass .modal-glass-content,',
       '.modal-glass-content{',
       '  background:' + CARD_BG + '!important;',
-      '  background-color:#A86A2E!important;',
-      '  border:none!important;border-width:0!important;outline:none!important;',
-      '  border-radius:20px!important;',
-      '  box-shadow:0 18px 44px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,230,180,.35), inset 0 -12px 28px rgba(0,0,0,.18), inset 0 20px 40px rgba(255,200,120,.08)!important;',
+      '  background-color:' + CARD_BG + '!important;',
+      '  border:2px solid #c9a84c!important;',
+      '  outline:none!important;',
+      '  border-radius:24px!important;',
+      '  box-shadow:0 10px 30px rgba(0,0,0,.8)!important;',
       '  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;',
       '  max-height:min(86vh,720px)!important;',
-      '  width:calc(100% - 8px)!important;max-width:400px!important;',
+      '  width:calc(100% - 8px)!important;max-width:420px!important;',
       '  margin:0 auto!important;padding:0!important;',
       '  overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;',
+      '  color:#fff!important;',
       '}',
+
+      /* هدر */
       '.modal-glass .modal-glass-header{',
       '  display:flex!important;align-items:center!important;gap:10px!important;',
-      '  padding:14px 16px 12px!important;',
-      '  border-bottom:1px solid rgba(255,230,180,.2)!important;',
+      '  padding:16px 18px 12px!important;',
+      '  border-bottom:1px dashed #c9a84c!important;',
       '  background:transparent!important;',
       '}',
       '.modal-glass .modal-glass-logo{',
-      '  width:32px!important;height:32px!important;flex-shrink:0!important;',
+      '  width:40px!important;height:40px!important;flex-shrink:0!important;',
       '  display:flex!important;align-items:center!important;justify-content:center!important;',
       '  font-size:0!important;overflow:hidden!important;border-radius:50%!important;',
+      '  border:2px solid #c9a84c!important;',
       '}',
       '.modal-glass .modal-glass-logo img{',
-      '  width:32px!important;height:32px!important;object-fit:contain!important;border-radius:50%!important;display:block!important;',
+      '  width:36px!important;height:36px!important;object-fit:contain!important;',
+      '  border-radius:50%!important;display:block!important;',
       '}',
       '.modal-glass .modal-glass-title{',
-      '  flex:1!important;color:#FFF1C4!important;-webkit-text-fill-color:#FFF1C4!important;',
-      '  font-size:.92rem!important;font-weight:800!important;line-height:1.3!important;',
+      '  flex:1!important;color:#F0D878!important;-webkit-text-fill-color:#F0D878!important;',
+      '  font-size:1.05rem!important;font-weight:700!important;line-height:1.3!important;',
       '  text-align:right!important;margin:0!important;',
-      '  text-shadow:0 1px 2px rgba(0,0,0,.35)!important;',
       '}',
       '.modal-glass .modal-glass-close{',
-      '  width:32px!important;height:32px!important;border-radius:10px!important;',
-      '  background:rgba(0,0,0,.18)!important;border:none!important;',
-      '  color:#fff!important;font-size:1rem!important;flex-shrink:0!important;cursor:pointer!important;',
+      '  width:36px!important;height:36px!important;border-radius:10px!important;',
+      '  background:transparent!important;border:none!important;',
+      '  color:#F0D878!important;-webkit-text-fill-color:#F0D878!important;',
+      '  font-size:1.4rem!important;flex-shrink:0!important;cursor:pointer!important;',
       '}',
       '.modal-glass .modal-glass-header button:not(.modal-glass-close){',
       '  width:32px!important;height:32px!important;border-radius:10px!important;',
       '  padding:0!important;font-size:.85rem!important;',
       '}',
-      '.modal-glass .modal-glass-body{padding:12px 16px 18px!important;background:transparent!important;}',
-      '.modal-glass .modal-guide,.modal-glass .modal-guide-box,.modal-glass [class*="guide"]{',
-      '  background:rgba(0,0,0,.18)!important;border:none!important;border-radius:12px!important;',
-      '  padding:8px 12px!important;margin:0 0 12px!important;',
-      '  color:#F3D6EE!important;-webkit-text-fill-color:#F3D6EE!important;',
-      '  font-size:.72rem!important;line-height:1.55!important;font-weight:500!important;',
+      '.modal-glass .modal-glass-body{padding:14px 18px 18px!important;background:transparent!important;}',
+
+      /* کادر راهنما فیروزه‌ای */
+      '.modal-glass .modal-guide,',
+      '.modal-glass .modal-guide-box,',
+      '.modal-glass [class*="guide"]{',
+      '  background:#1e3a45!important;',
+      '  border:none!important;',
+      '  border-right:4px solid #2dd4bf!important;',
+      '  border-radius:8px!important;',
+      '  padding:12px!important;margin:0 0 18px!important;',
+      '  color:#ffffff!important;-webkit-text-fill-color:#ffffff!important;',
+      '  font-size:.85rem!important;line-height:1.8!important;font-weight:500!important;',
       '}',
       '.modal-glass .modal-guide i,.modal-glass .modal-guide *{',
-      '  color:#F3D6EE!important;-webkit-text-fill-color:#F3D6EE!important;font-size:inherit!important;',
+      '  color:#ffffff!important;-webkit-text-fill-color:#ffffff!important;font-size:inherit!important;',
       '}',
+
+      /* تب‌ها */
       '.modal-glass .tab-buttons,.modal-glass .tabs,.modal-glass [class*="tab-row"]{',
-      '  display:flex!important;gap:8px!important;margin-bottom:12px!important;',
+      '  display:flex!important;gap:8px!important;margin-bottom:14px!important;',
       '}',
       '.modal-glass .tab-btn{',
       '  flex:1!important;padding:10px 8px!important;border-radius:12px!important;',
-      '  border:1px solid rgba(255,255,255,.22)!important;background:rgba(0,0,0,.15)!important;',
-      '  color:#FFF6E0!important;-webkit-text-fill-color:#FFF6E0!important;',
+      '  border:1px solid rgba(201,168,76,.4)!important;background:#111827!important;',
+      '  color:#E8E0D0!important;-webkit-text-fill-color:#E8E0D0!important;',
       '  font-size:.8rem!important;font-weight:700!important;cursor:pointer!important;',
       '}',
       '.modal-glass .tab-btn.active{',
-      '  background:linear-gradient(135deg,#F0D878,#C9A84C)!important;border-color:transparent!important;',
-      '  color:#1a1408!important;-webkit-text-fill-color:#1a1408!important;',
+      '  background:#c9a84c!important;border-color:#c9a84c!important;',
+      '  color:#0f172a!important;-webkit-text-fill-color:#0f172a!important;',
       '}',
-      '.modal-glass .input-group label,.modal-glass .form-group label,.modal-glass label{',
+
+      /* لیبل طلایی */
+      '.modal-glass .input-group label,',
+      '.modal-glass .form-group label,',
+      '.modal-glass label{',
       '  display:block!important;margin:0 0 6px!important;',
-      '  color:#FFF1C4!important;-webkit-text-fill-color:#FFF1C4!important;',
-      '  font-weight:700!important;font-size:.8rem!important;',
-      '  text-shadow:0 1px 2px rgba(0,0,0,.3)!important;',
+      '  color:#F0D878!important;-webkit-text-fill-color:#F0D878!important;',
+      '  font-weight:700!important;font-size:.9rem!important;',
       '}',
-      /* فیلدها: روشن + متن تیره — بدون تداخل */
+
+      /* فیلدها: سرمه‌ای تیره + متن سفید + حاشیه طلایی نازک */
       '.modal-glass input[type=text],.modal-glass input[type=number],.modal-glass input[type=tel],',
       '.modal-glass input[type=email],.modal-glass input[type=password],.modal-glass input[type=date],',
       '.modal-glass input[type=search],.modal-glass textarea,.modal-glass select,',
@@ -118,42 +140,58 @@
       '.modal-glass .form-group input,.modal-glass .form-group select,.modal-glass .form-group textarea,',
       '#hamzadModal input,#hamzadModal select,#hamzadModal select.hamzad-date-select,#hamzadModal #calendar{',
       '  width:100%!important;box-sizing:border-box!important;',
-      '  background:#F7F3EA!important;color:#1a1a1a!important;-webkit-text-fill-color:#1a1a1a!important;',
-      '  border:none!important;border-radius:12px!important;',
-      '  font-weight:600!important;font-size:.92rem!important;padding:12px 14px!important;',
-      '  font-family:inherit!important;min-height:44px!important;',
+      '  background:#111827!important;',
+      '  color:#ffffff!important;-webkit-text-fill-color:#ffffff!important;',
+      '  border:1px solid rgba(201,168,76,.4)!important;',
+      '  border-radius:12px!important;',
+      '  font-weight:600!important;font-size:1rem!important;',
+      '  padding:12px 15px!important;font-family:inherit!important;',
+      '  min-height:44px!important;',
       '  appearance:auto!important;-webkit-appearance:menulist!important;',
+      '  outline:none!important;',
       '}',
       '.modal-glass input::placeholder,.modal-glass textarea::placeholder{',
-      '  color:#8a8578!important;-webkit-text-fill-color:#8a8578!important;font-weight:500!important;opacity:1!important;',
+      '  color:rgba(255,255,255,.45)!important;-webkit-text-fill-color:rgba(255,255,255,.45)!important;',
+      '  font-weight:500!important;opacity:1!important;',
       '}',
       '.modal-glass input:focus,.modal-glass textarea:focus,.modal-glass select:focus{',
-      '  outline:none!important;box-shadow:0 0 0 2px rgba(255,230,150,.55)!important;background:#FFFEF9!important;',
+      '  outline:none!important;',
+      '  border-color:#c9a84c!important;',
+      '  box-shadow:0 0 0 2px rgba(201,168,76,.25)!important;',
+      '  background:#111827!important;',
       '}',
-      '.modal-glass select option{background:#fff!important;color:#1a1a1a!important;}',
-      '.modal-glass .input-group,.modal-glass .form-group{margin-bottom:12px!important;}',
+      '.modal-glass select option{background:#0b1120!important;color:#fff!important;}',
+      '.modal-glass .input-group,.modal-glass .form-group{margin-bottom:15px!important;}',
+
+      /* دکمه طلایی */
       '.modal-glass .btn,.modal-glass button.btn{',
-      '  width:100%!important;padding:13px 14px!important;margin-top:4px!important;',
+      '  width:100%!important;padding:14px!important;margin-top:4px!important;',
       '  border:none!important;border-radius:12px!important;',
-      '  background:linear-gradient(135deg,#F0D878,#C9A84C)!important;',
-      '  color:#1a1408!important;-webkit-text-fill-color:#1a1408!important;',
-      '  font-size:.95rem!important;font-weight:800!important;',
-      '  box-shadow:0 4px 14px rgba(0,0,0,.25)!important;',
+      '  background:#c9a84c!important;',
+      '  color:#0f172a!important;-webkit-text-fill-color:#0f172a!important;',
+      '  font-size:1.05rem!important;font-weight:800!important;',
+      '  box-shadow:0 5px 15px rgba(201,168,76,.4)!important;',
       '}',
-      '.modal-glass .result-box[style*="display: none"],.modal-glass .result-box[style*="display:none"]{',
+
+      /* نتیجه */
+      '.modal-glass .result-box[style*="display: none"],',
+      '.modal-glass .result-box[style*="display:none"]{',
       '  display:none!important;margin:0!important;padding:0!important;height:0!important;border:none!important;',
       '}',
       '.modal-glass .result-box,.modal-glass .result-card{',
-      '  background:rgba(0,0,0,.22)!important;border:none!important;border-radius:12px!important;',
-      '  padding:12px!important;margin-top:12px!important;',
+      '  background:#111827!important;',
+      '  border:1px solid rgba(201,168,76,.25)!important;',
+      '  border-radius:12px!important;',
+      '  padding:12px!important;margin-top:14px!important;',
       '}',
       '.modal-glass .result-description,.modal-glass .result-value,.modal-glass .result-text{',
-      '  color:#FFF8E8!important;-webkit-text-fill-color:#FFF8E8!important;',
-      '  line-height:1.75!important;font-size:.88rem!important;',
+      '  color:#ffffff!important;-webkit-text-fill-color:#ffffff!important;',
+      '  line-height:1.75!important;font-size:.9rem!important;',
       '  max-height:none!important;overflow:visible!important;',
       '  white-space:pre-wrap!important;word-wrap:break-word!important;',
       '  -webkit-line-clamp:unset!important;line-clamp:unset!important;',
       '}',
+
       '#hamzadModal .date-row,#hamzadModal .hamzad-date-row{',
       '  display:grid!important;grid-template-columns:1fr 1fr 1fr!important;',
       '  gap:8px!important;margin-bottom:12px!important;',
@@ -173,20 +211,19 @@
     } catch (e) {}
   }
 
-  function stripFrame() {
+  function applyInline() {
     try {
       document.querySelectorAll('.modal-glass').forEach(function (modal) {
-        modal.style.setProperty('border', 'none', 'important');
-        modal.style.setProperty('outline', 'none', 'important');
-        modal.style.setProperty('background', '#0B0E16', 'important');
+        modal.style.setProperty('background', OVERLAY_BG, 'important');
         modal.style.setProperty('backdrop-filter', 'none', 'important');
         var c = modal.querySelector('.modal-glass-content');
         if (!c) return;
-        c.style.setProperty('border', 'none', 'important');
-        c.style.setProperty('outline', 'none', 'important');
-        c.style.setProperty('border-radius', '20px', 'important');
         c.style.setProperty('background', CARD_BG, 'important');
+        c.style.setProperty('background-color', CARD_BG, 'important');
+        c.style.setProperty('border', '2px solid #c9a84c', 'important');
+        c.style.setProperty('border-radius', '24px', 'important');
         c.style.setProperty('backdrop-filter', 'none', 'important');
+        c.style.setProperty('box-shadow', '0 10px 30px rgba(0,0,0,.8)', 'important');
       });
     } catch (e) {}
   }
@@ -220,7 +257,7 @@
         if (!im) {
           logo.textContent = '';
           im = document.createElement('img');
-          im.alt = 'لوگو';
+          im.alt = '\u0644\u0648\u06af\u0648';
           logo.appendChild(im);
         }
         if (im.getAttribute('src') !== src) im.src = src;
@@ -230,30 +267,32 @@
 
   function patch() {
     var prevOpen = window.openModalGlass;
-    if (typeof prevOpen === 'function' && !prevOpen.__kafeV11) {
+    if (typeof prevOpen === 'function' && !prevOpen.__kafeV12) {
       window.openModalGlass = function () {
         var r = prevOpen.apply(this, arguments);
-        setTimeout(function () { injectThemeCSS(); stripFrame(); syncOpen(); applyLogo(); hideVersionBadge(); }, 20);
-        setTimeout(stripFrame, 150);
+        setTimeout(function () {
+          injectThemeCSS(); applyInline(); syncOpen(); applyLogo(); hideVersionBadge();
+        }, 20);
+        setTimeout(applyInline, 150);
         return r;
       };
-      window.openModalGlass.__kafeV11 = true;
+      window.openModalGlass.__kafeV12 = true;
     }
     var prevClose = window.closeModalGlass;
-    if (typeof prevClose === 'function' && !prevClose.__kafeV11) {
+    if (typeof prevClose === 'function' && !prevClose.__kafeV12) {
       window.closeModalGlass = function () {
         var r = prevClose.apply(this, arguments);
         setTimeout(syncOpen, 30);
         return r;
       };
-      window.closeModalGlass.__kafeV11 = true;
+      window.closeModalGlass.__kafeV12 = true;
     }
   }
 
   function run() {
     injectThemeCSS();
     hideVersionBadge();
-    stripFrame();
+    applyInline();
     patch();
     syncOpen();
     applyLogo();
@@ -268,6 +307,6 @@
   }
   window.addEventListener('load', function () { setTimeout(run, 400); });
   document.addEventListener('click', function () {
-    setTimeout(function () { hideVersionBadge(); stripFrame(); syncOpen(); applyLogo(); }, 40);
+    setTimeout(function () { hideVersionBadge(); applyInline(); syncOpen(); applyLogo(); }, 40);
   }, true);
 })();
