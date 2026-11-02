@@ -1,8 +1,12 @@
-/** modal-ui-theme.js V9 — تمیز، مرتب؛ پس‌زمینه اپ کاملاً مات؛ کارت پنجره پررنگ‌تر */
+/** modal-ui-theme.js V10
+ * کارت پنجره: نارنجی/کهربایی متعادل، براق و روغنی (بدون شفافیت)
+ * بدون تداخل با رنگ فیلد / متن / عنوان / نتیجه
+ * حذف نشان نسخه از صفحه اصلی و مودال‌ها (فقط اسپلیش بماند)
+ */
 (function () {
   'use strict';
-  if (window.__KAFE_MODAL_UI_THEME_V9__) return;
-  window.__KAFE_MODAL_UI_THEME_V9__ = true;
+  if (window.__KAFE_MODAL_UI_THEME_V10__) return;
+  window.__KAFE_MODAL_UI_THEME_V10__ = true;
 
   function injectThemeCSS() {
     var id = 'kafe-modal-ui-theme-css';
@@ -14,32 +18,32 @@
     }
     try { document.head.appendChild(st); } catch (e) {}
     st.textContent = [
+      /* نسخه فقط در اسپلیش */
+      '#appVersionBadge{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;}',
       'body.kafe-modal-open #pageModals,',
       'body.kafe-modal-open #modalsHomeGrid,',
       'body.kafe-modal-open .modals-home-grid,',
       'body.kafe-modal-open .modals-home-hero{',
       '  opacity:0!important;visibility:hidden!important;pointer-events:none!important;',
       '}',
-      /* اوورلی کاملاً مات — تصویر اصلی دیده نشود / تار نباشد */
+      /* اوورلی مات جدا */
       '.modal-glass,.modal-glass.active,div.modal-glass,div.modal-glass.active{',
-      '  background:#0B0E16!important;',
-      '  background-color:#0B0E16!important;',
-      '  background-image:none!important;',
+      '  background:#0B0E16!important;background-color:#0B0E16!important;background-image:none!important;',
       '  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;',
       '  align-items:center!important;justify-content:center!important;',
       '  padding:16px 14px calc(var(--bottom-nav-height,64px) + 16px)!important;',
       '  box-sizing:border-box!important;border:none!important;outline:none!important;',
       '}',
-      /* کارت پنجره — پررنگ‌تر و کاملاً جدا */
+      /* کارت — نارنجی کهربایی متعادل، براق/روغنی/استیلی */
       '.modal-glass .modal-glass-content,',
       '.modal-glass > .modal-glass-content,',
       'div.modal-glass .modal-glass-content,',
       '.modal-glass-content{',
-      '  background:#161B2A!important;',
-      '  background-color:#161B2A!important;',
+      '  background:linear-gradient(155deg,#3A2A1C 0%,#2A1C12 42%,#3D2B1A 78%,#2E2014 100%)!important;',
+      '  background-color:#2A1C12!important;',
       '  border:none!important;border-width:0!important;outline:none!important;',
       '  border-radius:20px!important;',
-      '  box-shadow:0 16px 48px rgba(0,0,0,.55)!important;',
+      '  box-shadow:0 16px 48px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,200,120,.18), inset 0 -1px 0 rgba(0,0,0,.25)!important;',
       '  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;',
       '  max-height:min(86vh,720px)!important;',
       '  width:calc(100% - 8px)!important;max-width:400px!important;',
@@ -49,7 +53,7 @@
       '.modal-glass .modal-glass-header{',
       '  display:flex!important;align-items:center!important;gap:10px!important;',
       '  padding:14px 16px 12px!important;',
-      '  border-bottom:1px solid rgba(255,255,255,.08)!important;',
+      '  border-bottom:1px solid rgba(255,200,120,.12)!important;',
       '  background:transparent!important;',
       '}',
       '.modal-glass .modal-glass-logo{',
@@ -75,6 +79,7 @@
       '  padding:0!important;font-size:.85rem!important;',
       '}',
       '.modal-glass .modal-glass-body{padding:12px 16px 18px!important;background:transparent!important;}',
+      /* راهنما — بدون تغییر رنگ نسبت به قبل */
       '.modal-glass .modal-guide,.modal-glass .modal-guide-box,.modal-glass [class*="guide"]{',
       '  background:rgba(199,125,186,.1)!important;border:none!important;border-radius:12px!important;',
       '  padding:8px 12px!important;margin:0 0 12px!important;',
@@ -97,11 +102,13 @@
       '  background:linear-gradient(135deg,#C9A84C,#A8872A)!important;border-color:transparent!important;',
       '  color:#1a1408!important;-webkit-text-fill-color:#1a1408!important;',
       '}',
+      /* لیبل طلایی — بدون تغییر */
       '.modal-glass .input-group label,.modal-glass .form-group label,.modal-glass label{',
       '  display:block!important;margin:0 0 6px!important;',
       '  color:#E8D5A3!important;-webkit-text-fill-color:#E8D5A3!important;',
       '  font-weight:700!important;font-size:.8rem!important;',
       '}',
+      /* فیلدها روشن + متن تیره — بدون تغییر */
       '.modal-glass input[type=text],.modal-glass input[type=number],.modal-glass input[type=tel],',
       '.modal-glass input[type=email],.modal-glass input[type=password],.modal-glass input[type=date],',
       '.modal-glass input[type=search],.modal-glass textarea,.modal-glass select,',
@@ -135,9 +142,10 @@
       '  display:none!important;margin:0!important;padding:0!important;height:0!important;border:none!important;',
       '}',
       '.modal-glass .result-box,.modal-glass .result-card{',
-      '  background:rgba(255,255,255,.06)!important;border:none!important;border-radius:12px!important;',
+      '  background:rgba(0,0,0,.22)!important;border:none!important;border-radius:12px!important;',
       '  padding:12px!important;margin-top:12px!important;',
       '}',
+      /* نتیجه — بدون تغییر رنگ */
       '.modal-glass .result-description,.modal-glass .result-value,.modal-glass .result-text{',
       '  color:#F5F0E4!important;-webkit-text-fill-color:#F5F0E4!important;',
       '  line-height:1.75!important;font-size:.88rem!important;',
@@ -152,6 +160,17 @@
     ].join('\n');
   }
 
+  function hideVersionBadge() {
+    try {
+      var b = document.getElementById('appVersionBadge');
+      if (b) {
+        b.style.setProperty('display', 'none', 'important');
+        b.style.setProperty('visibility', 'hidden', 'important');
+        b.style.setProperty('opacity', '0', 'important');
+      }
+    } catch (e) {}
+  }
+
   function stripFrame() {
     try {
       document.querySelectorAll('.modal-glass').forEach(function (modal) {
@@ -164,7 +183,7 @@
         c.style.setProperty('border', 'none', 'important');
         c.style.setProperty('outline', 'none', 'important');
         c.style.setProperty('border-radius', '20px', 'important');
-        c.style.setProperty('background', '#161B2A', 'important');
+        c.style.setProperty('background', 'linear-gradient(155deg,#3A2A1C 0%,#2A1C12 42%,#3D2B1A 78%,#2E2014 100%)', 'important');
         c.style.setProperty('backdrop-filter', 'none', 'important');
       });
     } catch (e) {}
@@ -209,28 +228,29 @@
 
   function patch() {
     var prevOpen = window.openModalGlass;
-    if (typeof prevOpen === 'function' && !prevOpen.__kafeV9) {
+    if (typeof prevOpen === 'function' && !prevOpen.__kafeV10) {
       window.openModalGlass = function () {
         var r = prevOpen.apply(this, arguments);
-        setTimeout(function () { injectThemeCSS(); stripFrame(); syncOpen(); applyLogo(); }, 20);
+        setTimeout(function () { injectThemeCSS(); stripFrame(); syncOpen(); applyLogo(); hideVersionBadge(); }, 20);
         setTimeout(stripFrame, 150);
         return r;
       };
-      window.openModalGlass.__kafeV9 = true;
+      window.openModalGlass.__kafeV10 = true;
     }
     var prevClose = window.closeModalGlass;
-    if (typeof prevClose === 'function' && !prevClose.__kafeV9) {
+    if (typeof prevClose === 'function' && !prevClose.__kafeV10) {
       window.closeModalGlass = function () {
         var r = prevClose.apply(this, arguments);
         setTimeout(syncOpen, 30);
         return r;
       };
-      window.closeModalGlass.__kafeV9 = true;
+      window.closeModalGlass.__kafeV10 = true;
     }
   }
 
   function run() {
     injectThemeCSS();
+    hideVersionBadge();
     stripFrame();
     patch();
     syncOpen();
@@ -246,6 +266,6 @@
   }
   window.addEventListener('load', function () { setTimeout(run, 400); });
   document.addEventListener('click', function () {
-    setTimeout(function () { stripFrame(); syncOpen(); applyLogo(); }, 40);
+    setTimeout(function () { hideVersionBadge(); stripFrame(); syncOpen(); applyLogo(); }, 40);
   }, true);
 })();
