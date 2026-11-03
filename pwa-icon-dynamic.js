@@ -1,14 +1,13 @@
 /**
- * pwa-icon-dynamic.js V3
- * آیکون نصب باید same-origin باشد (manifest نسبی).
- * blob:manifest و URL خارجی باعث آیکون سفید و شکست Add to Home Screen می‌شود.
- * این فایل فقط پک را روی Supabase می‌سازد و apple-touch/favicon را به‌روز می‌کند.
- * برای نصب PWA از icon192/512 روی خود سایت استفاده می‌شود.
+ * pwa-icon-dynamic.js V4
+ * آپلود آیکون از پنل → Supabase
+ * manifest استاتیک به همان URLهای Supabase اشاره می‌کند (بدون blob:).
+ * فقط apple-touch و favicon در runtime به‌روز می‌شوند.
  */
 (function () {
   'use strict';
-  if (window.__KAFE_PWA_ICON_DYNAMIC_V3__) return;
-  window.__KAFE_PWA_ICON_DYNAMIC_V3__ = true;
+  if (window.__KAFE_PWA_ICON_DYNAMIC_V4__) return;
+  window.__KAFE_PWA_ICON_DYNAMIC_V4__ = true;
 
   var BASE =
     'https://evxxvnlwtbaqpjbjaxdk.supabase.co/storage/v1/object/public/public-assets/app-media/pwa/';
@@ -88,17 +87,19 @@
       .catch(function () {});
   }
 
-  /** فقط لینک‌های head — manifest دست نخورده می‌ماند (same-origin) */
   function pointHeadIcons(version) {
     var q = '?v=' + encodeURIComponent(version || Date.now());
-    // favicon تب مرورگر می‌تواند از پک جدید بیاید
     document.querySelectorAll('link[rel="icon"]').forEach(function (link) {
       link.href = BASE + 'favicon.png' + q;
     });
-    // apple-touch برای iOS bookmark
     document.querySelectorAll('link[rel="apple-touch-icon"]').forEach(function (link) {
       link.href = BASE + 'apple-touch-icon.png' + q;
     });
+    // manifest را دست نزن — فایل استاتیک به Supabase اشاره می‌کند
+    var man = document.querySelector('link[rel="manifest"]');
+    if (man && man.href && String(man.href).indexOf('blob:') === 0) {
+      man.href = './manifest.webmanifest?v=' + encodeURIComponent(version || Date.now());
+    }
   }
 
   async function saveVersion(version) {
@@ -136,7 +137,7 @@
     var version = Date.now();
     await saveVersion(version);
     notify(
-      'پک آیکون روی سرور ذخیره شد. برای آیکون نصب PWA باید فایل‌های icon192/512 روی گیت‌هاب همگام شوند. میانبر قبلی را حذف و دوباره اضافه کنید.'
+      'آیکون روی سرور ذخیره شد. میانبر قبلی را حذف کنید و دوباره به صفحه اصلی اضافه کنید تا آیکون جدید دیده شود.'
     );
     return true;
   }
@@ -160,9 +161,9 @@
 
   async function boot() {
     wrapSaver();
-    // مهم: manifest را دست نزن — same-origin بماند
+    // جلوگیری از blob:manifest
     var link = document.querySelector('link[rel="manifest"]');
-    if (link && link.href && link.href.indexOf('blob:') === 0) {
+    if (link && link.href && String(link.href).indexOf('blob:') === 0) {
       link.href = './manifest.webmanifest?v=' + Date.now();
     }
     try {

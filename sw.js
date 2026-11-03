@@ -1,8 +1,6 @@
 /* کافه سرکتاب میعاد — Service Worker */
-const CACHE_VERSION = 'kafe-miad-v22.56-seven-fixes';
+const CACHE_VERSION = 'kafe-miad-v22.56-seven-supabase-icon';
 const SHELL_CACHE = `shell-${CACHE_VERSION}`;
-const PWA_ICON_BASE =
-  'https://evxxvnlwtbaqpjbjaxdk.supabase.co/storage/v1/object/public/public-assets/app-media/pwa/';
 
 const PRECACHE_URLS = [
   './',
@@ -40,7 +38,9 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches
       .open(SHELL_CACHE)
-      .then((cache) => cache.addAll(PRECACHE_URLS.map((u) => new Request(u, { cache: 'reload' }))))
+      .then((cache) =>
+        cache.addAll(PRECACHE_URLS.map((u) => new Request(u, { cache: 'reload' })))
+      )
       .then(() => self.skipWaiting())
       .catch(() => self.skipWaiting())
   );
@@ -52,7 +52,9 @@ self.addEventListener('activate', (event) => {
       .keys()
       .then((keys) =>
         Promise.all(
-          keys.filter((k) => k.startsWith('shell-') && k !== SHELL_CACHE).map((k) => caches.delete(k))
+          keys
+            .filter((k) => k.startsWith('shell-') && k !== SHELL_CACHE)
+            .map((k) => caches.delete(k))
         )
       )
       .then(() => self.clients.claim())
@@ -79,53 +81,26 @@ function isSupabaseOrApi(url) {
 function isStaticAsset(url) {
   try {
     const u = new URL(url);
-    return /\.(?:css|js|png|jpg|jpeg|webp|svg|woff2?|ttf|ico|webmanifest)$/i.test(u.pathname);
+    return /\.(?:css|js|png|jpg|jpeg|webp|svg|woff2?|ttf|ico|webmanifest)$/i.test(
+      u.pathname
+    );
   } catch (e) {
     return false;
   }
-}
-
-/** آیکون‌های نصب: same-origin در manifest، محتوا از Supabase */
-function mapLocalIconToRemote(pathname) {
-  if (pathname.endsWith('/icon192.png') || pathname.endsWith('icon192.png'))
-    return PWA_ICON_BASE + 'icon-192.png';
-  if (pathname.endsWith('/icon512.png') || pathname.endsWith('icon512.png'))
-    return PWA_ICON_BASE + 'icon-512.png';
-  if (pathname.endsWith('/icon512-maskable.png') || pathname.endsWith('icon512-maskable.png'))
-    return PWA_ICON_BASE + 'icon-maskable-512.png';
-  if (pathname.endsWith('/apple-touch-icon.png') || pathname.endsWith('apple-touch-icon.png'))
-    return PWA_ICON_BASE + 'apple-touch-icon.png';
-  if (pathname.endsWith('/favicon.png') || pathname.endsWith('favicon.png'))
-    return PWA_ICON_BASE + 'favicon.png';
-  return null;
 }
 
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
   const url = req.url;
-  let u;
-  try {
-    u = new URL(url);
-  } catch (e) {
-    return;
-  }
 
-  // آیکون PWA: از پک ادمین روی Supabase سرو کن (همگام با پنل)
-  const remoteIcon = mapLocalIconToRemote(u.pathname);
-  if (remoteIcon) {
-    event.respondWith(
-      fetch(remoteIcon, { cache: 'no-store' })
-        .then((res) => {
-          if (res && res.ok) {
-            const copy = res.clone();
-            caches.open(SHELL_CACHE).then((c) => c.put(req, copy)).catch(() => {});
-            return res;
-          }
-          return caches.match(req).then((c) => c || fetch(req));
-        })
-        .catch(() => caches.match(req).then((c) => c || fetch(req)))
-    );
+  // آیکون‌های PWA از Supabase — همیشه شبکه (نه کش قدیمی گیت‌هاب)
+  if (
+    url.includes('app-media/pwa/icon-') ||
+    url.includes('app-media/pwa/favicon') ||
+    url.includes('app-media/pwa/apple-touch')
+  ) {
+    event.respondWith(fetch(req, { cache: 'no-store' }).catch(() => caches.match(req)));
     return;
   }
 
@@ -133,7 +108,24 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(fetch(req));
     return;
   }
-  if (/\.js$/i.test(u.pathname)) {
+
+  // manifest همیشه تازه
+  if (url.includes('manifest.webmanifest')) {
+    event.respondWith(
+      fetch(req, { cache: 'reload' })
+        .then((res) => {
+          if (res && res.ok) {
+            const copy = res.clone();
+            caches.open(SHELL_CACHE).then((c) => c.put(req, copy)).catch(() => {});
+          }
+          return res;
+        })
+        .catch(() => caches.match(req))
+    );
+    return;
+  }
+
+  if (/\.js$/i.test(new URL(url).pathname)) {
     event.respondWith(
       fetch(req)
         .then((res) => {
@@ -147,6 +139,7 @@ self.addEventListener('fetch', (event) => {
     );
     return;
   }
+
   if (isStaticAsset(url)) {
     event.respondWith(
       caches.match(req).then((cached) => {
@@ -164,6 +157,7 @@ self.addEventListener('fetch', (event) => {
     );
     return;
   }
+
   event.respondWith(
     fetch(req)
       .then((res) => {
@@ -178,16 +172,7 @@ self.addEventListener('fetch', (event) => {
 });
 
 self.addEventListener('message', (event) => {
-  if (!event.data) return;
-  if (event.data.type === 'SKIP_WAITING') self.skipWaiting();
-  if (event.data.type === 'PWA_ICON_UPDATED') {
-    // پاک کردن کش آیکون‌های محلی تا نسخهٔ جدید از Supabase بیاید
-    caches.open(SHELL_CACHE).then((cache) => {
-      ;['./icon192.png', './icon512.png', './icon512-maskable.png', './apple-touch-icon.png', './favicon.png'].forEach(
-        (p) => {
-          cache.delete(p).catch(() => {});
-        }
-      );
-    });
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
   }
 });

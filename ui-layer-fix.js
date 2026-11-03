@@ -42,7 +42,9 @@
       try {
         if (name === 'toggleUserSettings') {
           var panel = document.getElementById('settingsPanel');
-          var willOpen = panel && !(panel.style.display === 'block' || panel.classList.contains('active'));
+          var willOpen =
+            panel &&
+            !(panel.style.display === 'block' || panel.classList.contains('active'));
           if (willOpen) closeAllLayersExcept('settings');
         } else if (name === 'toggleMenuDrawer') {
           var drawer = document.getElementById('menuDrawer');
@@ -63,16 +65,20 @@
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () { setTimeout(applyWraps, 0); });
+    document.addEventListener('DOMContentLoaded', function () {
+      setTimeout(applyWraps, 0);
+    });
   } else {
     setTimeout(applyWraps, 0);
   }
-  window.addEventListener('load', function () { setTimeout(applyWraps, 50); });
+  window.addEventListener('load', function () {
+    setTimeout(applyWraps, 50);
+  });
 
   (function loadKafePatches() {
     function inject(src, key) {
       try {
-        if (document.querySelector('script[data-kafe-patch="'+key+'"]')) return;
+        if (document.querySelector('script[data-kafe-patch="' + key + '"]')) return;
         var s = document.createElement('script');
         s.src = src;
         s.async = true;
@@ -80,16 +86,16 @@
         (document.body || document.documentElement).appendChild(s);
       } catch (e) {}
     }
-    inject('./boot-flow-fix.js?v=20261103i', 'boot-flow');
-    inject('./nav-swipe-fix.js?v=20261103i', 'nav-swipe');
-    inject('./buy-nav-fix.js?v=20261103i', 'buy-nav');
-    inject('./kafe-seven-fixes.js?v=20261103i', 'seven');
-    inject('./fix-four-bugs.js?v=20261103i', 'four-bugs');
-    inject('./hamzad-ui-fix.js?v=20261103i', 'hamzad-ui');
-    inject('./modal-menu-layout.js?v=20261103i', 'modal-menu');
-    inject('./modal-ui-theme.js?v=20261103i', 'modal-theme');
-    inject('./rename-raml.js?v=20261103i', 'rename-raml');
-    inject('./ui-unify-v1.js?v=20261103i', 'ui-unify');
-    inject('./admin-ui-four-fixes.js?v=20261103i', 'admin-four');
+    inject('./boot-flow-fix.js?v=20261103j', 'boot-flow');
+    inject('./nav-swipe-fix.js?v=20261103j', 'nav-swipe');
+    inject('./buy-nav-fix.js?v=20261103j', 'buy-nav');
+    inject('./kafe-seven-fixes.js?v=20261103j', 'seven');
+    inject('./fix-four-bugs.js?v=20261103j', 'four-bugs');
+    inject('./hamzad-ui-fix.js?v=20261103j', 'hamzad-ui');
+    inject('./modal-menu-layout.js?v=20261103j', 'modal-menu');
+    inject('./modal-ui-theme.js?v=20261103j', 'modal-theme');
+    inject('./rename-raml.js?v=20261103j', 'rename-raml');
+    inject('./ui-unify-v1.js?v=20261103j', 'ui-unify');
+    inject('./admin-ui-four-fixes.js?v=20261103j', 'admin-four');
   })();
 })();

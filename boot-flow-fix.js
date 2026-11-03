@@ -1,7 +1,7 @@
 /** boot-flow-fix.js V2
- * مسیر ورود یک‌بار و ثابت:
- * شرایط → موافقم → (لاگین؟ اسپلش→اصلی : ثبت‌نام/ورود → اسپلش→اصلی)
- * دیگر چندبار showTerms در load تکرار نمی‌شود.
+ * مسیر ثابت یک‌باره:
+ * شرایط → (لاگین؟ اسپلش→اصلی : ثبت‌نام) → بعد از auth: اسپلش→اصلی
+ * جلوگیری از دو بار اجرا شدن boot
  */
 (function () {
   'use strict';
@@ -10,7 +10,7 @@
 
   var MIN_SPLASH = 1600;
   var MAX_SESSION_WAIT = 3500;
-  var booted = false;
+  var stage = 'init'; // init | terms | auth | splash | main
 
   function el(id) {
     return document.getElementById(id);
@@ -43,6 +43,8 @@
   }
 
   function showTermsOnly() {
+    if (stage === 'main' || stage === 'splash' || stage === 'auth') return;
+    stage = 'terms';
     hide(el('splashScreen'));
     hide(el('registerScreen'));
     hide(el('app'));
@@ -56,6 +58,7 @@
   }
 
   function runSplashThen(done) {
+    stage = 'splash';
     var splash = el('splashScreen');
     if (splash) {
       try {
@@ -63,7 +66,8 @@
       } catch (e) {}
       splash.style.display = 'flex';
       var bar =
-        el('splashLoaderBar') || (splash.querySelector && splash.querySelector('.splash-loader-bar'));
+        el('splashLoaderBar') ||
+        (splash.querySelector && splash.querySelector('.splash-loader-bar'));
       if (bar) {
         try {
           bar.style.animation = 'none';
@@ -86,6 +90,7 @@
   }
 
   function enterMainApp(profile) {
+    stage = 'main';
     hide(el('termsScreen'));
     hide(el('splashScreen'));
     hide(el('registerScreen'));
@@ -119,7 +124,8 @@
         window.supabaseClient.auth
           .getSession()
           .then(function (sr) {
-            var session = sr && sr.data && sr.data.session ? sr.data.session : null;
+            var session =
+              sr && sr.data && sr.data.session ? sr.data.session : null;
             finish(session);
           })
           .catch(function () {
@@ -174,14 +180,17 @@
       if (session && session.user) {
         runSplashThen(function () {
           loadProfile(session.user.id).then(function (profile) {
-            if (profile) enterMainApp(profile);
-            else {
+            if (profile) {
+              enterMainApp(profile);
+            } else {
+              stage = 'auth';
               hide(el('app'));
               showFlex(el('registerScreen'));
             }
           });
         });
       } else {
+        stage = 'auth';
         hide(el('splashScreen'));
         hide(el('app'));
         showFlex(el('registerScreen'));
@@ -217,8 +226,12 @@
     window.registerUser.__kafeBootPatched = true;
   }
 
+  var booted = false;
   function boot() {
-    if (booted) return;
+    if (booted) {
+      patchRegisterUser();
+      return;
+    }
     booted = true;
     showTermsOnly();
     patchRegisterUser();
@@ -227,14 +240,17 @@
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () {
-      setTimeout(boot, 0);
-    });
+    document.addEventListener(
+      'DOMContentLoaded',
+      function () {
+        setTimeout(boot, 0);
+      },
+      true
+    );
   } else {
     boot();
   }
   window.addEventListener('load', function () {
-    // فقط patch؛ دیگر terms را دوباره نشان نده
     setTimeout(patchRegisterUser, 300);
   });
 })();
