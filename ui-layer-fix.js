@@ -80,15 +80,16 @@
         (document.body || document.documentElement).appendChild(s);
       } catch (e) {}
     }
-    inject('./boot-flow-fix.js?v=20261103h', 'boot-flow');
-    inject('./nav-swipe-fix.js?v=20261103h', 'nav-swipe');
-    inject('./buy-nav-fix.js?v=20261103h', 'buy-nav');
-    inject('./fix-four-bugs.js?v=20261103h', 'four-bugs');
-    inject('./hamzad-ui-fix.js?v=20261103h', 'hamzad-ui');
-    inject('./modal-menu-layout.js?v=20261103h', 'modal-menu');
-    inject('./modal-ui-theme.js?v=20261103h', 'modal-theme');
-    inject('./rename-raml.js?v=20261103h', 'rename-raml');
-    inject('./ui-unify-v1.js?v=20261103h', 'ui-unify');
-    inject('./admin-ui-four-fixes.js?v=20261103h', 'admin-four');
+    inject('./boot-flow-fix.js?v=20261103i', 'boot-flow');
+    inject('./nav-swipe-fix.js?v=20261103i', 'nav-swipe');
+    inject('./buy-nav-fix.js?v=20261103i', 'buy-nav');
+    inject('./kafe-seven-fixes.js?v=20261103i', 'seven');
+    inject('./fix-four-bugs.js?v=20261103i', 'four-bugs');
+    inject('./hamzad-ui-fix.js?v=20261103i', 'hamzad-ui');
+    inject('./modal-menu-layout.js?v=20261103i', 'modal-menu');
+    inject('./modal-ui-theme.js?v=20261103i', 'modal-theme');
+    inject('./rename-raml.js?v=20261103i', 'rename-raml');
+    inject('./ui-unify-v1.js?v=20261103i', 'ui-unify');
+    inject('./admin-ui-four-fixes.js?v=20261103i', 'admin-four');
   })();
 })();
