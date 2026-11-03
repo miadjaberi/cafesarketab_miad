@@ -68,7 +68,7 @@
     wrap('toggleUserSettings', 'settings');
     wrap('toggleMenuDrawer', 'menu');
     wrap('toggleAdmin', 'admin');
-    wrap('openSubOrdersPanel', 'suborders');
+    // openSubOrdersPanel را buy-nav-fix مدیریت می‌کند — اینجا wrap نکن تا تداخل نشود
   }
 
   if (document.readyState === 'loading') {
@@ -89,15 +89,15 @@
         (document.body || document.documentElement).appendChild(s);
       } catch (e) {}
     }
-    inject('./boot-flow-fix.js?v=20261103e', 'boot-flow');
-    inject('./nav-swipe-fix.js?v=20261103e', 'nav-swipe');
-    inject('./buy-nav-fix.js?v=20261103e', 'buy-nav');
-    inject('./fix-four-bugs.js?v=20261103e', 'four-bugs');
-    inject('./hamzad-ui-fix.js?v=20261103e', 'hamzad-ui');
-    inject('./modal-menu-layout.js?v=20261103e', 'modal-menu');
-    inject('./modal-ui-theme.js?v=20261103e', 'modal-theme');
-    inject('./rename-raml.js?v=20261103e', 'rename-raml');
-    inject('./ui-unify-v1.js?v=20261103e', 'ui-unify');
-    inject('./admin-ui-four-fixes.js?v=20261103e', 'admin-four');
+    inject('./boot-flow-fix.js?v=20261103f', 'boot-flow');
+    inject('./nav-swipe-fix.js?v=20261103f', 'nav-swipe');
+    inject('./buy-nav-fix.js?v=20261103f', 'buy-nav');
+    inject('./fix-four-bugs.js?v=20261103f', 'four-bugs');
+    inject('./hamzad-ui-fix.js?v=20261103f', 'hamzad-ui');
+    inject('./modal-menu-layout.js?v=20261103f', 'modal-menu');
+    inject('./modal-ui-theme.js?v=20261103f', 'modal-theme');
+    inject('./rename-raml.js?v=20261103f', 'rename-raml');
+    inject('./ui-unify-v1.js?v=20261103f', 'ui-unify');
+    inject('./admin-ui-four-fixes.js?v=20261103f', 'admin-four');
   })();
 })();

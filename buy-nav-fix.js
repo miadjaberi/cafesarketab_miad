@@ -1,11 +1,11 @@
-/** buy-nav-fix.js
- * دکمه «خرید» نوار پایین گاهی بی‌اثر بود.
- * این پچ: bind مستقیم + باز کردن قطعی پنل + بازخورد
+/** buy-nav-fix.js V2
+ * دکمه «خرید» بین فروشگاه و منوی وسط.
+ * باگ V1: بعد از wrap، به‌خاطر فلگ __kafeBuyNavCore دیگر open اصلی صدا زده نمی‌شد.
  */
 (function () {
   'use strict';
-  if (window.__KAFE_BUY_NAV_FIX_V1__) return;
-  window.__KAFE_BUY_NAV_FIX_V1__ = true;
+  if (window.__KAFE_BUY_NAV_FIX_V2__) return;
+  window.__KAFE_BUY_NAV_FIX_V2__ = true;
 
   function notify(msg) {
     try {
@@ -27,7 +27,7 @@
       clearTimeout(t._hide);
       t._hide = setTimeout(function () {
         t.style.display = 'none';
-      }, 2500);
+      }, 2200);
     } catch (e2) {}
   }
 
@@ -43,8 +43,7 @@
       var nav = document.getElementById('bottomNav');
       if (nav) navH = Math.round(nav.getBoundingClientRect().height) || navH;
     } catch (e) {}
-    // محافظه کارانه: اگر ارتفاع عجیب بود
-    if (headerH < 40 || headerH > 260) headerH = 152;
+    if (headerH < 40 || headerH > 280) headerH = 152;
     if (navH < 40 || navH > 140) navH = 68;
     return { headerH: headerH, navH: navH };
   }
@@ -60,6 +59,7 @@
     p.style.setProperty('left', '0', 'important');
     p.style.setProperty('right', '0', 'important');
     p.style.setProperty('width', '100%', 'important');
+    p.style.setProperty('height', 'auto', 'important');
     p.style.setProperty('z-index', '9000', 'important');
     p.style.setProperty('background', '#0b1120', 'important');
     p.style.setProperty('align-items', 'stretch', 'important');
@@ -83,87 +83,118 @@
     }
   }
 
+  // نگه داشتن تابع اصلی قبل از هر wrap دیگر
+  var coreOpen = null;
+  function captureCore() {
+    var fn = window.openSubOrdersPanel;
+    if (typeof fn === 'function' && !fn.__kafeBuyNavWrapper) {
+      coreOpen = fn;
+    }
+  }
+  captureCore();
+
   function openBuyPanel() {
-    notify('باز کردن بخش خرید…');
+    captureCore();
     var p = document.getElementById('subOrdersPanel');
     if (!p) {
-      notify('پنل خرید در صفحه پیدا نشد');
+      notify('پنل خرید پیدا نشد');
       return;
     }
-    // اول خودمان پنل را نشان بده
-    stylePanel(p);
 
-    // بعد تابع اصلی (وضعیت اشتراک / لیست)
+    // بستن لایه‌های مزاحم
     try {
-      if (typeof window.openSubOrdersPanel === 'function' && !window.openSubOrdersPanel.__kafeBuyNavCore) {
-        // اگر نسخهٔ اصلی است، صدا بزن
-        var ret = window.openSubOrdersPanel();
-        if (ret && typeof ret.then === 'function') {
-          ret.catch(function (e) {
-            console.warn('openSubOrdersPanel', e);
-            notify('خطا در بارگذاری خرید: ' + ((e && e.message) || e));
-          });
-        }
+      var settings = document.getElementById('settingsPanel');
+      if (settings) {
+        settings.style.display = 'none';
+        settings.classList.remove('active');
       }
-    } catch (e) {
-      console.warn(e);
-      notify('خطا: ' + ((e && e.message) || e));
+      var drawer = document.getElementById('menuDrawer');
+      var overlay = document.getElementById('menuDrawerOverlay');
+      if (drawer) drawer.classList.remove('active');
+      if (overlay) overlay.classList.remove('active');
+    } catch (e) {}
+
+    // اول ظاهر کن
+    stylePanel(p);
+    notify('بخش خرید');
+
+    // بعد داده را از هستهٔ اصلی بگیر
+    try {
+      if (typeof coreOpen === 'function') {
+        var ret = coreOpen();
+        if (ret && typeof ret.then === 'function') {
+          ret
+            .then(function () {
+              stylePanel(p);
+            })
+            .catch(function (err) {
+              console.warn('[buy-nav]', err);
+              stylePanel(p);
+            });
+        }
+      } else if (typeof window.openSubOrdersPanel === 'function') {
+        window.openSubOrdersPanel();
+      }
+    } catch (err) {
+      console.warn('[buy-nav] open', err);
+      notify('خطا در باز کردن خرید');
     }
 
-    // دوباره محکم‌کاری ظاهر
     stylePanel(p);
     setTimeout(function () {
       stylePanel(p);
-    }, 50);
+    }, 60);
     setTimeout(function () {
       stylePanel(p);
-    }, 200);
+    }, 250);
   }
 
-  // نسخهٔ پایدار سراسری
-  var prevOpen = window.openSubOrdersPanel;
-  window.openSubOrdersPanel = function () {
-    var p = document.getElementById('subOrdersPanel');
-    if (p) stylePanel(p);
-    if (typeof prevOpen === 'function') {
-      try {
-        var r = prevOpen.apply(this, arguments);
-        setTimeout(function () {
+  // wrapper عمومی برای هر کسی که openSubOrdersPanel را صدا می‌زند
+  function installWrapper() {
+    captureCore();
+    if (typeof coreOpen !== 'function') return;
+    if (window.openSubOrdersPanel && window.openSubOrdersPanel.__kafeBuyNavWrapper) return;
+
+    var wrapped = function () {
+      var p = document.getElementById('subOrdersPanel');
+      if (p) stylePanel(p);
+      var ret = coreOpen.apply(this, arguments);
+      if (ret && typeof ret.then === 'function') {
+        ret.then(function () {
           if (p) stylePanel(p);
-        }, 0);
-        setTimeout(function () {
-          if (p) stylePanel(p);
-        }, 120);
-        return r;
-      } catch (e) {
-        if (p) stylePanel(p);
-        notify('خطا در باز کردن خرید');
-        throw e;
+        });
       }
+      setTimeout(function () {
+        if (p) stylePanel(p);
+      }, 50);
+      return ret;
+    };
+    wrapped.__kafeBuyNavWrapper = true;
+    window.openSubOrdersPanel = wrapped;
+  }
+
+  function findBuyButton() {
+    var nav = document.getElementById('bottomNav');
+    if (!nav) return null;
+    var buttons = nav.querySelectorAll('button.nav-item-bottom');
+    for (var i = 0; i < buttons.length; i++) {
+      var b = buttons[i];
+      if (b.classList.contains('center-btn')) continue;
+      var oc = b.getAttribute('onclick') || '';
+      var label = (b.textContent || '').replace(/\s+/g, ' ').trim();
+      if (oc.indexOf('openSubOrdersPanel') >= 0 || label.indexOf('خرید') >= 0) return b;
     }
-    if (p) stylePanel(p);
-  };
-  window.openSubOrdersPanel.__kafeBuyNavCore = true;
+    return null;
+  }
 
   function bindBuyButton() {
-    var nav = document.getElementById('bottomNav');
-    if (!nav) return;
-    var buttons = nav.querySelectorAll('button.nav-item-bottom');
-    var buyBtn = null;
-    buttons.forEach(function (b) {
-      var label = (b.textContent || '').replace(/\s+/g, ' ').trim();
-      var oc = b.getAttribute('onclick') || '';
-      if (oc.indexOf('openSubOrdersPanel') >= 0 || label.indexOf('خرید') >= 0) {
-        // وسط منو نیست
-        if (!b.classList.contains('center-btn')) buyBtn = b;
-      }
-    });
-    if (!buyBtn) return;
-    if (buyBtn.__kafeBuyBound) return;
-    buyBtn.__kafeBuyBound = true;
+    var buyBtn = findBuyButton();
+    if (!buyBtn || buyBtn.__kafeBuyBoundV2) return;
+    buyBtn.__kafeBuyBoundV2 = true;
     buyBtn.style.pointerEvents = 'auto';
     buyBtn.style.cursor = 'pointer';
-    // onclick قدیمی را نگه می‌داریم ولی capture هم می‌گیریم
+    // حذف وابستگی به onclick خطی — کنترل کامل با ما
+    buyBtn.setAttribute('onclick', 'void(0)');
     buyBtn.addEventListener(
       'click',
       function (ev) {
@@ -175,22 +206,47 @@
     );
   }
 
+  // وقتی فروشگاه/ابزارها زده شد، پنل خرید بسته شود
+  function bindOtherNavClose() {
+    var nav = document.getElementById('bottomNav');
+    if (!nav || nav.__kafeBuyCloseBound) return;
+    nav.__kafeBuyCloseBound = true;
+    nav.addEventListener(
+      'click',
+      function (ev) {
+        var t = ev.target && ev.target.closest ? ev.target.closest('button.nav-item-bottom') : null;
+        if (!t) return;
+        var oc = t.getAttribute('onclick') || '';
+        var label = (t.textContent || '').replace(/\s+/g, ' ').trim();
+        var isBuy = oc.indexOf('openSubOrdersPanel') >= 0 || (label.indexOf('خرید') >= 0 && !t.classList.contains('center-btn'));
+        if (isBuy) return;
+        var p = document.getElementById('subOrdersPanel');
+        if (p && p.style.display !== 'none') {
+          p.style.display = 'none';
+        }
+      },
+      true
+    );
+  }
+
   function run() {
+    installWrapper();
     bindBuyButton();
+    bindOtherNavClose();
   }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
       setTimeout(run, 0);
-      setTimeout(run, 400);
-      setTimeout(run, 1200);
+      setTimeout(run, 500);
+      setTimeout(run, 1500);
     });
   } else {
     run();
-    setTimeout(run, 400);
-    setTimeout(run, 1200);
+    setTimeout(run, 500);
+    setTimeout(run, 1500);
   }
   window.addEventListener('load', function () {
-    setTimeout(run, 300);
+    setTimeout(run, 400);
   });
 })();
