@@ -1,5 +1,5 @@
 /* کافه سرکتاب میعاد — Service Worker */
-const CACHE_VERSION = 'kafe-miad-v22.51-icon-restore-sub-del';
+const CACHE_VERSION = 'kafe-miad-v22.52-buy-nav';
 const SHELL_CACHE = `shell-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = [
@@ -15,6 +15,7 @@ const PRECACHE_URLS = [
   './ui-layer-fix.js',
   './boot-flow-fix.js',
   './nav-swipe-fix.js',
+  './buy-nav-fix.js',
   './fix-four-bugs.js',
   './hamzad-ui-fix.js',
   './modal-menu-layout.js',
