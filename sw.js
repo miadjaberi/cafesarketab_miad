@@ -1,5 +1,5 @@
 /* کافه سرکتاب میعاد — Service Worker */
-const CACHE_VERSION = 'kafe-miad-v22.64-unfreeze';
+const CACHE_VERSION = 'kafe-miad-v22.65-no-freeze';
 const SHELL_CACHE = `shell-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = [
@@ -18,7 +18,6 @@ const PRECACHE_URLS = [
   './boot-flow-fix.js',
   './nav-swipe-fix.js',
   './buy-nav-fix.js',
-  './purchase-hold-fix.js',
   './kafe-seven-fixes.js',
   './fix-four-bugs.js',
   './hamzad-ui-fix.js',
@@ -79,17 +78,6 @@ function isSupabaseOrApi(url) {
   }
 }
 
-function isStaticAsset(url) {
-  try {
-    const u = new URL(url);
-    return /\.(?:css|js|png|jpg|jpeg|webp|svg|woff2?|ttf|ico|webmanifest)$/i.test(
-      u.pathname
-    );
-  } catch (e) {
-    return false;
-  }
-}
-
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
@@ -100,7 +88,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  if (/\.js$/i.test(new URL(url).pathname) || url.includes('manifest.webmanifest')) {
+  if (/\.js$/i.test(new URL(url).pathname)) {
     event.respondWith(
       fetch(req, { cache: 'reload' })
         .then((res) => {
@@ -111,24 +99,6 @@ self.addEventListener('fetch', (event) => {
           return res;
         })
         .catch(() => caches.match(req))
-    );
-    return;
-  }
-
-  if (isStaticAsset(url)) {
-    event.respondWith(
-      caches.match(req).then((cached) => {
-        const net = fetch(req)
-          .then((res) => {
-            if (res && res.ok) {
-              const copy = res.clone();
-              caches.open(SHELL_CACHE).then((c) => c.put(req, copy)).catch(() => {});
-            }
-            return res;
-          })
-          .catch(() => cached);
-        return cached || net;
-      })
     );
     return;
   }
@@ -147,7 +117,5 @@ self.addEventListener('fetch', (event) => {
 });
 
 self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
+  if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
 });

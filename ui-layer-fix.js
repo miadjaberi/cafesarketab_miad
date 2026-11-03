@@ -71,9 +71,6 @@
   } else {
     setTimeout(applyWraps, 0);
   }
-  window.addEventListener('load', function () {
-    setTimeout(applyWraps, 50);
-  });
 
   (function loadKafePatches() {
     function inject(src, key) {
@@ -86,17 +83,17 @@
         (document.body || document.documentElement).appendChild(s);
       } catch (e) {}
     }
-    inject('./boot-flow-fix.js?v=20261103t', 'boot-flow');
-    inject('./nav-swipe-fix.js?v=20261103t', 'nav-swipe');
-    inject('./purchase-hold-fix.js?v=20261103t', 'purchase-hold');
-    inject('./buy-nav-fix.js?v=20261103t', 'buy-nav');
-    inject('./kafe-seven-fixes.js?v=20261103t', 'seven');
-    inject('./fix-four-bugs.js?v=20261103t', 'four-bugs');
-    inject('./hamzad-ui-fix.js?v=20261103t', 'hamzad-ui');
-    inject('./modal-menu-layout.js?v=20261103t', 'modal-menu');
-    inject('./modal-ui-theme.js?v=20261103t', 'modal-theme');
-    inject('./rename-raml.js?v=20261103t', 'rename-raml');
-    inject('./ui-unify-v1.js?v=20261103t', 'ui-unify');
-    inject('./admin-ui-four-fixes.js?v=20261103t', 'admin-four');
+    inject('./boot-flow-fix.js?v=20261103u', 'boot-flow');
+    inject('./nav-swipe-fix.js?v=20261103u', 'nav-swipe');
+    inject('./buy-nav-fix.js?v=20261103u', 'buy-nav');
+    inject('./kafe-seven-fixes.js?v=20261103u', 'seven');
+    inject('./fix-four-bugs.js?v=20261103u', 'four-bugs');
+    inject('./hamzad-ui-fix.js?v=20261103u', 'hamzad-ui');
+    inject('./modal-menu-layout.js?v=20261103u', 'modal-menu');
+    inject('./modal-ui-theme.js?v=20261103u', 'modal-theme');
+    inject('./rename-raml.js?v=20261103u', 'rename-raml');
+    inject('./ui-unify-v1.js?v=20261103u', 'ui-unify');
+    inject('./admin-ui-four-fixes.js?v=20261103u', 'admin-four');
+    // purchase-hold عمداً لود نمی‌شود
   })();
 })();
