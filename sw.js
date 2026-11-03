@@ -1,5 +1,5 @@
 /* کافه سرکتاب میعاد — Service Worker */
-const CACHE_VERSION = 'kafe-miad-v22.50-pwa-icon-lock';
+const CACHE_VERSION = 'kafe-miad-v22.51-icon-restore-sub-del';
 const SHELL_CACHE = `shell-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = [
@@ -27,7 +27,10 @@ const PRECACHE_URLS = [
   './theme-lock.css',
   './fonts/vazirmatn.css',
   './fonts/Vazirmatn-wght.woff2',
-  './manifest.webmanifest'
+  './manifest.webmanifest',
+  './icon192.png',
+  './icon512.png',
+  './icon512-maskable.png'
 ];
 
 self.addEventListener('install', (event) => {

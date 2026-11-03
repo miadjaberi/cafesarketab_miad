@@ -1,16 +1,14 @@
 /**
- * pwa-icon-dynamic.js V2
- * آیکون نصب PWA از پنل ادمین → Supabase Storage
- * + بازنویسی runtime برای manifest / favicon / apple-touch
- * تا دیگر به فایل‌های قدیمی icon192.png روی گیت‌هاب برنگردد.
- *
- * محدودیت پلتفرم: میانبر از قبل نصب‌شده روی iOS عوض نمی‌شود؛
- * روی اندروید اغلب تا حذف و نصب دوباره ثابت می‌ماند.
+ * pwa-icon-dynamic.js V3
+ * آیکون نصب باید same-origin باشد (manifest نسبی).
+ * blob:manifest و URL خارجی باعث آیکون سفید و شکست Add to Home Screen می‌شود.
+ * این فایل فقط پک را روی Supabase می‌سازد و apple-touch/favicon را به‌روز می‌کند.
+ * برای نصب PWA از icon192/512 روی خود سایت استفاده می‌شود.
  */
 (function () {
   'use strict';
-  if (window.__KAFE_PWA_ICON_DYNAMIC_V2__) return;
-  window.__KAFE_PWA_ICON_DYNAMIC_V2__ = true;
+  if (window.__KAFE_PWA_ICON_DYNAMIC_V3__) return;
+  window.__KAFE_PWA_ICON_DYNAMIC_V3__ = true;
 
   var BASE =
     'https://evxxvnlwtbaqpjbjaxdk.supabase.co/storage/v1/object/public/public-assets/app-media/pwa/';
@@ -90,79 +88,17 @@
       .catch(function () {});
   }
 
-  function setLinkHref(selector, href) {
-    var links = document.querySelectorAll(selector);
-    if (!links.length) return;
-    links.forEach(function (link) {
-      link.href = href;
-    });
-  }
-
+  /** فقط لینک‌های head — manifest دست نخورده می‌ماند (same-origin) */
   function pointHeadIcons(version) {
-    var q = version ? ('?v=' + encodeURIComponent(version)) : ('?t=' + Date.now());
-    setLinkHref('link[rel="icon"]', BASE + 'favicon.png' + q);
-    setLinkHref('link[rel="apple-touch-icon"]', BASE + 'apple-touch-icon.png' + q);
-    // header logo optional — only if explicitly using static icon files
-  }
-
-  function pointManifest(version) {
-    var q = version ? ('?v=' + encodeURIComponent(version)) : ('?t=' + Date.now());
-    var manifest = {
-      id: '/',
-      name: 'کافه سرکتاب میعاد',
-      short_name: 'کافه میعاد',
-      description: 'آموزش، محتوا و فروش محصولات کافه سرکتاب میعاد',
-      lang: 'fa',
-      dir: 'rtl',
-      start_url: './index.html',
-      scope: './',
-      display: 'standalone',
-      orientation: 'portrait-primary',
-      background_color: '#070B14',
-      theme_color: '#070B14',
-      categories: ['education', 'shopping', 'lifestyle'],
-      icons: [
-        {
-          src: BASE + 'icon-192.png' + q,
-          sizes: '192x192',
-          type: 'image/png',
-          purpose: 'any'
-        },
-        {
-          src: BASE + 'icon-512.png' + q,
-          sizes: '512x512',
-          type: 'image/png',
-          purpose: 'any'
-        },
-        {
-          src: BASE + 'icon-maskable-512.png' + q,
-          sizes: '512x512',
-          type: 'image/png',
-          purpose: 'maskable'
-        }
-      ],
-      shortcuts: [
-        {
-          name: 'ورود به برنامه',
-          short_name: 'ورود',
-          url: './index.html',
-          description: 'باز کردن کافه سرکتاب میعاد'
-        }
-      ]
-    };
-    try {
-      var blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
-      var url = URL.createObjectURL(blob);
-      var link = document.querySelector('link[rel="manifest"]');
-      if (!link) {
-        link = document.createElement('link');
-        link.rel = 'manifest';
-        document.head.appendChild(link);
-      }
-      link.href = url;
-    } catch (e) {
-      console.warn('[pwa-icon] manifest rewrite failed', e);
-    }
+    var q = '?v=' + encodeURIComponent(version || Date.now());
+    // favicon تب مرورگر می‌تواند از پک جدید بیاید
+    document.querySelectorAll('link[rel="icon"]').forEach(function (link) {
+      link.href = BASE + 'favicon.png' + q;
+    });
+    // apple-touch برای iOS bookmark
+    document.querySelectorAll('link[rel="apple-touch-icon"]').forEach(function (link) {
+      link.href = BASE + 'apple-touch-icon.png' + q;
+    });
   }
 
   async function saveVersion(version) {
@@ -181,7 +117,6 @@
     }
     tellServiceWorker(version);
     pointHeadIcons(version);
-    pointManifest(version);
   }
 
   async function publishPwaIcons() {
@@ -201,7 +136,7 @@
     var version = Date.now();
     await saveVersion(version);
     notify(
-      'آیکون میانبر روی سرور ذخیره شد. نصب جدید همین را می‌گیرد. میانبر قبلی گوشی را حذف کنید و دوباره اضافه کنید.'
+      'پک آیکون روی سرور ذخیره شد. برای آیکون نصب PWA باید فایل‌های icon192/512 روی گیت‌هاب همگام شوند. میانبر قبلی را حذف و دوباره اضافه کنید.'
     );
     return true;
   }
@@ -225,24 +160,18 @@
 
   async function boot() {
     wrapSaver();
-    var version = null;
+    // مهم: manifest را دست نزن — same-origin بماند
+    var link = document.querySelector('link[rel="manifest"]');
+    if (link && link.href && link.href.indexOf('blob:') === 0) {
+      link.href = './manifest.webmanifest?v=' + Date.now();
+    }
     try {
       var res = await fetch(BASE + 'version.txt?t=' + Date.now(), { cache: 'no-store' });
       if (res.ok) {
         var text = ((await res.text()) || '').trim();
-        if (/^\d+$/.test(text)) version = text;
+        if (/^\d+$/.test(text)) pointHeadIcons(text);
       }
     } catch (e) {}
-    if (!version) {
-      try {
-        version = localStorage.getItem('cafePwaIconVersion') || String(Date.now());
-      } catch (e2) {
-        version = String(Date.now());
-      }
-    }
-    tellServiceWorker(version);
-    pointHeadIcons(version);
-    pointManifest(version);
   }
 
   window.publishPwaIcons = publishPwaIcons;
