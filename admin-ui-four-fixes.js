@@ -1,19 +1,9 @@
-/** admin-ui-four-fixes.js V4
- * بدون cssText='' روی subscriptionModalBox (علت پریدن فرم)
+/** admin-ui-four-fixes.js V5
+ * خرید اشتراک: شفاف داخل قالب — نه پس‌زمینه تیره جامد
  */
 (function () {
   'use strict';
-  window.__KAFE_ADMIN_UI_FOUR_FIXES_V4__ = true;
-
-  function notify(msg, type) {
-    if (typeof window.kafeNotify === 'function') {
-      window.kafeNotify(msg, type);
-      return;
-    }
-    try {
-      if (typeof showNotification === 'function') showNotification(String(msg), type || '');
-    } catch (e) {}
-  }
+  window.__KAFE_ADMIN_UI_FOUR_FIXES_V5__ = true;
 
   function headerNavHeights() {
     var headerH = 152,
@@ -41,16 +31,15 @@
     st.textContent = [
       '#kafeAdminPurchaseDetail{z-index:100150!important;pointer-events:auto!important;}',
       '#subscriptionModalBox{',
-      '  position:fixed!important;left:0!important;right:0!important;',
-      '  inset:auto!important;width:100%!important;z-index:120!important;',
-      '  display:flex!important;flex-direction:column!important;',
-      '  background:#0b1120!important;opacity:1!important;visibility:visible!important;',
-      '  border-radius:0!important;backdrop-filter:none!important;',
+      '  background:transparent!important;',
+      '  backdrop-filter:none!important;',
       '}',
       '#subscriptionModalBox > div{',
-      '  width:100%!important;max-width:none!important;height:100%!important;',
-      '  max-height:none!important;margin:0!important;border-radius:0!important;',
-      '  background:#0b1120!important;opacity:1!important;overflow-y:auto!important;',
+      '  background:rgba(8,12,24,0.18)!important;',
+      '  backdrop-filter:blur(10px)!important;',
+      '  -webkit-backdrop-filter:blur(10px)!important;',
+      '  border:none!important;border-radius:0!important;',
+      '  box-shadow:none!important;',
       '}'
     ].join('\n');
   }
@@ -58,26 +47,27 @@
   function forceSubAsPage() {
     var box = document.getElementById('subscriptionModalBox');
     if (!box) return;
-    // مهم: دیگر cssText='' نمی‌کنیم
     var h = headerNavHeights();
     box.style.setProperty('position', 'fixed', 'important');
-    box.style.setProperty('top', h.headerH + 'px', 'important');
-    box.style.setProperty('bottom', h.navH + 'px', 'important');
+    box.style.setProperty('top', h.headerH + 8 + 'px', 'important');
+    box.style.setProperty('bottom', h.navH + 8 + 'px', 'important');
     box.style.setProperty('left', '0', 'important');
     box.style.setProperty('right', '0', 'important');
     box.style.setProperty('inset', 'auto', 'important');
     box.style.setProperty('display', 'flex', 'important');
+    box.style.setProperty('background', 'transparent', 'important');
     box.style.setProperty('opacity', '1', 'important');
     box.style.setProperty('visibility', 'visible', 'important');
-    box.style.setProperty('background', '#0b1120', 'important');
-    box.style.setProperty('z-index', '9200', 'important');
+    box.style.setProperty('z-index', '50', 'important');
     var sheet = box.firstElementChild;
     if (sheet) {
       sheet.style.setProperty('width', '100%', 'important');
       sheet.style.setProperty('height', '100%', 'important');
       sheet.style.setProperty('max-height', 'none', 'important');
-      sheet.style.setProperty('background', '#0b1120', 'important');
+      sheet.style.setProperty('background', 'rgba(8,12,24,0.18)', 'important');
+      sheet.style.setProperty('backdrop-filter', 'blur(10px)', 'important');
       sheet.style.setProperty('opacity', '1', 'important');
+      sheet.style.setProperty('border-radius', '0', 'important');
     }
   }
 
@@ -91,14 +81,14 @@
 
   function patchDetail() {
     var prev = window.showAdminPurchaseDetail;
-    if (typeof prev !== 'function' || prev.__kafeV4) return;
+    if (typeof prev !== 'function' || prev.__kafeV5) return;
     window.showAdminPurchaseDetail = function () {
       var ret = prev.apply(this, arguments);
       setTimeout(elevateDetail, 0);
       setTimeout(elevateDetail, 80);
       return ret;
     };
-    window.showAdminPurchaseDetail.__kafeV4 = true;
+    window.showAdminPurchaseDetail.__kafeV5 = true;
   }
 
   window.kafeHtmlJsArg = function (value) {

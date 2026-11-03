@@ -1,17 +1,9 @@
-/** kafe-seven-fixes.js
- * ۷ مورد باقی‌مانده — بدون باز کردن موارد حل‌شده
- * 1 boot یک‌بار (در boot-flow V2)
- * 2 بازخورد یکدست
- * 3 حذف پیام با تأیید واقعی
- * 4-5-7 آیکون Supabase در manifest
- * 6 خرید اشتراک پایدار با ۴ طرح
- */
+/** kafe-seven-fixes.js V2 — transparent purchase + unified notify + delete verify */
 (function () {
   'use strict';
-  if (window.__KAFE_SEVEN_FIXES_V1__) return;
-  window.__KAFE_SEVEN_FIXES_V1__ = true;
+  if (window.__KAFE_SEVEN_FIXES_V2__) return;
+  window.__KAFE_SEVEN_FIXES_V2__ = true;
 
-  /* ========== 2) بازخورد یکدست ========== */
   function unifiedNotify(msg, type) {
     var text = String(msg || '');
     try {
@@ -33,13 +25,9 @@
         return;
       }
     } catch (e2) {}
-    try {
-      alert(text);
-    } catch (e3) {}
   }
   window.kafeNotify = unifiedNotify;
 
-  // استایل یکدست notification
   (function () {
     var id = 'kafe-unified-notify-css';
     if (document.getElementById(id)) return;
@@ -53,17 +41,14 @@
       '  padding:12px 16px!important;border-radius:12px!important;',
       '  font-size:0.92rem!important;font-weight:800!important;text-align:center!important;direction:rtl!important;',
       '  background:#0b1120!important;color:#F0D878!important;',
-      '  border:2px solid #c9a84c!important;box-shadow:0 10px 28px rgba(0,0,0,.45)!important;',
+      '  border:2px solid #c9a84c!important;',
       '}',
-      '#notification.error{',
-      '  color:#fff!important;background:#5a1520!important;border-color:#c44!important;',
-      '}',
-      '#kafeHardToast{display:none!important;}' // جلوگیری از دوگانگی زرد/سبز موازی
+      '#notification.error{color:#fff!important;background:#5a1520!important;border-color:#c44!important;}',
+      '#kafeHardToast{display:none!important;}'
     ].join('\n');
     document.head.appendChild(st);
   })();
 
-  /* ========== 3) حذف پیام با تأیید واقعی ========== */
   async function hardDeleteMessageVerified(msgId, convId) {
     unifiedNotify('در حال حذف پیام…');
     try {
@@ -86,17 +71,11 @@
         unifiedNotify('اتصال سرور برقرار نیست', 'error');
         return;
       }
-      // حذف
       var r = await c.from('messages').delete().eq('id', msgId);
       if (r && r.error) throw r.error;
-
-      // تأیید واقعی: آیا هنوز هست؟
       var check = await c.from('messages').select('id').eq('id', msgId).maybeSingle();
       if (check && check.data && check.data.id) {
-        unifiedNotify(
-          'حذف انجام نشد (احتمالاً محدودیت دسترسی سرور). نقش admin در پروفایل را بررسی کنید.',
-          'error'
-        );
+        unifiedNotify('حذف انجام نشد (محدودیت دسترسی سرور / نقش admin).', 'error');
         return;
       }
       unifiedNotify('✅ پیام حذف شد');
@@ -106,7 +85,6 @@
         } catch (e2) {}
       }
     } catch (e) {
-      console.error('hardDeleteMessageVerified', e);
       unifiedNotify('حذف ناموفق: ' + ((e && e.message) || e), 'error');
     }
   }
@@ -128,8 +106,8 @@
     return { mid: mid, cid: cid };
   }
 
-  if (!window.__kafeDelSeven) {
-    window.__kafeDelSeven = true;
+  if (!window.__kafeDelSevenV2) {
+    window.__kafeDelSevenV2 = true;
     document.addEventListener(
       'click',
       function (ev) {
@@ -153,77 +131,37 @@
     );
   }
 
-  /* ========== 6) خرید اشتراک پایدار ========== */
-  function heights() {
-    var headerH = 152,
-      navH = 68;
-    try {
-      var hdr =
-        document.querySelector('#appHeader') ||
-        document.querySelector('header.app-header') ||
-        document.querySelector('header');
-      if (hdr) {
-        var hr = hdr.getBoundingClientRect();
-        if (hr.height > 40 && hr.height < 280) headerH = Math.round(hr.height);
-      }
-      var nav = document.getElementById('bottomNav');
-      if (nav) {
-        var nr = nav.getBoundingClientRect();
-        if (nr.height > 40 && nr.height < 140) navH = Math.round(nr.height);
-      }
-    } catch (e) {}
-    return { headerH: headerH, navH: navH };
-  }
-
-  function stylePurchaseSolid() {
+  function stylePurchaseGlass() {
     var box = document.getElementById('subscriptionModalBox');
     if (!box) return;
-    var h = heights();
-    box.style.setProperty('position', 'fixed', 'important');
-    box.style.setProperty('inset', 'auto', 'important');
-    box.style.setProperty('top', h.headerH + 'px', 'important');
-    box.style.setProperty('bottom', h.navH + 'px', 'important');
-    box.style.setProperty('left', '0', 'important');
-    box.style.setProperty('right', '0', 'important');
-    box.style.setProperty('z-index', '9200', 'important');
-    box.style.setProperty('display', 'flex', 'important');
-    box.style.setProperty('background', '#0b1120', 'important');
+    box.style.setProperty('background', 'transparent', 'important');
     box.style.setProperty('opacity', '1', 'important');
-    box.style.setProperty('visibility', 'visible', 'important');
     var sheet = box.firstElementChild;
     if (sheet) {
-      sheet.style.setProperty('width', '100%', 'important');
-      sheet.style.setProperty('max-width', 'none', 'important');
-      sheet.style.setProperty('height', '100%', 'important');
-      sheet.style.setProperty('max-height', 'none', 'important');
-      sheet.style.setProperty('background', '#0b1120', 'important');
+      sheet.style.setProperty('background', 'rgba(8,12,24,0.18)', 'important');
+      sheet.style.setProperty('backdrop-filter', 'blur(10px)', 'important');
       sheet.style.setProperty('opacity', '1', 'important');
-      sheet.style.setProperty('overflow-y', 'auto', 'important');
-      sheet.style.setProperty('border-radius', '0', 'important');
     }
   }
 
   function wrapPurchase() {
     var prev = window.openSubscriptionPurchase;
-    if (typeof prev !== 'function' || prev.__kafeSevenPurchase) return;
+    if (typeof prev !== 'function' || prev.__kafeSevenPurchaseV2) return;
     var wrapped = function () {
       var ret = prev.apply(this, arguments);
       var apply = function () {
-        stylePurchaseSolid();
-        // چند بار برای غلبه بر ui-unify شفاف
-        setTimeout(stylePurchaseSolid, 50);
-        setTimeout(stylePurchaseSolid, 200);
-        setTimeout(stylePurchaseSolid, 500);
+        stylePurchaseGlass();
+        setTimeout(stylePurchaseGlass, 100);
+        setTimeout(stylePurchaseGlass, 400);
       };
       if (ret && typeof ret.then === 'function') ret.then(apply).catch(apply);
       else apply();
       return ret;
     };
-    wrapped.__kafeSevenPurchase = true;
+    wrapped.__kafeSevenPurchaseV2 = true;
     window.openSubscriptionPurchase = wrapped;
   }
 
-  // دکمه خرید نوار پایین → فرم کامل
   function bindBuy() {
     var nav = document.getElementById('bottomNav');
     if (!nav) return;
@@ -234,8 +172,8 @@
       var label = (b.textContent || '').replace(/\s+/g, ' ').trim();
       var oc = b.getAttribute('onclick') || '';
       if (!(oc.indexOf('openSubOrdersPanel') >= 0 || label.indexOf('خرید') >= 0)) continue;
-      if (b.__kafeSevenBuy) continue;
-      b.__kafeSevenBuy = true;
+      if (b.__kafeSevenBuyV2) continue;
+      b.__kafeSevenBuyV2 = true;
       b.setAttribute('onclick', 'void(0)');
       b.addEventListener(
         'click',
@@ -246,8 +184,6 @@
           if (typeof window.openSubscriptionPurchase === 'function') {
             unifiedNotify('فرم خرید اشتراک');
             window.openSubscriptionPurchase();
-          } else {
-            unifiedNotify('فرم خرید در دسترس نیست', 'error');
           }
         },
         true
