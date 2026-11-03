@@ -1,13 +1,11 @@
-/** purchase-hold-fix.js V2
- * فرم خرید اشتراک:
- * - داخل قالب اپ (بین هدر و نوار پایین)
- * - پس‌زمینه شفاف مثل فروشگاه / منوی مودال‌ها
- * - قفل ضد بسته شدن تصادفی
+/** purchase-hold-fix.js V3
+ * فرم خرید داخل قالب اپ + شفاف
+ * قیمت طرح‌ها: متن تیره و خوانا
  */
 (function () {
   'use strict';
-  if (window.__KAFE_PURCHASE_HOLD_V2__) return;
-  window.__KAFE_PURCHASE_HOLD_V2__ = true;
+  if (window.__KAFE_PURCHASE_HOLD_V3__) return;
+  window.__KAFE_PURCHASE_HOLD_V3__ = true;
 
   window.__kafeSubLock = false;
   window.__kafeSubAllowClose = false;
@@ -30,7 +28,6 @@
         if (nr.height > 40 && nr.height < 140) navH = Math.round(nr.height);
       }
     } catch (e) {}
-    // فاصله کوچک مثل pages-container
     return { headerH: headerH, navH: navH, gap: 8 };
   }
 
@@ -43,53 +40,36 @@
       document.head.appendChild(st);
     }
     st.textContent = [
-      '/* خرید اشتراک = لایه داخل قالب اپ، شفاف مثل فروشگاه */',
       '#subscriptionModalBox{',
-      '  position:fixed!important;',
-      '  inset:auto!important;',
-      '  left:0!important;right:0!important;',
-      '  z-index:50!important;',
-      '  display:flex!important;',
-      '  flex-direction:column!important;',
-      '  align-items:stretch!important;',
-      '  justify-content:flex-start!important;',
-      '  padding:0!important;margin:0!important;',
-      '  /* شفاف — تصویر زمینه اپ دیده شود */',
-      '  background:transparent!important;',
-      '  backdrop-filter:none!important;',
-      '  -webkit-backdrop-filter:none!important;',
-      '  border-radius:0!important;',
-      '  box-shadow:none!important;',
-      '  opacity:1!important;visibility:visible!important;',
-      '  pointer-events:auto!important;',
+      '  position:fixed!important;inset:auto!important;left:0!important;right:0!important;',
+      '  z-index:50!important;display:flex!important;flex-direction:column!important;',
+      '  background:transparent!important;opacity:1!important;visibility:visible!important;',
+      '  pointer-events:auto!important;border-radius:0!important;box-shadow:none!important;',
       '}',
       '#subscriptionModalBox > div{',
-      '  width:100%!important;',
-      '  max-width:none!important;',
-      '  height:100%!important;',
-      '  max-height:none!important;',
-      '  margin:0!important;',
-      '  border-radius:0!important;',
-      '  border:none!important;',
-      '  /* کارت شیشه‌ای ملایم مثل بلوک‌های فروشگاه */',
+      '  width:100%!important;max-width:none!important;height:100%!important;max-height:none!important;',
+      '  margin:0!important;border-radius:0!important;border:none!important;',
       '  background:rgba(8,12,24,0.18)!important;',
-      '  backdrop-filter:blur(10px)!important;',
-      '  -webkit-backdrop-filter:blur(10px)!important;',
-      '  box-shadow:none!important;',
-      '  overflow-y:auto!important;',
-      '  padding:12px 12px 24px!important;',
-      '  color:#F0E6D3!important;',
-      '  opacity:1!important;',
+      '  backdrop-filter:blur(10px)!important;-webkit-backdrop-filter:blur(10px)!important;',
+      '  overflow-y:auto!important;padding:12px 12px 24px!important;color:#F0E6D3!important;',
       '}',
-      '/* فیلدها خوانا روی پس‌زمینه شفاف */',
-      '#subscriptionModalBox input,',
-      '#subscriptionModalBox select,',
-      '#subscriptionModalBox textarea{',
-      '  background:rgba(8,12,24,0.55)!important;',
-      '  color:#F5E6C8!important;',
+      '#subscriptionModalBox input,#subscriptionModalBox select,#subscriptionModalBox textarea{',
+      '  background:rgba(8,12,24,0.55)!important;color:#F5E6C8!important;',
       '  border:1px solid rgba(201,168,76,0.4)!important;',
       '}',
-      '#subscriptionModalBox label{color:#F0D878!important;}'
+      '#subscriptionModalBox label{color:#F0D878!important;}',
+      '/* قیمت طرح‌ها: متن تیره و خوانا */',
+      '#subscriptionModalBox .subscription-plan-btn span{',
+      '  color:#1A1208!important;',
+      '  -webkit-text-fill-color:#1A1208!important;',
+      '  font-weight:900!important;',
+      '  opacity:1!important;',
+      '  background:rgba(255,248,220,0.95)!important;',
+      '  border-radius:8px!important;',
+      '  padding:3px 8px!important;',
+      '  display:inline-block!important;',
+      '  margin-top:6px!important;',
+      '}'
     ].join('\n');
   }
 
@@ -110,7 +90,6 @@
     box.style.setProperty('opacity', '1', 'important');
     box.style.setProperty('visibility', 'visible', 'important');
     box.style.setProperty('pointer-events', 'auto', 'important');
-    box.style.setProperty('backdrop-filter', 'none', 'important');
 
     var sheet = box.firstElementChild;
     if (sheet) {
@@ -124,11 +103,22 @@
       sheet.style.setProperty('background', 'rgba(8,12,24,0.18)', 'important');
       sheet.style.setProperty('backdrop-filter', 'blur(10px)', 'important');
       sheet.style.setProperty('-webkit-backdrop-filter', 'blur(10px)', 'important');
-      sheet.style.setProperty('box-shadow', 'none', 'important');
       sheet.style.setProperty('overflow-y', 'auto', 'important');
-      sheet.style.setProperty('padding', '12px 12px 24px', 'important');
       sheet.style.setProperty('opacity', '1', 'important');
     }
+
+    // رنگ قیمت تیره
+    box.querySelectorAll('.subscription-plan-btn span').forEach(function (sp) {
+      sp.style.setProperty('color', '#1A1208', 'important');
+      sp.style.setProperty('-webkit-text-fill-color', '#1A1208', 'important');
+      sp.style.setProperty('font-weight', '900', 'important');
+      sp.style.setProperty('opacity', '1', 'important');
+      sp.style.setProperty('background', 'rgba(255,248,220,0.95)', 'important');
+      sp.style.setProperty('border-radius', '8px', 'important');
+      sp.style.setProperty('padding', '3px 8px', 'important');
+      sp.style.setProperty('display', 'inline-block', 'important');
+      sp.style.setProperty('margin-top', '6px', 'important');
+    });
   }
 
   var origRemove = Element.prototype.remove;
@@ -139,7 +129,6 @@
       window.__kafeSubLock &&
       !window.__kafeSubAllowClose
     ) {
-      console.warn('[purchase-hold] blocked remove');
       styleInApp(this);
       return;
     }
@@ -178,7 +167,7 @@
 
   function wrapOpen() {
     var prev = window.openSubscriptionPurchase;
-    if (typeof prev !== 'function' || prev.__kafeHoldWrapV2) return;
+    if (typeof prev !== 'function' || prev.__kafeHoldWrapV3) return;
     var wrapped = function () {
       window.__kafeSubAllowClose = true;
       window.__kafeSubLock = false;
@@ -193,7 +182,7 @@
       else after();
       return ret;
     };
-    wrapped.__kafeHoldWrapV2 = true;
+    wrapped.__kafeHoldWrapV3 = true;
     window.openSubscriptionPurchase = wrapped;
   }
 
@@ -213,8 +202,8 @@
 
   function bindNavClose() {
     var nav = document.getElementById('bottomNav');
-    if (!nav || nav.__kafeHoldNavV2) return;
-    nav.__kafeHoldNavV2 = true;
+    if (!nav || nav.__kafeHoldNavV3) return;
+    nav.__kafeHoldNavV3 = true;
     nav.addEventListener(
       'click',
       function (ev) {
