@@ -1,14 +1,16 @@
 /**
- * pwa-icon-dynamic.js
- * آیکون نصب PWA را از پنل ادمین به Supabase Storage می‌فرستد.
- * main.js تغییر نمی‌کند. فایل‌های icon192.png / icon512.png روی گیت‌هاب لازم نیست عوض شوند.
+ * pwa-icon-dynamic.js V2
+ * آیکون نصب PWA از پنل ادمین → Supabase Storage
+ * + بازنویسی runtime برای manifest / favicon / apple-touch
+ * تا دیگر به فایل‌های قدیمی icon192.png روی گیت‌هاب برنگردد.
  *
- * محدودیت پلتفرم: میانبری که از قبل روی صفحهٔ گوشی نصب شده،
- * روی iOS اصلاً و روی اغلب اندروید‌ها عملاً تا حذف و افزودن دوباره عوض نمی‌شود.
- * نصب‌های جدید بعد از ذخیره، آیکون پنل را می‌گیرند.
+ * محدودیت پلتفرم: میانبر از قبل نصب‌شده روی iOS عوض نمی‌شود؛
+ * روی اندروید اغلب تا حذف و نصب دوباره ثابت می‌ماند.
  */
 (function () {
   'use strict';
+  if (window.__KAFE_PWA_ICON_DYNAMIC_V2__) return;
+  window.__KAFE_PWA_ICON_DYNAMIC_V2__ = true;
 
   var BASE =
     'https://evxxvnlwtbaqpjbjaxdk.supabase.co/storage/v1/object/public/public-assets/app-media/pwa/';
@@ -64,8 +66,6 @@
       cacheControl: path.indexOf('version.txt') >= 0 ? '0' : '60'
     });
     if (up.error) throw up.error;
-    var pub = supabaseClient.storage.from('public-assets').getPublicUrl(path);
-    return pub.data && pub.data.publicUrl ? pub.data.publicUrl : BASE + path.split('/').pop();
   }
 
   function currentIconSrc() {
@@ -82,34 +82,106 @@
     try {
       if (navigator.serviceWorker.controller) navigator.serviceWorker.controller.postMessage(msg);
     } catch (e) {}
-    navigator.serviceWorker.ready.then(function (reg) {
-      if (reg.active) reg.active.postMessage(msg);
-      if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-    }).catch(function () {});
+    navigator.serviceWorker.ready
+      .then(function (reg) {
+        if (reg.active) reg.active.postMessage(msg);
+        if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+      })
+      .catch(function () {});
   }
 
-  function pointAppleTouchIcon(version) {
-    var href = BASE + 'apple-touch-icon.png?v=' + encodeURIComponent(version);
-    var links = document.querySelectorAll('link[rel="apple-touch-icon"]');
-    if (!links.length) {
-      var link = document.createElement('link');
-      link.rel = 'apple-touch-icon';
+  function setLinkHref(selector, href) {
+    var links = document.querySelectorAll(selector);
+    if (!links.length) return;
+    links.forEach(function (link) {
       link.href = href;
-      document.head.appendChild(link);
-      return;
+    });
+  }
+
+  function pointHeadIcons(version) {
+    var q = version ? ('?v=' + encodeURIComponent(version)) : ('?t=' + Date.now());
+    setLinkHref('link[rel="icon"]', BASE + 'favicon.png' + q);
+    setLinkHref('link[rel="apple-touch-icon"]', BASE + 'apple-touch-icon.png' + q);
+    // header logo optional — only if explicitly using static icon files
+  }
+
+  function pointManifest(version) {
+    var q = version ? ('?v=' + encodeURIComponent(version)) : ('?t=' + Date.now());
+    var manifest = {
+      id: '/',
+      name: 'کافه سرکتاب میعاد',
+      short_name: 'کافه میعاد',
+      description: 'آموزش، محتوا و فروش محصولات کافه سرکتاب میعاد',
+      lang: 'fa',
+      dir: 'rtl',
+      start_url: './index.html',
+      scope: './',
+      display: 'standalone',
+      orientation: 'portrait-primary',
+      background_color: '#070B14',
+      theme_color: '#070B14',
+      categories: ['education', 'shopping', 'lifestyle'],
+      icons: [
+        {
+          src: BASE + 'icon-192.png' + q,
+          sizes: '192x192',
+          type: 'image/png',
+          purpose: 'any'
+        },
+        {
+          src: BASE + 'icon-512.png' + q,
+          sizes: '512x512',
+          type: 'image/png',
+          purpose: 'any'
+        },
+        {
+          src: BASE + 'icon-maskable-512.png' + q,
+          sizes: '512x512',
+          type: 'image/png',
+          purpose: 'maskable'
+        }
+      ],
+      shortcuts: [
+        {
+          name: 'ورود به برنامه',
+          short_name: 'ورود',
+          url: './index.html',
+          description: 'باز کردن کافه سرکتاب میعاد'
+        }
+      ]
+    };
+    try {
+      var blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+      var url = URL.createObjectURL(blob);
+      var link = document.querySelector('link[rel="manifest"]');
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'manifest';
+        document.head.appendChild(link);
+      }
+      link.href = url;
+    } catch (e) {
+      console.warn('[pwa-icon] manifest rewrite failed', e);
     }
-    links.forEach(function (link) { link.href = href; });
   }
 
   async function saveVersion(version) {
     var blob = new Blob([String(version)], { type: 'text/plain' });
     await uploadBlob('app-media/pwa/version.txt', blob, 'text/plain');
-    try { localStorage.setItem('cafePwaIconVersion', String(version)); } catch (e) {}
+    try {
+      localStorage.setItem('cafePwaIconVersion', String(version));
+    } catch (e) {}
     if (typeof cloudSaveAdminSetting === 'function') {
-      try { await cloudSaveAdminSetting('pwaIconPack', { v: version, updated_at: new Date().toISOString() }); } catch (e) {}
+      try {
+        await cloudSaveAdminSetting('pwaIconPack', {
+          v: version,
+          updated_at: new Date().toISOString()
+        });
+      } catch (e) {}
     }
     tellServiceWorker(version);
-    pointAppleTouchIcon(version);
+    pointHeadIcons(version);
+    pointManifest(version);
   }
 
   async function publishPwaIcons() {
@@ -128,7 +200,9 @@
     }
     var version = Date.now();
     await saveVersion(version);
-    notify('آیکون میانبر روی سرور ذخیره شد. نصب جدید همین را می‌گیرد. میانبر قبلی گوشی را حذف کنید و دوباره اضافه کنید.');
+    notify(
+      'آیکون میانبر روی سرور ذخیره شد. نصب جدید همین را می‌گیرد. میانبر قبلی گوشی را حذف کنید و دوباره اضافه کنید.'
+    );
     return true;
   }
 
@@ -151,14 +225,24 @@
 
   async function boot() {
     wrapSaver();
+    var version = null;
     try {
       var res = await fetch(BASE + 'version.txt?t=' + Date.now(), { cache: 'no-store' });
-      if (!res.ok) return;
-      var version = (await res.text() || '').trim();
-      if (!/^\d+$/.test(version)) return;
-      tellServiceWorker(version);
-      pointAppleTouchIcon(version);
+      if (res.ok) {
+        var text = ((await res.text()) || '').trim();
+        if (/^\d+$/.test(text)) version = text;
+      }
     } catch (e) {}
+    if (!version) {
+      try {
+        version = localStorage.getItem('cafePwaIconVersion') || String(Date.now());
+      } catch (e2) {
+        version = String(Date.now());
+      }
+    }
+    tellServiceWorker(version);
+    pointHeadIcons(version);
+    pointManifest(version);
   }
 
   window.publishPwaIcons = publishPwaIcons;
