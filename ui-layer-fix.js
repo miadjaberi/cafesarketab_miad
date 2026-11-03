@@ -29,16 +29,10 @@
     }
   }
 
-  function closeSubOrders() {
-    var p = document.getElementById('subOrdersPanel');
-    if (p) p.style.display = 'none';
-  }
-
   function closeAllLayersExcept(keep) {
     if (keep !== 'settings') closeSettings();
     if (keep !== 'admin') closeAdmin();
     if (keep !== 'menu') closeMenu();
-    if (keep !== 'suborders') closeSubOrders();
   }
 
   function wrap(name) {
@@ -86,15 +80,15 @@
         (document.body || document.documentElement).appendChild(s);
       } catch (e) {}
     }
-    inject('./boot-flow-fix.js?v=20261103g', 'boot-flow');
-    inject('./nav-swipe-fix.js?v=20261103g', 'nav-swipe');
-    inject('./buy-nav-fix.js?v=20261103g', 'buy-nav');
-    inject('./fix-four-bugs.js?v=20261103g', 'four-bugs');
-    inject('./hamzad-ui-fix.js?v=20261103g', 'hamzad-ui');
-    inject('./modal-menu-layout.js?v=20261103g', 'modal-menu');
-    inject('./modal-ui-theme.js?v=20261103g', 'modal-theme');
-    inject('./rename-raml.js?v=20261103g', 'rename-raml');
-    inject('./ui-unify-v1.js?v=20261103g', 'ui-unify');
-    inject('./admin-ui-four-fixes.js?v=20261103g', 'admin-four');
+    inject('./boot-flow-fix.js?v=20261103h', 'boot-flow');
+    inject('./nav-swipe-fix.js?v=20261103h', 'nav-swipe');
+    inject('./buy-nav-fix.js?v=20261103h', 'buy-nav');
+    inject('./fix-four-bugs.js?v=20261103h', 'four-bugs');
+    inject('./hamzad-ui-fix.js?v=20261103h', 'hamzad-ui');
+    inject('./modal-menu-layout.js?v=20261103h', 'modal-menu');
+    inject('./modal-ui-theme.js?v=20261103h', 'modal-theme');
+    inject('./rename-raml.js?v=20261103h', 'rename-raml');
+    inject('./ui-unify-v1.js?v=20261103h', 'ui-unify');
+    inject('./admin-ui-four-fixes.js?v=20261103h', 'admin-four');
   })();
 })();
