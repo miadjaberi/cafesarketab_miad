@@ -1,5 +1,5 @@
 /* کافه سرکتاب میعاد — Service Worker */
-const CACHE_VERSION = 'kafe-miad-v22.63-shop-glass-purchase';
+const CACHE_VERSION = 'kafe-miad-v22.64-unfreeze';
 const SHELL_CACHE = `shell-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = [
@@ -95,38 +95,14 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET') return;
   const url = req.url;
 
-  if (
-    url.includes('app-media/pwa/icon-') ||
-    url.includes('app-media/pwa/favicon') ||
-    url.includes('app-media/pwa/apple-touch')
-  ) {
-    event.respondWith(fetch(req, { cache: 'no-store' }).catch(() => caches.match(req)));
-    return;
-  }
-
   if (isSupabaseOrApi(url)) {
     event.respondWith(fetch(req));
     return;
   }
 
-  if (url.includes('manifest.webmanifest')) {
+  if (/\.js$/i.test(new URL(url).pathname) || url.includes('manifest.webmanifest')) {
     event.respondWith(
       fetch(req, { cache: 'reload' })
-        .then((res) => {
-          if (res && res.ok) {
-            const copy = res.clone();
-            caches.open(SHELL_CACHE).then((c) => c.put(req, copy)).catch(() => {});
-          }
-          return res;
-        })
-        .catch(() => caches.match(req))
-    );
-    return;
-  }
-
-  if (/\.js$/i.test(new URL(url).pathname)) {
-    event.respondWith(
-      fetch(req)
         .then((res) => {
           if (res && res.ok) {
             const copy = res.clone();
