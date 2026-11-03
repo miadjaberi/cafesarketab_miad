@@ -89,14 +89,15 @@
         (document.body || document.documentElement).appendChild(s);
       } catch (e) {}
     }
-    inject('./boot-flow-fix.js?v=20261103a', 'boot-flow');
-    inject('./nav-swipe-fix.js?v=20261103a', 'nav-swipe');
-    inject('./fix-four-bugs.js?v=20261103a', 'four-bugs');
-    inject('./hamzad-ui-fix.js?v=20261103a', 'hamzad-ui');
-    inject('./modal-menu-layout.js?v=20261103a', 'modal-menu');
-    inject('./modal-ui-theme.js?v=20261103a', 'modal-theme');
-    inject('./rename-raml.js?v=20261103a', 'rename-raml');
-    inject('./ui-unify-v1.js?v=20261103a', 'ui-unify');
+    inject('./boot-flow-fix.js?v=20261103b', 'boot-flow');
+    inject('./nav-swipe-fix.js?v=20261103b', 'nav-swipe');
+    inject('./fix-four-bugs.js?v=20261103b', 'four-bugs');
+    inject('./hamzad-ui-fix.js?v=20261103b', 'hamzad-ui');
+    inject('./modal-menu-layout.js?v=20261103b', 'modal-menu');
+    inject('./modal-ui-theme.js?v=20261103b', 'modal-theme');
+    inject('./rename-raml.js?v=20261103b', 'rename-raml');
+    inject('./ui-unify-v1.js?v=20261103b', 'ui-unify');
+    inject('./admin-ui-four-fixes.js?v=20261103b', 'admin-four');
     /* kafe-sub-modal-fix.js عمداً حذف شد — دیگر inject نمی‌شود */
   })();
 })();
