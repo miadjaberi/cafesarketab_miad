@@ -1,5 +1,5 @@
 /* کافه سرکتاب میعاد — Service Worker */
-const CACHE_VERSION = 'kafe-miad-v22.56-seven-supabase-icon';
+const CACHE_VERSION = 'kafe-miad-v22.57-purchase-hold';
 const SHELL_CACHE = `shell-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = [
@@ -18,6 +18,7 @@ const PRECACHE_URLS = [
   './boot-flow-fix.js',
   './nav-swipe-fix.js',
   './buy-nav-fix.js',
+  './purchase-hold-fix.js',
   './kafe-seven-fixes.js',
   './fix-four-bugs.js',
   './hamzad-ui-fix.js',
@@ -94,7 +95,6 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET') return;
   const url = req.url;
 
-  // آیکون‌های PWA از Supabase — همیشه شبکه (نه کش قدیمی گیت‌هاب)
   if (
     url.includes('app-media/pwa/icon-') ||
     url.includes('app-media/pwa/favicon') ||
@@ -109,7 +109,6 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // manifest همیشه تازه
   if (url.includes('manifest.webmanifest')) {
     event.respondWith(
       fetch(req, { cache: 'reload' })
