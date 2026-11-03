@@ -1,11 +1,11 @@
-/** modal-ui-theme.js V12 — استاندارد نهایی طبق نمونه
- * پس‌زمینه سرمه‌ای #0b1120 | حاشیه طلایی | راهنما فیروزه‌ای
+/** modal-ui-theme.js V13 — استاندارد نهایی + راهنمای خوانا
+ * پس‌زمینه سرمه‌ای #0b1120 | حاشیه طلایی | راهنما فیروزه‌ای خوانا
  * فیلد تیره + متن سفید | دکمه طلایی | بدون شفافیت
  */
 (function () {
   'use strict';
-  if (window.__KAFE_MODAL_UI_THEME_V12__) return;
-  window.__KAFE_MODAL_UI_THEME_V12__ = true;
+  if (window.__KAFE_MODAL_UI_THEME_V13__) return;
+  window.__KAFE_MODAL_UI_THEME_V13__ = true;
 
   var CARD_BG = '#0b1120';
   var OVERLAY_BG = 'rgba(0,0,0,0.8)';
@@ -28,7 +28,6 @@
       '  opacity:0!important;visibility:hidden!important;pointer-events:none!important;',
       '}',
 
-      /* اوورلی تیره مات */
       '.modal-glass,.modal-glass.active,div.modal-glass,div.modal-glass.active{',
       '  background:' + OVERLAY_BG + '!important;',
       '  background-color:' + OVERLAY_BG + '!important;',
@@ -39,7 +38,6 @@
       '  box-sizing:border-box!important;border:none!important;outline:none!important;',
       '}',
 
-      /* کارت سرمه‌ای + حاشیه طلایی */
       '.modal-glass .modal-glass-content,',
       '.modal-glass > .modal-glass-content,',
       'div.modal-glass .modal-glass-content,',
@@ -58,7 +56,6 @@
       '  color:#fff!important;',
       '}',
 
-      /* هدر */
       '.modal-glass .modal-glass-header{',
       '  display:flex!important;align-items:center!important;gap:10px!important;',
       '  padding:16px 18px 12px!important;',
@@ -92,23 +89,46 @@
       '}',
       '.modal-glass .modal-glass-body{padding:14px 18px 18px!important;background:transparent!important;}',
 
-      /* کادر راهنما فیروزه‌ای */
+      /* راهنما فیروزه‌ای — خوانا و متعادل */
       '.modal-glass .modal-guide,',
       '.modal-glass .modal-guide-box,',
       '.modal-glass [class*="guide"]{',
       '  background:#1e3a45!important;',
       '  border:none!important;',
       '  border-right:4px solid #2dd4bf!important;',
-      '  border-radius:8px!important;',
-      '  padding:12px!important;margin:0 0 18px!important;',
+      '  border-radius:10px!important;',
+      '  padding:10px 12px!important;margin:0 0 14px!important;',
       '  color:#ffffff!important;-webkit-text-fill-color:#ffffff!important;',
-      '  font-size:.85rem!important;line-height:1.8!important;font-weight:500!important;',
+      '  font-size:.88rem!important;line-height:1.7!important;font-weight:500!important;',
+      '  max-height:none!important;overflow:visible!important;',
       '}',
       '.modal-glass .modal-guide i,.modal-glass .modal-guide *{',
       '  color:#ffffff!important;-webkit-text-fill-color:#ffffff!important;font-size:inherit!important;',
       '}',
 
-      /* تب‌ها */
+      /* detailed guide — override styles.css polish (was too small) */
+      'html body .modal-glass .kafe-modal-detailed-guide,',
+      'html body .kafe-modal-detailed-guide{',
+      '  background:#1e3a45!important;',
+      '  border:none!important;',
+      '  border-right:4px solid #2dd4bf!important;',
+      '  border-radius:10px!important;',
+      '  padding:10px 12px!important;margin:0 0 14px!important;',
+      '  max-height:180px!important;overflow:auto!important;',
+      '  font-size:.82rem!important;line-height:1.65!important;font-weight:500!important;',
+      '  color:#ffffff!important;-webkit-text-fill-color:#ffffff!important;',
+      '}',
+      'html body .kafe-modal-detailed-guide .kafe-modal-guide-title,',
+      'html body .kafe-modal-guide-title{',
+      '  font-size:.88rem!important;line-height:1.35!important;margin:0 0 4px!important;',
+      '  font-weight:800!important;color:#F0D878!important;-webkit-text-fill-color:#F0D878!important;',
+      '}',
+      'html body .kafe-modal-detailed-guide p,',
+      'html body .kafe-modal-detailed-guide p *{',
+      '  font-size:.82rem!important;line-height:1.65!important;margin:0!important;font-weight:500!important;',
+      '  color:#ffffff!important;-webkit-text-fill-color:#ffffff!important;',
+      '}',
+
       '.modal-glass .tab-buttons,.modal-glass .tabs,.modal-glass [class*="tab-row"]{',
       '  display:flex!important;gap:8px!important;margin-bottom:14px!important;',
       '}',
@@ -123,7 +143,6 @@
       '  color:#0f172a!important;-webkit-text-fill-color:#0f172a!important;',
       '}',
 
-      /* لیبل طلایی */
       '.modal-glass .input-group label,',
       '.modal-glass .form-group label,',
       '.modal-glass label{',
@@ -132,7 +151,6 @@
       '  font-weight:700!important;font-size:.9rem!important;',
       '}',
 
-      /* فیلدها: سرمه‌ای تیره + متن سفید + حاشیه طلایی نازک */
       '.modal-glass input[type=text],.modal-glass input[type=number],.modal-glass input[type=tel],',
       '.modal-glass input[type=email],.modal-glass input[type=password],.modal-glass input[type=date],',
       '.modal-glass input[type=search],.modal-glass textarea,.modal-glass select,',
@@ -163,7 +181,6 @@
       '.modal-glass select option{background:#0b1120!important;color:#fff!important;}',
       '.modal-glass .input-group,.modal-glass .form-group{margin-bottom:15px!important;}',
 
-      /* دکمه طلایی */
       '.modal-glass .btn,.modal-glass button.btn{',
       '  width:100%!important;padding:14px!important;margin-top:4px!important;',
       '  border:none!important;border-radius:12px!important;',
@@ -173,7 +190,6 @@
       '  box-shadow:0 5px 15px rgba(201,168,76,.4)!important;',
       '}',
 
-      /* نتیجه */
       '.modal-glass .result-box[style*="display: none"],',
       '.modal-glass .result-box[style*="display:none"]{',
       '  display:none!important;margin:0!important;padding:0!important;height:0!important;border:none!important;',
@@ -195,23 +211,6 @@
       '#hamzadModal .date-row,#hamzadModal .hamzad-date-row{',
       '  display:grid!important;grid-template-columns:1fr 1fr 1fr!important;',
       '  gap:8px!important;margin-bottom:12px!important;',
-      '}',
-
-      /* راهنمای پنجره — جمع‌وجور، فونت ریز، تا فرم دیده بماند */
-      'html body .modal-glass .kafe-modal-detailed-guide,',
-      'html body .kafe-modal-detailed-guide{',
-      '  padding:6px 9px!important;margin:4px 0 8px!important;',
-      '  max-height:88px!important;overflow:auto!important;',
-      '  font-size:.7rem!important;line-height:1.45!important;',
-      '  border-radius:10px!important;',
-      '}',
-      'html body .kafe-modal-detailed-guide .kafe-modal-guide-title{',
-      '  font-size:.72rem!important;line-height:1.3!important;margin:0 0 2px!important;',
-      '  font-weight:800!important;color:#F0D878!important;-webkit-text-fill-color:#F0D878!important;',
-      '}',
-      'html body .kafe-modal-detailed-guide p,',
-      'html body .kafe-modal-detailed-guide p *{',
-      '  font-size:.68rem!important;line-height:1.45!important;margin:0!important;font-weight:500!important;',
       '}'
     ].join('\n');
   }
@@ -284,7 +283,7 @@
 
   function patch() {
     var prevOpen = window.openModalGlass;
-    if (typeof prevOpen === 'function' && !prevOpen.__kafeV12) {
+    if (typeof prevOpen === 'function' && !prevOpen.__kafeV13) {
       window.openModalGlass = function () {
         var r = prevOpen.apply(this, arguments);
         setTimeout(function () {
@@ -293,16 +292,16 @@
         setTimeout(applyInline, 150);
         return r;
       };
-      window.openModalGlass.__kafeV12 = true;
+      window.openModalGlass.__kafeV13 = true;
     }
     var prevClose = window.closeModalGlass;
-    if (typeof prevClose === 'function' && !prevClose.__kafeV12) {
+    if (typeof prevClose === 'function' && !prevClose.__kafeV13) {
       window.closeModalGlass = function () {
         var r = prevClose.apply(this, arguments);
         setTimeout(syncOpen, 30);
         return r;
       };
-      window.closeModalGlass.__kafeV12 = true;
+      window.closeModalGlass.__kafeV13 = true;
     }
   }
 
