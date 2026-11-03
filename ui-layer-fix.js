@@ -1,4 +1,4 @@
-/* جلوگیری از روی‌هم افتادن پنل‌ها: هر بار فقط یک لایه اصلی باز باشد */
+/* جلوگیری از روی‌هم افتادن پنل‌ها */
 (function () {
   'use strict';
 
@@ -41,7 +41,7 @@
     if (keep !== 'suborders') closeSubOrders();
   }
 
-  function wrap(name, keep) {
+  function wrap(name) {
     var prev = window[name];
     if (typeof prev !== 'function') return;
     window[name] = function () {
@@ -56,8 +56,6 @@
           if (willOpenMenu) closeAllLayersExcept('menu');
         } else if (name === 'toggleAdmin') {
           closeAllLayersExcept('admin');
-        } else if (name === 'openSubOrdersPanel') {
-          closeAllLayersExcept('suborders');
         }
       } catch (e) {}
       return prev.apply(this, arguments);
@@ -65,10 +63,9 @@
   }
 
   function applyWraps() {
-    wrap('toggleUserSettings', 'settings');
-    wrap('toggleMenuDrawer', 'menu');
-    wrap('toggleAdmin', 'admin');
-    // openSubOrdersPanel را buy-nav-fix مدیریت می‌کند — اینجا wrap نکن تا تداخل نشود
+    wrap('toggleUserSettings');
+    wrap('toggleMenuDrawer');
+    wrap('toggleAdmin');
   }
 
   if (document.readyState === 'loading') {
@@ -89,15 +86,15 @@
         (document.body || document.documentElement).appendChild(s);
       } catch (e) {}
     }
-    inject('./boot-flow-fix.js?v=20261103f', 'boot-flow');
-    inject('./nav-swipe-fix.js?v=20261103f', 'nav-swipe');
-    inject('./buy-nav-fix.js?v=20261103f', 'buy-nav');
-    inject('./fix-four-bugs.js?v=20261103f', 'four-bugs');
-    inject('./hamzad-ui-fix.js?v=20261103f', 'hamzad-ui');
-    inject('./modal-menu-layout.js?v=20261103f', 'modal-menu');
-    inject('./modal-ui-theme.js?v=20261103f', 'modal-theme');
-    inject('./rename-raml.js?v=20261103f', 'rename-raml');
-    inject('./ui-unify-v1.js?v=20261103f', 'ui-unify');
-    inject('./admin-ui-four-fixes.js?v=20261103f', 'admin-four');
+    inject('./boot-flow-fix.js?v=20261103g', 'boot-flow');
+    inject('./nav-swipe-fix.js?v=20261103g', 'nav-swipe');
+    inject('./buy-nav-fix.js?v=20261103g', 'buy-nav');
+    inject('./fix-four-bugs.js?v=20261103g', 'four-bugs');
+    inject('./hamzad-ui-fix.js?v=20261103g', 'hamzad-ui');
+    inject('./modal-menu-layout.js?v=20261103g', 'modal-menu');
+    inject('./modal-ui-theme.js?v=20261103g', 'modal-theme');
+    inject('./rename-raml.js?v=20261103g', 'rename-raml');
+    inject('./ui-unify-v1.js?v=20261103g', 'ui-unify');
+    inject('./admin-ui-four-fixes.js?v=20261103g', 'admin-four');
   })();
 })();

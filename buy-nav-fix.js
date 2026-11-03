@@ -1,11 +1,11 @@
-/** buy-nav-fix.js V2
- * دکمه «خرید» بین فروشگاه و منوی وسط.
- * باگ V1: بعد از wrap، به‌خاطر فلگ __kafeBuyNavCore دیگر open اصلی صدا زده نمی‌شد.
+/** buy-nav-fix.js V3
+ * دکمه «خرید» نوار پایین → فرم کامل خرید اشتراک (۴ طرح + قیمت + فیش)
+ * نه فقط صفحه وضعیت/تاریخ انقضا.
  */
 (function () {
   'use strict';
-  if (window.__KAFE_BUY_NAV_FIX_V2__) return;
-  window.__KAFE_BUY_NAV_FIX_V2__ = true;
+  if (window.__KAFE_BUY_NAV_FIX_V3__) return;
+  window.__KAFE_BUY_NAV_FIX_V3__ = true;
 
   function notify(msg) {
     try {
@@ -48,28 +48,33 @@
     return { headerH: headerH, navH: navH };
   }
 
-  function stylePanel(p) {
-    if (!p) return;
+  /** فرم کامل خرید اشتراک را داخل چهارچوب اپ (بین هدر و نوار پایین) نشان بده */
+  function stylePurchaseBox() {
+    var box = document.getElementById('subscriptionModalBox');
+    if (!box) return;
     var h = heights();
-    p.style.setProperty('display', 'flex', 'important');
-    p.style.setProperty('position', 'fixed', 'important');
-    p.style.setProperty('inset', 'auto', 'important');
-    p.style.setProperty('top', h.headerH + 'px', 'important');
-    p.style.setProperty('bottom', h.navH + 'px', 'important');
-    p.style.setProperty('left', '0', 'important');
-    p.style.setProperty('right', '0', 'important');
-    p.style.setProperty('width', '100%', 'important');
-    p.style.setProperty('height', 'auto', 'important');
-    p.style.setProperty('z-index', '9000', 'important');
-    p.style.setProperty('background', '#0b1120', 'important');
-    p.style.setProperty('align-items', 'stretch', 'important');
-    p.style.setProperty('justify-content', 'flex-start', 'important');
-    p.style.setProperty('padding', '0', 'important');
-    p.style.setProperty('opacity', '1', 'important');
-    p.style.setProperty('visibility', 'visible', 'important');
-    p.style.setProperty('pointer-events', 'auto', 'important');
+    box.style.cssText = '';
+    box.style.setProperty('position', 'fixed', 'important');
+    box.style.setProperty('inset', 'auto', 'important');
+    box.style.setProperty('top', h.headerH + 'px', 'important');
+    box.style.setProperty('bottom', h.navH + 'px', 'important');
+    box.style.setProperty('left', '0', 'important');
+    box.style.setProperty('right', '0', 'important');
+    box.style.setProperty('width', '100%', 'important');
+    box.style.setProperty('z-index', '9200', 'important');
+    box.style.setProperty('display', 'flex', 'important');
+    box.style.setProperty('flex-direction', 'column', 'important');
+    box.style.setProperty('align-items', 'stretch', 'important');
+    box.style.setProperty('justify-content', 'flex-start', 'important');
+    box.style.setProperty('padding', '0', 'important');
+    box.style.setProperty('margin', '0', 'important');
+    box.style.setProperty('background', '#0b1120', 'important');
+    box.style.setProperty('border-radius', '0', 'important');
+    box.style.setProperty('opacity', '1', 'important');
+    box.style.setProperty('visibility', 'visible', 'important');
+    box.style.setProperty('pointer-events', 'auto', 'important');
 
-    var sheet = p.querySelector('.sub-orders-sheet');
+    var sheet = box.firstElementChild;
     if (sheet) {
       sheet.style.setProperty('width', '100%', 'important');
       sheet.style.setProperty('max-width', 'none', 'important');
@@ -77,31 +82,22 @@
       sheet.style.setProperty('max-height', 'none', 'important');
       sheet.style.setProperty('margin', '0', 'important');
       sheet.style.setProperty('border-radius', '0', 'important');
+      sheet.style.setProperty('border', 'none', 'important');
+      sheet.style.setProperty('border-top', '1px solid rgba(201,168,76,.35)', 'important');
       sheet.style.setProperty('background', '#0b1120', 'important');
-      sheet.style.setProperty('overflow', 'auto', 'important');
-      sheet.style.setProperty('display', 'block', 'important');
+      sheet.style.setProperty('box-shadow', 'none', 'important');
+      sheet.style.setProperty('overflow-y', 'auto', 'important');
+      sheet.style.setProperty('padding', '14px 14px 24px', 'important');
+      sheet.style.setProperty('color', '#F0E6D3', 'important');
     }
   }
 
-  // نگه داشتن تابع اصلی قبل از هر wrap دیگر
-  var coreOpen = null;
-  function captureCore() {
-    var fn = window.openSubOrdersPanel;
-    if (typeof fn === 'function' && !fn.__kafeBuyNavWrapper) {
-      coreOpen = fn;
-    }
-  }
-  captureCore();
-
-  function openBuyPanel() {
-    captureCore();
+  function closeStatusPanel() {
     var p = document.getElementById('subOrdersPanel');
-    if (!p) {
-      notify('پنل خرید پیدا نشد');
-      return;
-    }
+    if (p) p.style.display = 'none';
+  }
 
-    // بستن لایه‌های مزاحم
+  function closeOtherLayers() {
     try {
       var settings = document.getElementById('settingsPanel');
       if (settings) {
@@ -113,64 +109,103 @@
       if (drawer) drawer.classList.remove('active');
       if (overlay) overlay.classList.remove('active');
     } catch (e) {}
-
-    // اول ظاهر کن
-    stylePanel(p);
-    notify('بخش خرید');
-
-    // بعد داده را از هستهٔ اصلی بگیر
-    try {
-      if (typeof coreOpen === 'function') {
-        var ret = coreOpen();
-        if (ret && typeof ret.then === 'function') {
-          ret
-            .then(function () {
-              stylePanel(p);
-            })
-            .catch(function (err) {
-              console.warn('[buy-nav]', err);
-              stylePanel(p);
-            });
-        }
-      } else if (typeof window.openSubOrdersPanel === 'function') {
-        window.openSubOrdersPanel();
-      }
-    } catch (err) {
-      console.warn('[buy-nav] open', err);
-      notify('خطا در باز کردن خرید');
-    }
-
-    stylePanel(p);
-    setTimeout(function () {
-      stylePanel(p);
-    }, 60);
-    setTimeout(function () {
-      stylePanel(p);
-    }, 250);
+    closeStatusPanel();
   }
 
-  // wrapper عمومی برای هر کسی که openSubOrdersPanel را صدا می‌زند
-  function installWrapper() {
-    captureCore();
-    if (typeof coreOpen !== 'function') return;
-    if (window.openSubOrdersPanel && window.openSubOrdersPanel.__kafeBuyNavWrapper) return;
+  function openFullPurchase() {
+    closeOtherLayers();
+    notify('فرم خرید اشتراک');
 
+    var opener = window.openSubscriptionPurchase;
+    if (typeof opener !== 'function') {
+      notify('فرم خرید در دسترس نیست');
+      return;
+    }
+
+    try {
+      var ret = opener();
+      if (ret && typeof ret.then === 'function') {
+        ret
+          .then(function () {
+            stylePurchaseBox();
+            enhancePurchaseChrome();
+          })
+          .catch(function (e) {
+            console.warn('[buy-nav] purchase', e);
+            stylePurchaseBox();
+          });
+      } else {
+        stylePurchaseBox();
+        enhancePurchaseChrome();
+      }
+    } catch (e) {
+      console.warn(e);
+      notify('خطا در باز کردن فرم خرید');
+    }
+
+    [0, 40, 120, 300, 600].forEach(function (ms) {
+      setTimeout(function () {
+        stylePurchaseBox();
+        enhancePurchaseChrome();
+      }, ms);
+    });
+  }
+
+  /** لینک وضعیت اشتراک داخل فرم کامل */
+  function enhancePurchaseChrome() {
+    var box = document.getElementById('subscriptionModalBox');
+    if (!box) return;
+    if (box.querySelector('#kafeOpenSubStatusLink')) return;
+    var head = box.querySelector('div');
+    if (!head) return;
+    var bar = document.createElement('div');
+    bar.id = 'kafeOpenSubStatusLink';
+    bar.style.cssText =
+      'display:flex;justify-content:space-between;gap:8px;margin:0 0 12px;flex-wrap:wrap;';
+    bar.innerHTML =
+      '<button type="button" id="kafeBtnSubStatus" style="flex:1;min-width:140px;padding:10px;border-radius:12px;border:1px solid rgba(201,168,76,.45);background:rgba(201,168,76,.12);color:#F0D878;font-weight:800;cursor:pointer;font-family:inherit;">📋 وضعیت و سوابق من</button>';
+    // insert after title row if possible
+    try {
+      var titleRow = head.firstElementChild;
+      if (titleRow && titleRow.nextSibling) head.insertBefore(bar, titleRow.nextSibling);
+      else head.insertBefore(bar, head.firstChild);
+    } catch (e) {
+      head.appendChild(bar);
+    }
+    var btn = document.getElementById('kafeBtnSubStatus');
+    if (btn) {
+      btn.onclick = function () {
+        var m = document.getElementById('subscriptionModalBox');
+        if (m) m.remove();
+        if (typeof window.openSubOrdersPanel === 'function') {
+          window.openSubOrdersPanel();
+        }
+      };
+    }
+  }
+
+  // وقتی openSubscriptionPurchase از جاهای دیگر صدا زده شد هم فریم شود
+  function wrapPurchaseOpener() {
+    var prev = window.openSubscriptionPurchase;
+    if (typeof prev !== 'function' || prev.__kafeBuyNavPurchaseWrap) return;
     var wrapped = function () {
-      var p = document.getElementById('subOrdersPanel');
-      if (p) stylePanel(p);
-      var ret = coreOpen.apply(this, arguments);
+      var ret = prev.apply(this, arguments);
       if (ret && typeof ret.then === 'function') {
         ret.then(function () {
-          if (p) stylePanel(p);
+          stylePurchaseBox();
+          enhancePurchaseChrome();
         });
       }
-      setTimeout(function () {
-        if (p) stylePanel(p);
-      }, 50);
+      [0, 50, 150, 400].forEach(function (ms) {
+        setTimeout(function () {
+          stylePurchaseBox();
+          enhancePurchaseChrome();
+        }, ms);
+      });
       return ret;
     };
-    wrapped.__kafeBuyNavWrapper = true;
-    window.openSubOrdersPanel = wrapped;
+    wrapped.__kafeBuyNavPurchaseWrap = true;
+    window.openSubscriptionPurchase = wrapped;
   }
 
   function findBuyButton() {
@@ -189,48 +224,58 @@
 
   function bindBuyButton() {
     var buyBtn = findBuyButton();
-    if (!buyBtn || buyBtn.__kafeBuyBoundV2) return;
-    buyBtn.__kafeBuyBoundV2 = true;
+    if (!buyBtn || buyBtn.__kafeBuyBoundV3) return;
+    buyBtn.__kafeBuyBoundV3 = true;
     buyBtn.style.pointerEvents = 'auto';
     buyBtn.style.cursor = 'pointer';
-    // حذف وابستگی به onclick خطی — کنترل کامل با ما
+    // از openSubOrdersPanel جدا کن → فرم کامل
     buyBtn.setAttribute('onclick', 'void(0)');
     buyBtn.addEventListener(
       'click',
       function (ev) {
         ev.preventDefault();
         ev.stopPropagation();
-        openBuyPanel();
+        openFullPurchase();
       },
       true
     );
   }
 
-  // وقتی فروشگاه/ابزارها زده شد، پنل خرید بسته شود
+  // بستن فرم خرید وقتی فروشگاه/ابزارها زده شد
   function bindOtherNavClose() {
     var nav = document.getElementById('bottomNav');
-    if (!nav || nav.__kafeBuyCloseBound) return;
-    nav.__kafeBuyCloseBound = true;
+    if (!nav || nav.__kafeBuyCloseBoundV3) return;
+    nav.__kafeBuyCloseBoundV3 = true;
     nav.addEventListener(
       'click',
       function (ev) {
         var t = ev.target && ev.target.closest ? ev.target.closest('button.nav-item-bottom') : null;
         if (!t) return;
-        var oc = t.getAttribute('onclick') || '';
         var label = (t.textContent || '').replace(/\s+/g, ' ').trim();
-        var isBuy = oc.indexOf('openSubOrdersPanel') >= 0 || (label.indexOf('خرید') >= 0 && !t.classList.contains('center-btn'));
+        var isBuy = label.indexOf('خرید') >= 0 && !t.classList.contains('center-btn');
         if (isBuy) return;
+        var m = document.getElementById('subscriptionModalBox');
+        if (m) m.remove();
         var p = document.getElementById('subOrdersPanel');
-        if (p && p.style.display !== 'none') {
-          p.style.display = 'none';
-        }
+        if (p) p.style.display = 'none';
       },
       true
     );
   }
 
+  // observer برای وقتی فرم ساخته می‌شود
+  try {
+    var mo = new MutationObserver(function () {
+      if (document.getElementById('subscriptionModalBox')) {
+        stylePurchaseBox();
+        enhancePurchaseChrome();
+      }
+    });
+    mo.observe(document.documentElement, { childList: true, subtree: true });
+  } catch (e) {}
+
   function run() {
-    installWrapper();
+    wrapPurchaseOpener();
     bindBuyButton();
     bindOtherNavClose();
   }
