@@ -1,14 +1,24 @@
-/** purchase-hold-fix.js V6
- * فرم خرید: ثابت + خوانا
- * بدون blur سنگین که با پس‌زمینه قاطی شود
+/** purchase-hold-fix.js V7
+ * ظاهر = کارت خوش‌آمد فروشگاه:
+ *   background:rgba(255,255,255,0.05)
+ *   backdrop-filter:blur(12px)
+ *   border:1px solid rgba(255,215,0,0.15)
+ *   border-radius:16px
+ * قفل ثبات — دیگر تیره نشود
  */
 (function () {
   'use strict';
-  if (window.__KAFE_PURCHASE_HOLD_V6__) return;
-  window.__KAFE_PURCHASE_HOLD_V6__ = true;
+  if (window.__KAFE_PURCHASE_HOLD_V7__) return;
+  window.__KAFE_PURCHASE_HOLD_V7__ = true;
 
   window.__kafeSubLock = false;
   window.__kafeSubAllowClose = false;
+
+  // استایل مرجع فروشگاه
+  var GLASS_BG = 'rgba(255,255,255,0.05)';
+  var GLASS_BORDER = '1px solid rgba(255,215,0,0.15)';
+  var GLASS_RADIUS = '16px';
+  var GLASS_BLUR = 'blur(12px)';
 
   function heights() {
     var headerH = 152,
@@ -31,39 +41,45 @@
     return { headerH: headerH, navH: navH, gap: 8 };
   }
 
-  function injectClearCSS() {
-    var id = 'kafe-purchase-clear-css';
+  function injectCSS() {
+    var id = 'kafe-purchase-shop-glass-css';
     var st = document.getElementById(id);
     if (!st) {
       st = document.createElement('style');
       st.id = id;
-      document.head.appendChild(st);
     }
+    // همیشه آخر head تا برنده شود
     document.head.appendChild(st);
     st.textContent = [
+      '/* خرید اشتراک = استایل خوش‌آمد فروشگاه */',
       'html body #subscriptionModalBox{',
       '  position:fixed!important;inset:auto!important;left:0!important;right:0!important;',
       '  z-index:50!important;display:flex!important;flex-direction:column!important;',
-      '  background:rgba(7,11,20,0.92)!important;',
+      '  align-items:stretch!important;justify-content:flex-start!important;',
+      '  background:transparent!important;background-image:none!important;',
       '  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;',
-      '  opacity:1!important;visibility:visible!important;',
-      '  pointer-events:auto!important;border-radius:0!important;box-shadow:none!important;',
-      '  padding:0!important;margin:0!important;',
+      '  opacity:1!important;visibility:visible!important;pointer-events:auto!important;',
+      '  border:none!important;border-radius:0!important;box-shadow:none!important;',
+      '  padding:10px 12px!important;margin:0!important;box-sizing:border-box!important;',
       '}',
       'html body #subscriptionModalBox > div{',
-      '  width:100%!important;max-width:none!important;height:100%!important;max-height:none!important;',
-      '  margin:0!important;border-radius:0!important;border:none!important;',
-      '  background:rgba(7,11,20,0.96)!important;',
-      '  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;',
+      '  width:100%!important;max-width:none!important;',
+      '  height:auto!important;max-height:100%!important;flex:1 1 auto!important;',
+      '  margin:0!important;',
+      '  background:rgba(255,255,255,0.05)!important;',
+      '  background-image:none!important;',
+      '  backdrop-filter:blur(12px)!important;-webkit-backdrop-filter:blur(12px)!important;',
+      '  border:1px solid rgba(255,215,0,0.15)!important;',
+      '  border-radius:16px!important;',
       '  box-shadow:none!important;',
-      '  overflow-y:auto!important;padding:12px 12px 24px!important;',
-      '  color:#F0E6D3!important;opacity:1!important;',
+      '  overflow-y:auto!important;padding:20px 16px 24px!important;',
+      '  color:#F5F0E4!important;opacity:1!important;',
       '}',
       'html body #subscriptionModalBox input,',
       'html body #subscriptionModalBox select,',
       'html body #subscriptionModalBox textarea{',
-      '  background:rgba(20,24,40,0.95)!important;color:#F5E6C8!important;',
-      '  border:1px solid rgba(201,168,76,0.45)!important;',
+      '  background:rgba(255,255,255,0.06)!important;color:#F5F0E4!important;',
+      '  border:1px solid rgba(255,215,0,0.2)!important;border-radius:12px!important;',
       '}',
       'html body #subscriptionModalBox label{color:#F0D878!important;}',
       'html body #subscriptionModalBox .subscription-plan-btn span{',
@@ -71,14 +87,25 @@
       '  font-weight:900!important;opacity:1!important;',
       '  background:rgba(255,248,220,0.95)!important;border-radius:8px!important;',
       '  padding:3px 8px!important;display:inline-block!important;margin-top:6px!important;',
+      '}',
+      '/* خنثی کردن استایل‌های تیرهٔ دیگر */',
+      'html body #subscriptionModalBox,',
+      'html body #subscriptionModalBox > div{',
+      '  background-color:unset;',
       '}'
+    ].join('\n');
+    // override dark from other sheets with higher specificity after
+    st.textContent += [
+      '\nhtml body #subscriptionModalBox{background:transparent!important;}',
+      'html body #subscriptionModalBox > div{background:rgba(255,255,255,0.05)!important;}'
     ].join('\n');
   }
 
-  function placeClear(box) {
+  function applyShopGlass(box) {
     if (!box) box = document.getElementById('subscriptionModalBox');
     if (!box) return;
     var h = heights();
+
     box.style.setProperty('position', 'fixed', 'important');
     box.style.setProperty('inset', 'auto', 'important');
     box.style.setProperty('top', h.headerH + h.gap + 'px', 'important');
@@ -88,29 +115,42 @@
     box.style.setProperty('width', '100%', 'important');
     box.style.setProperty('z-index', '50', 'important');
     box.style.setProperty('display', 'flex', 'important');
+    box.style.setProperty('flex-direction', 'column', 'important');
+    box.style.setProperty('padding', '10px 12px', 'important');
+    box.style.setProperty('margin', '0', 'important');
+    box.style.setProperty('box-sizing', 'border-box', 'important');
+    // لایه بیرونی شفاف کامل
+    box.style.setProperty('background', 'transparent', 'important');
+    box.style.setProperty('background-image', 'none', 'important');
+    box.style.setProperty('backdrop-filter', 'none', 'important');
+    box.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
     box.style.setProperty('opacity', '1', 'important');
     box.style.setProperty('visibility', 'visible', 'important');
     box.style.setProperty('pointer-events', 'auto', 'important');
-    // مات و خوانا — بدون blur
-    box.style.setProperty('background', 'rgba(7,11,20,0.92)', 'important');
-    box.style.setProperty('backdrop-filter', 'none', 'important');
-    box.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
+    box.style.setProperty('border', 'none', 'important');
+    box.style.setProperty('border-radius', '0', 'important');
+    box.style.setProperty('box-shadow', 'none', 'important');
 
     var sheet = box.firstElementChild;
     if (sheet) {
       sheet.style.setProperty('width', '100%', 'important');
       sheet.style.setProperty('max-width', 'none', 'important');
-      sheet.style.setProperty('height', '100%', 'important');
-      sheet.style.setProperty('max-height', 'none', 'important');
-      sheet.style.setProperty('overflow-y', 'auto', 'important');
+      sheet.style.setProperty('flex', '1 1 auto', 'important');
+      sheet.style.setProperty('height', 'auto', 'important');
+      sheet.style.setProperty('max-height', '100%', 'important');
       sheet.style.setProperty('margin', '0', 'important');
-      sheet.style.setProperty('border-radius', '0', 'important');
-      sheet.style.setProperty('background', 'rgba(7,11,20,0.96)', 'important');
-      sheet.style.setProperty('backdrop-filter', 'none', 'important');
-      sheet.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
+      sheet.style.setProperty('overflow-y', 'auto', 'important');
+      sheet.style.setProperty('padding', '20px 16px 24px', 'important');
+      // دقیقاً مثل کارت خوش‌آمد فروشگاه
+      sheet.style.setProperty('background', GLASS_BG, 'important');
+      sheet.style.setProperty('background-image', 'none', 'important');
+      sheet.style.setProperty('backdrop-filter', GLASS_BLUR, 'important');
+      sheet.style.setProperty('-webkit-backdrop-filter', GLASS_BLUR, 'important');
+      sheet.style.setProperty('border', GLASS_BORDER, 'important');
+      sheet.style.setProperty('border-radius', GLASS_RADIUS, 'important');
       sheet.style.setProperty('box-shadow', 'none', 'important');
       sheet.style.setProperty('opacity', '1', 'important');
-      sheet.style.setProperty('color', '#F0E6D3', 'important');
+      sheet.style.setProperty('color', '#F5F0E4', 'important');
     }
 
     box.querySelectorAll('.subscription-plan-btn span').forEach(function (sp) {
@@ -125,6 +165,52 @@
     });
   }
 
+  // اگر پس‌زمینه تیره شد دوباره شیشه فروشگاه
+  function guardGlass() {
+    var box = document.getElementById('subscriptionModalBox');
+    if (!box || !window.__kafeSubLock) return;
+    var sheet = box.firstElementChild;
+    if (!sheet) return;
+    var bg = (sheet.style.background || sheet.style.backgroundColor || '').toLowerCase();
+    // اگر کسی تیره کرد
+    if (
+      bg.indexOf('0b1120') >= 0 ||
+      bg.indexOf('7,11,20') >= 0 ||
+      bg.indexOf('12,16,28') >= 0 ||
+      bg.indexOf('#12') >= 0 ||
+      bg.indexOf('linear-gradient') >= 0
+    ) {
+      applyShopGlass(box);
+    }
+  }
+
+  var guardTimer = null;
+  function startGuard() {
+    if (guardTimer) clearInterval(guardTimer);
+    var n = 0;
+    guardTimer = setInterval(function () {
+      n++;
+      if (!document.getElementById('subscriptionModalBox')) {
+        clearInterval(guardTimer);
+        guardTimer = null;
+        return;
+      }
+      applyShopGlass();
+      if (n > 40) {
+        // بعد از ۸ ثانیه فقط هر ۲ ثانیه
+        clearInterval(guardTimer);
+        guardTimer = setInterval(function () {
+          if (!document.getElementById('subscriptionModalBox')) {
+            clearInterval(guardTimer);
+            guardTimer = null;
+            return;
+          }
+          applyShopGlass();
+        }, 2000);
+      }
+    }, 200);
+  }
+
   var origRemove = Element.prototype.remove;
   Element.prototype.remove = function () {
     if (
@@ -133,7 +219,7 @@
       window.__kafeSubLock &&
       !window.__kafeSubAllowClose
     ) {
-      placeClear(this);
+      applyShopGlass(this);
       return;
     }
     return origRemove.apply(this, arguments);
@@ -142,13 +228,19 @@
   function allowClose() {
     window.__kafeSubAllowClose = true;
     window.__kafeSubLock = false;
+    if (guardTimer) {
+      clearInterval(guardTimer);
+      guardTimer = null;
+    }
   }
 
   function lockOpen() {
     window.__kafeSubAllowClose = false;
     window.__kafeSubLock = true;
-    injectClearCSS();
-    placeClear();
+    injectCSS();
+    applyShopGlass();
+    startGuard();
+
     var box = document.getElementById('subscriptionModalBox');
     if (!box) return;
     box.querySelectorAll('button').forEach(function (btn) {
@@ -172,21 +264,22 @@
 
   function wrapOpen() {
     var prev = window.openSubscriptionPurchase;
-    if (typeof prev !== 'function' || prev.__kafeHoldWrapV6) return;
+    if (typeof prev !== 'function' || prev.__kafeHoldWrapV7) return;
     var wrapped = function () {
       window.__kafeSubAllowClose = true;
       window.__kafeSubLock = false;
       var ret = prev.apply(this, arguments);
       var after = function () {
         lockOpen();
-        setTimeout(lockOpen, 100);
-        setTimeout(lockOpen, 400);
+        setTimeout(lockOpen, 80);
+        setTimeout(lockOpen, 300);
+        setTimeout(lockOpen, 800);
       };
       if (ret && typeof ret.then === 'function') ret.then(after).catch(after);
       else after();
       return ret;
     };
-    wrapped.__kafeHoldWrapV6 = true;
+    wrapped.__kafeHoldWrapV7 = true;
     window.openSubscriptionPurchase = wrapped;
   }
 
@@ -194,19 +287,20 @@
     var mo = new MutationObserver(function () {
       var btn = document.getElementById('subscriptionSubmitBtn');
       if (btn && /موفق|ارسال شد/.test(btn.textContent || '')) allowClose();
-      if (window.__kafeSubLock) placeClear();
+      if (window.__kafeSubLock) applyShopGlass();
     });
     mo.observe(document.documentElement, {
       childList: true,
       subtree: true,
-      characterData: true
+      attributes: true,
+      attributeFilter: ['style', 'class']
     });
   } catch (e) {}
 
   function bindNavClose() {
     var nav = document.getElementById('bottomNav');
-    if (!nav || nav.__kafeHoldNavV6) return;
-    nav.__kafeHoldNavV6 = true;
+    if (!nav || nav.__kafeHoldNavV7) return;
+    nav.__kafeHoldNavV7 = true;
     nav.addEventListener(
       'click',
       function (ev) {
@@ -227,7 +321,7 @@
   }
 
   function run() {
-    injectClearCSS();
+    injectCSS();
     wrapOpen();
     bindNavClose();
   }

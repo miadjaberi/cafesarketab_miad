@@ -1,8 +1,8 @@
-/** kafe-seven-fixes.js V2 — transparent purchase + unified notify + delete verify */
+/** kafe-seven-fixes.js V3 — بدون دستکاری ظاهر خرید (purchase-hold مسئول است) */
 (function () {
   'use strict';
-  if (window.__KAFE_SEVEN_FIXES_V2__) return;
-  window.__KAFE_SEVEN_FIXES_V2__ = true;
+  if (window.__KAFE_SEVEN_FIXES_V3__) return;
+  window.__KAFE_SEVEN_FIXES_V3__ = true;
 
   function unifiedNotify(msg, type) {
     var text = String(msg || '');
@@ -12,19 +12,6 @@
         return;
       }
     } catch (e) {}
-    try {
-      var n = document.getElementById('notification');
-      if (n) {
-        n.textContent = text;
-        n.style.display = 'block';
-        n.className = type === 'error' ? 'error' : '';
-        clearTimeout(n._timeout);
-        n._timeout = setTimeout(function () {
-          n.style.display = 'none';
-        }, 3200);
-        return;
-      }
-    } catch (e2) {}
   }
   window.kafeNotify = unifiedNotify;
 
@@ -106,8 +93,8 @@
     return { mid: mid, cid: cid };
   }
 
-  if (!window.__kafeDelSevenV2) {
-    window.__kafeDelSevenV2 = true;
+  if (!window.__kafeDelSevenV3) {
+    window.__kafeDelSevenV3 = true;
     document.addEventListener(
       'click',
       function (ev) {
@@ -131,37 +118,6 @@
     );
   }
 
-  function stylePurchaseGlass() {
-    var box = document.getElementById('subscriptionModalBox');
-    if (!box) return;
-    box.style.setProperty('background', 'transparent', 'important');
-    box.style.setProperty('opacity', '1', 'important');
-    var sheet = box.firstElementChild;
-    if (sheet) {
-      sheet.style.setProperty('background', 'rgba(8,12,24,0.18)', 'important');
-      sheet.style.setProperty('backdrop-filter', 'blur(10px)', 'important');
-      sheet.style.setProperty('opacity', '1', 'important');
-    }
-  }
-
-  function wrapPurchase() {
-    var prev = window.openSubscriptionPurchase;
-    if (typeof prev !== 'function' || prev.__kafeSevenPurchaseV2) return;
-    var wrapped = function () {
-      var ret = prev.apply(this, arguments);
-      var apply = function () {
-        stylePurchaseGlass();
-        setTimeout(stylePurchaseGlass, 100);
-        setTimeout(stylePurchaseGlass, 400);
-      };
-      if (ret && typeof ret.then === 'function') ret.then(apply).catch(apply);
-      else apply();
-      return ret;
-    };
-    wrapped.__kafeSevenPurchaseV2 = true;
-    window.openSubscriptionPurchase = wrapped;
-  }
-
   function bindBuy() {
     var nav = document.getElementById('bottomNav');
     if (!nav) return;
@@ -172,8 +128,8 @@
       var label = (b.textContent || '').replace(/\s+/g, ' ').trim();
       var oc = b.getAttribute('onclick') || '';
       if (!(oc.indexOf('openSubOrdersPanel') >= 0 || label.indexOf('خرید') >= 0)) continue;
-      if (b.__kafeSevenBuyV2) continue;
-      b.__kafeSevenBuyV2 = true;
+      if (b.__kafeSevenBuyV3) continue;
+      b.__kafeSevenBuyV3 = true;
       b.setAttribute('onclick', 'void(0)');
       b.addEventListener(
         'click',
@@ -182,7 +138,6 @@
           ev.stopPropagation();
           if (typeof ev.stopImmediatePropagation === 'function') ev.stopImmediatePropagation();
           if (typeof window.openSubscriptionPurchase === 'function') {
-            unifiedNotify('فرم خرید اشتراک');
             window.openSubscriptionPurchase();
           }
         },
@@ -192,7 +147,6 @@
   }
 
   function run() {
-    wrapPurchase();
     bindBuy();
   }
 
@@ -205,7 +159,4 @@
     run();
     setTimeout(run, 800);
   }
-  window.addEventListener('load', function () {
-    setTimeout(run, 400);
-  });
 })();
