@@ -1,4 +1,4 @@
-/** buy-nav-fix.js V8
+/** buy-nav-fix.js V8.1
  * خرید اشتراک = یک page-swipe واقعی داخل pagesContainer
  * همان انیمیشن نرم scrollToPage (scroll-behavior: smooth)
  */
@@ -22,7 +22,6 @@
       '  box-sizing:border-box!important;',
       '  padding:12px 12px 80px!important;',
       '}',
-      /* فرم خرید وقتی داخل صفحه است — نه اورلی تمام‌صفحه */',
       '#' + BUY_PAGE_ID + ' #subscriptionModalBox{',
       '  position:relative!important;',
       '  inset:auto!important;',
@@ -97,7 +96,6 @@
       host.appendChild(box);
     }
 
-    // تبدیل از اورلی به محتوای صفحه
     box.style.position = 'relative';
     box.style.inset = 'auto';
     box.style.top = 'auto';
@@ -110,7 +108,6 @@
     box.style.display = 'flex';
     box.style.zIndex = '1';
 
-    // ✕ فقط محتوا را پاک می‌کند و به فروشگاه برمی‌گردد
     box.querySelectorAll('button').forEach(function (btn) {
       var t = (btn.textContent || '').trim();
       var oc = btn.getAttribute('onclick') || '';
@@ -136,7 +133,7 @@
   function highlightBuyNav(on) {
     try {
       var items = document.querySelectorAll('.bottom-nav .nav-item-bottom');
-      items.forEach(function (item, i) {
+      items.forEach(function (item) {
         var label = (item.textContent || '').replace(/\s+/g, ' ').trim();
         var isBuy = label.indexOf('خرید') >= 0 && !item.classList.contains('center-btn');
         if (on) {
@@ -162,7 +159,6 @@
     if (typeof window.openSubscriptionPurchase === 'function') {
       try {
         var ret = window.openSubscriptionPurchase();
-        // چند تلاش کوتاه برای mount بعد از ساخت DOM
         setTimeout(go, 60);
         setTimeout(go, 200);
         setTimeout(go, 500);
@@ -203,7 +199,6 @@
     });
   }
 
-  // وقتی به فروشگاه/ابزارها/منو می‌رود، active خرید برداشته شود
   function bindOtherNav() {
     var nav = document.getElementById('bottomNav');
     if (!nav || nav.__kafeBuyNavV8) return;
