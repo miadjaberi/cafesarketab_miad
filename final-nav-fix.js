@@ -1,18 +1,15 @@
-/** final-nav-fix.js V2
- * مشاور فنی 2026-11-06:
- * ترتیب صفحات: shop → buy → modals → tools
- * scrollToPage جایگزین (نه wrap) + RTL با getBoundingClientRect
- * هایلایت: shop=0 buy=1 tools=3 | modals هیچ | منو/تنظیمات فقط پنل باز
- * برچسب ● آماده بیرون از دکمه تنظیمات
+/** final-nav-fix.js V3
+ * مشاور فنی: بدون حلقه ensurePageOrder؛ sole owner برای scrollToPage/هایلایت
+ * نصب فرم خرید وقتی pageBuy با کشیدن فعال و host خالی است
  */
 (function () {
   'use strict';
-  if (window.__KAFE_FINAL_NAV_FIX_V2__) return;
-  window.__KAFE_FINAL_NAV_FIX_V2__ = true;
+  if (window.__KAFE_FINAL_NAV_FIX_V3__) return;
+  window.__KAFE_FINAL_NAV_FIX_V3__ = true;
 
   var ORDER = ['pageShop', 'pageBuy', 'pageModals', 'pageTools'];
-  // نگاشت شماره قدیمی: 0 shop, 1 modals, 2 tools, 3 buy
   var LEGACY_NUM = { 0: 'pageShop', 1: 'pageModals', 2: 'pageTools', 3: 'pageBuy' };
+  var pageOrderObserver = null;
 
   function navButtons() {
     var nav = document.getElementById('bottomNav');
@@ -30,42 +27,113 @@
     return d === 'block' || d === 'flex';
   }
 
-  /* —— ترتیب صفحات —— */
+  function currentOrderIds(container) {
+    var ids = [];
+    Array.prototype.forEach.call(container.children, function (ch) {
+      if (ch && ch.id) ids.push(ch.id);
+    });
+    return ids;
+  }
+
+  function desiredPrefixIds(container) {
+    var have = {};
+    Array.prototype.forEach.call(container.children, function (ch) {
+      if (ch && ch.id) have[ch.id] = true;
+    });
+    // pageBuy ممکن است هنوز ساخته نشده باشد — در desired فقط موجودها
+    var out = [];
+    ORDER.forEach(function (id) {
+      if (have[id] || id === 'pageBuy') out.push(id);
+    });
+    // اگر pageBuy هنوز در DOM نیست، در مقایسه فقط بقیه را بسنجیم بعد از ساخت
+    return out;
+  }
+
+  function ensurePageBuyNode(container) {
+    var buy = document.getElementById('pageBuy');
+    if (buy) return buy;
+    buy = document.createElement('div');
+    buy.className = 'page-swipe';
+    buy.id = 'pageBuy';
+    buy.innerHTML =
+      '<div class="page-header" style="text-align:center;margin-bottom:12px;">' +
+      '<h2 style="color:#F0D878;font-size:1.1rem;font-weight:800;margin:0;">⭐ خرید اشتراک</h2>' +
+      '</div><div id="kafeBuyFormHost"></div>';
+    return buy;
+  }
+
   function ensurePageOrder() {
     var container = document.getElementById('pagesContainer');
     if (!container) return;
-    var nodes = {};
-    Array.prototype.forEach.call(container.children, function (ch) {
-      if (ch && ch.id) nodes[ch.id] = ch;
-    });
-    // pageBuy اگر نیست بساز (میزبان فرم خرید)
-    if (!nodes.pageBuy) {
-      var buy = document.createElement('div');
-      buy.className = 'page-swipe';
-      buy.id = 'pageBuy';
-      buy.innerHTML =
-        '<div class="page-header" style="text-align:center;margin-bottom:12px;">' +
-        '<h2 style="color:#F0D878;font-size:1.1rem;font-weight:800;margin:0;">⭐ خرید اشتراک</h2>' +
-        '</div><div id="kafeBuyFormHost"></div>';
-      nodes.pageBuy = buy;
-    }
-    var frag = document.createDocumentFragment();
-    var changed = false;
-    ORDER.forEach(function (id, i) {
-      var n = nodes[id];
-      if (!n) return;
-      if (container.children[i] !== n) changed = true;
-      frag.appendChild(n);
-    });
-    // بقیه فرزندان ناشناس را ته بگذار
-    Array.prototype.forEach.call(
-      Array.prototype.slice.call(container.children),
-      function (ch) {
-        if (ORDER.indexOf(ch.id) === -1) frag.appendChild(ch);
+
+    var shop = document.getElementById('pageShop');
+    var buy = ensurePageBuyNode(container);
+    var modals = document.getElementById('pageModals');
+    var tools = document.getElementById('pageTools');
+
+    // اگر buy هنوز در container نیست، فقط یک‌بار بعد از shop بگذار
+    if (buy.parentNode !== container) {
+      if (pageOrderObserver) {
+        try {
+          pageOrderObserver.disconnect();
+        } catch (e) {}
       }
-    );
-    if (changed || container.children.length !== frag.childNodes.length) {
-      container.appendChild(frag);
+      if (shop && shop.parentNode === container) {
+        if (shop.nextSibling) container.insertBefore(buy, shop.nextSibling);
+        else container.appendChild(buy);
+      } else {
+        container.insertBefore(buy, container.firstChild);
+      }
+      if (pageOrderObserver) {
+        try {
+          pageOrderObserver.observe(container, { childList: true });
+        } catch (e2) {}
+      }
+    }
+
+    // ترتیب فعلی چهار صفحهٔ اصلی
+    var cur = [];
+    Array.prototype.forEach.call(container.children, function (ch) {
+      if (ch && ORDER.indexOf(ch.id) >= 0) cur.push(ch.id);
+    });
+    var want = ORDER.filter(function (id) {
+      return document.getElementById(id);
+    });
+    if (cur.length === want.length && cur.join(',') === want.join(',')) {
+      return; // برابر — هیچ جابه‌جایی
+    }
+
+    if (pageOrderObserver) {
+      try {
+        pageOrderObserver.disconnect();
+      } catch (e3) {}
+    }
+
+    // فقط pageBuy را بلافاصله بعد از pageShop ببر؛ بقیه را به ترتیب ثابت
+    if (shop && buy && shop.parentNode === container) {
+      if (shop.nextSibling !== buy) {
+        container.insertBefore(buy, shop.nextSibling);
+      }
+    }
+    if (modals && buy && buy.parentNode === container && buy.nextSibling !== modals) {
+      // modals بعد از buy
+      if (modals.parentNode === container) {
+        container.insertBefore(modals, buy.nextSibling);
+      }
+    }
+    if (tools && modals && modals.parentNode === container) {
+      if (modals.nextSibling !== tools && tools.parentNode === container) {
+        container.insertBefore(tools, modals.nextSibling);
+      }
+    } else if (tools && buy && buy.parentNode === container && !modals) {
+      if (buy.nextSibling !== tools) container.insertBefore(tools, buy.nextSibling);
+    }
+
+    // تأیید نهایی بدون rebuild کامل
+    if (pageOrderObserver) {
+      try {
+        pageOrderObserver.observe(container, { childList: true });
+      } catch (e4) {}
     }
   }
 
@@ -75,23 +143,22 @@
     orderTimer = setTimeout(function () {
       orderTimer = null;
       ensurePageOrder();
-    }, 50);
+    }, 80);
   }
 
   function watchPageOrder() {
     var container = document.getElementById('pagesContainer');
-    if (!container || container.__kafeOrderWatch) return;
-    container.__kafeOrderWatch = true;
+    if (!container || container.__kafeOrderWatchV3) return;
+    container.__kafeOrderWatchV3 = true;
     try {
-      var mo = new MutationObserver(function () {
+      pageOrderObserver = new MutationObserver(function () {
         scheduleEnsureOrder();
       });
-      mo.observe(container, { childList: true });
+      pageOrderObserver.observe(container, { childList: true });
     } catch (e) {}
     ensurePageOrder();
   }
 
-  /* —— صفحهٔ فعال با بیشترین هم‌پوشانی —— */
   function getActivePageId() {
     var container = document.getElementById('pagesContainer');
     if (!container) return 'pageShop';
@@ -116,16 +183,42 @@
     return bestId;
   }
 
+  function maybeMountBuyForm() {
+    var host = document.getElementById('kafeBuyFormHost');
+    if (!host) return;
+    if (host.children && host.children.length > 0) return;
+    if (document.getElementById('subscriptionModalBox') && document.getElementById('subscriptionModalBox').parentNode === host) {
+      return;
+    }
+    // اگر فرم جایی دیگر است منتقل کن؛ وگرنه باز کن
+    var box = document.getElementById('subscriptionModalBox');
+    if (box) {
+      host.appendChild(box);
+      return;
+    }
+    if (typeof window.openSubscriptionPurchase === 'function') {
+      try {
+        window.openSubscriptionPurchase();
+        setTimeout(function () {
+          var b = document.getElementById('subscriptionModalBox');
+          if (b && host && b.parentNode !== host) host.appendChild(b);
+        }, 120);
+        setTimeout(function () {
+          var b2 = document.getElementById('subscriptionModalBox');
+          if (b2 && host && b2.parentNode !== host) host.appendChild(b2);
+        }, 400);
+      } catch (e) {}
+    }
+  }
+
   function syncFromScroll() {
     var btns = navButtons();
     if (!btns.length) return;
 
-    // پاک کردن active از همه
     btns.forEach(function (b) {
       b.classList.remove('active');
     });
 
-    // تنظیمات باز → فقط دکمه تنظیمات
     if (isSettingsOpen()) {
       btns.forEach(function (b) {
         var label = (b.textContent || '').replace(/\s+/g, ' ').trim();
@@ -135,7 +228,9 @@
     }
 
     var id = getActivePageId();
-    // modals → هیچ دکمه active نشود (منو وسط هم نه)
+    if (id === 'pageBuy') {
+      maybeMountBuyForm();
+    }
     if (id === 'pageModals') return;
 
     var map = { pageShop: 0, pageBuy: 1, pageTools: 3 };
@@ -145,7 +240,6 @@
     }
   }
 
-  /* —— scrollToPage جایگزین کامل —— */
   function scrollToPageImpl(arg) {
     ensurePageOrder();
     var container = document.getElementById('pagesContainer');
@@ -164,7 +258,6 @@
 
     var target = document.getElementById(id);
     if (!target || target.parentNode !== container) {
-      // fallback index
       var ix = ORDER.indexOf(id);
       target = container.children[ix >= 0 ? ix : 0];
     }
@@ -199,13 +292,11 @@
     };
   }
 
-  /* —— برچسب ● آماده بیرون از نوار —— */
   function fixReadyBadge() {
     var badge =
       document.getElementById('v8NetworkState') ||
       document.querySelector('[id*="NetworkState"]');
     if (!badge) return;
-    // اگر داخل دکمه تنظیمات یا bottomNav است بیرون بکش
     var nav = document.getElementById('bottomNav');
     var settingsBtn = null;
     navButtons().forEach(function (b) {
@@ -233,8 +324,8 @@
 
   function bindScroll() {
     var container = document.getElementById('pagesContainer');
-    if (container && !container.__kafeNavScrollV2) {
-      container.__kafeNavScrollV2 = true;
+    if (container && !container.__kafeNavScrollV3) {
+      container.__kafeNavScrollV3 = true;
       container.addEventListener(
         'scroll',
         function () {
@@ -247,8 +338,8 @@
 
   function bindSettingsWatch() {
     var panel = document.getElementById('settingsPanel');
-    if (panel && !panel.__kafeNavSetWatch) {
-      panel.__kafeNavSetWatch = true;
+    if (panel && !panel.__kafeNavSetWatchV3) {
+      panel.__kafeNavSetWatchV3 = true;
       try {
         var mo = new MutationObserver(function () {
           syncFromScroll();
@@ -272,13 +363,10 @@
     syncFromScroll();
   }
 
-  // چند بار تا بعد از nav-swipe-fix نسخهٔ ما آخر بماند
   function runKeep() {
     run();
-    setTimeout(run, 0);
-    setTimeout(run, 300);
-    setTimeout(run, 800);
-    setTimeout(run, 1500);
+    setTimeout(installScrollToPage, 300);
+    setTimeout(installScrollToPage, 1000);
     setTimeout(installScrollToPage, 2000);
   }
 
