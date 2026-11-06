@@ -1,23 +1,20 @@
-/** boot-flow-fix.js V3
- * مسیر کاربر:
- * 1) اسپلش (هر بار باز شدن برنامه، قبل از همه)
- * 2) شرایط
- * 3) ثبت‌نام/ورود (ساخت حساب فقط با اینترنت)
- * 4) پیشخوان — بدون اسپلش دوباره
- *
- * کاربر ثبت‌نام‌شده + قطع نت → پیام بله/خیر آفلاین
- * کاربر جدید بدون نت → ثبت‌نام ممکن نیست (بدون مهمان)
- * جلوگیری از دو بار طی شدن مسیر در یک نشست
+/** boot-flow-fix.js V4
+ * مدیر پروژه 2026-11-06:
+ * اسپلش → شرایط (یک‌بار در نشست با sessionStorage) → ثبت‌نام/آفلاین → پیشخوان
+ * kafeTermsAccepted برای رد کردن شرایط استفاده نمی‌شود
+ * آفلاین خیر → صفحه تلاش مجدد + ادامه با online
+ * patchRegisterUser با پولینگ
+ * آفلاین: قفل پنل مدیریت و سفارش/خرید
  */
 (function () {
   'use strict';
-  if (window.__KAFE_BOOT_FLOW_V3__) return;
-  window.__KAFE_BOOT_FLOW_V3__ = true;
+  if (window.__KAFE_BOOT_FLOW_V4__) return;
+  window.__KAFE_BOOT_FLOW_V4__ = true;
 
   var MIN_SPLASH = 1600;
   var MAX_SESSION_WAIT = 3500;
-  var STAGE_KEY = 'kafeBootStageV3';
-  var stage = 'init';
+  var TERMS_SESSION_KEY = 'kafeTermsSeenThisSessionV4';
+  var STAGE_KEY = 'kafeBootStageV4';
 
   function el(id) {
     return document.getElementById(id);
@@ -56,12 +53,18 @@
     return true;
   }
 
-  function termsAccepted() {
+  function termsSeenThisSession() {
     try {
-      return localStorage.getItem('kafeTermsAccepted') === '1';
+      return sessionStorage.getItem(TERMS_SESSION_KEY) === '1';
     } catch (e) {
       return false;
     }
+  }
+
+  function markTermsSeenThisSession() {
+    try {
+      sessionStorage.setItem(TERMS_SESSION_KEY, '1');
+    } catch (e) {}
   }
 
   function getLocalCafeUser() {
@@ -75,18 +78,9 @@
   }
 
   function setStage(s) {
-    stage = s;
     try {
       sessionStorage.setItem(STAGE_KEY, s);
     } catch (e) {}
-  }
-
-  function getStage() {
-    try {
-      return sessionStorage.getItem(STAGE_KEY) || stage;
-    } catch (e) {
-      return stage;
-    }
   }
 
   function enterMainApp(profile) {
@@ -95,7 +89,11 @@
     hide(el('splashScreen'));
     hide(el('registerScreen'));
     hideOfflineDialog();
+    hideRetryOnline();
     showBlock(el('app'));
+    try {
+      document.body.classList.toggle('is-offline', !isOnline());
+    } catch (e0) {}
     try {
       if (profile && typeof updateUserDisplay === 'function') {
         Promise.resolve(updateUserDisplay(profile)).catch(function () {});
@@ -114,6 +112,7 @@
     hide(el('registerScreen'));
     hide(el('app'));
     hideOfflineDialog();
+    hideRetryOnline();
     var terms = el('termsScreen');
     if (terms) {
       try {
@@ -129,8 +128,8 @@
     hide(el('termsScreen'));
     hide(el('app'));
     hideOfflineDialog();
+    hideRetryOnline();
     showFlex(el('registerScreen'));
-    // اگر آفلاین: راهنما روی فرم
     if (!isOnline()) {
       try {
         if (typeof showNotification === 'function') {
@@ -140,6 +139,7 @@
     }
   }
 
+  /* —— دیالوگ آفلاین بله/خیر —— */
   function ensureOfflineDialog() {
     var id = 'kafeOfflineChoiceDialog';
     var box = document.getElementById(id);
@@ -168,26 +168,13 @@
     if (yes) {
       yes.onclick = function () {
         hideOfflineDialog();
-        setStage('main');
-        if (typeof window.enterAppForLocalModals === 'function') {
-          window.enterAppForLocalModals('نسخه آفلاین');
-        } else {
-          enterMainApp(getLocalCafeUser());
-        }
+        goOfflineLimited();
       };
     }
     if (no) {
       no.onclick = function () {
         hideOfflineDialog();
-        setStage('wait-online');
-        hide(el('app'));
-        hide(el('registerScreen'));
-        hide(el('splashScreen'));
-        try {
-          if (typeof showNotification === 'function') {
-            showNotification('اتصال اینترنت برقرار نیست. پس از اتصال دوباره برنامه را باز کنید.', 'error');
-          }
-        } catch (e) {}
+        showRetryOnline();
       };
     }
     return box;
@@ -199,6 +186,7 @@
     hide(el('termsScreen'));
     hide(el('registerScreen'));
     hide(el('app'));
+    hideRetryOnline();
     var box = ensureOfflineDialog();
     box.style.display = 'flex';
   }
@@ -208,12 +196,149 @@
     if (box) box.style.display = 'none';
   }
 
+  /* —— صفحه تلاش مجدد (به‌جای صفحه خالی) —— */
+  function ensureRetryOnline() {
+    var id = 'kafeRetryOnlineScreen';
+    var box = document.getElementById(id);
+    if (box) return box;
+    box = document.createElement('div');
+    box.id = id;
+    box.style.cssText =
+      'display:none;position:fixed;inset:0;z-index:10085;align-items:center;justify-content:center;' +
+      'background:#070B14;padding:24px;box-sizing:border-box;direction:rtl;';
+    box.innerHTML =
+      '<div style="max-width:380px;text-align:center;color:#F5F0E4;">' +
+      '<p style="font-size:1.05rem;font-weight:800;color:#F0D878;margin:0 0 12px;">اتصال برقرار نیست</p>' +
+      '<p style="line-height:1.7;margin:0 0 20px;font-size:0.9rem;opacity:0.9;">' +
+      'برای ورود آنلاین منتظر اتصال بمانید. به‌محض آنلاین شدن، برنامه ادامه می‌دهد.' +
+      '</p>' +
+      '<button type="button" id="kafeRetryOnlineBtn" style="padding:12px 20px;border-radius:12px;border:none;' +
+      'background:linear-gradient(180deg,#e8c76b,#c9a84c);color:#1A1208;font-weight:800;cursor:pointer;">' +
+      'تلاش مجدد</button>' +
+      '<p id="kafeRetryOnlineHint" style="margin-top:14px;font-size:0.8rem;color:#C8C0B0;"></p>' +
+      '</div>';
+    document.body.appendChild(box);
+    var btn = box.querySelector('#kafeRetryOnlineBtn');
+    if (btn) {
+      btn.onclick = function () {
+        tryRetryOnline();
+      };
+    }
+    return box;
+  }
+
+  function showRetryOnline() {
+    setStage('wait-online');
+    hide(el('app'));
+    hide(el('registerScreen'));
+    hide(el('splashScreen'));
+    hide(el('termsScreen'));
+    hideOfflineDialog();
+    var box = ensureRetryOnline();
+    box.style.display = 'flex';
+    var hint = document.getElementById('kafeRetryOnlineHint');
+    if (hint) hint.textContent = isOnline() ? 'در حال بررسی…' : 'هنوز آفلاین هستید';
+  }
+
+  function hideRetryOnline() {
+    var box = document.getElementById('kafeRetryOnlineScreen');
+    if (box) box.style.display = 'none';
+  }
+
+  function tryRetryOnline() {
+    var hint = document.getElementById('kafeRetryOnlineHint');
+    if (!isOnline()) {
+      if (hint) hint.textContent = 'هنوز متصل نیستید. صبر کنید یا دوباره تلاش کنید.';
+      return;
+    }
+    if (hint) hint.textContent = 'متصل شدید — ادامه…';
+    hideRetryOnline();
+    continueAfterTermsOrSession();
+  }
+
+  function goOfflineLimited() {
+    setStage('main-offline');
+    try {
+      document.body.classList.add('is-offline');
+      window.__kafeOfflineLimited = true;
+    } catch (e) {}
+    if (typeof window.enterAppForLocalModals === 'function') {
+      window.enterAppForLocalModals('نسخه آفلاین');
+    } else {
+      enterMainApp(getLocalCafeUser());
+    }
+    installOfflineLocks();
+  }
+
+  /* قفل مدیریت و سفارش در آفلاین */
+  function installOfflineLocks() {
+    if (window.__kafeOfflineLocksV4) return;
+    window.__kafeOfflineLocksV4 = true;
+
+    document.addEventListener(
+      'click',
+      function (ev) {
+        if (!window.__kafeOfflineLimited && isOnline()) return;
+        var t = ev.target && ev.target.closest ? ev.target.closest('button, a') : null;
+        if (!t) return;
+        var oc = t.getAttribute('onclick') || '';
+        var label = (t.textContent || '').replace(/\s+/g, ' ').trim();
+        var isAdmin =
+          oc.indexOf('toggleAdmin') >= 0 ||
+          oc.indexOf('openAdmin') >= 0 ||
+          (t.closest && t.closest('#adminPanel'));
+        var isOrder =
+          oc.indexOf('openSubOrders') >= 0 ||
+          oc.indexOf('openSubscription') >= 0 ||
+          label.indexOf('خرید') >= 0 ||
+          label.indexOf('سفارش') >= 0;
+        if (isAdmin || isOrder) {
+          if (window.__kafeOfflineLimited || !isOnline()) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            try {
+              if (typeof showNotification === 'function') {
+                showNotification(
+                  isAdmin
+                    ? 'پنل مدیریت در حالت آفلاین در دسترس نیست'
+                    : 'خرید و سفارش در حالت آفلاین بسته است',
+                  'error'
+                );
+              }
+            } catch (e) {}
+          }
+        }
+      },
+      true
+    );
+
+    // wrap توابع اگر موجود باشند
+    function blockWhenOffline(name, msg) {
+      var prev = window[name];
+      if (typeof prev !== 'function' || prev.__kafeOffLock) return;
+      window[name] = function () {
+        if (window.__kafeOfflineLimited || !isOnline()) {
+          try {
+            if (typeof showNotification === 'function') showNotification(msg, 'error');
+          } catch (e) {}
+          return;
+        }
+        return prev.apply(this, arguments);
+      };
+      window[name].__kafeOffLock = true;
+    }
+    blockWhenOffline('toggleAdmin', 'پنل مدیریت در حالت آفلاین در دسترس نیست');
+    blockWhenOffline('openSubOrdersPanel', 'سفارش در حالت آفلاین بسته است');
+    blockWhenOffline('openSubscriptionPurchase', 'خرید اشتراک در حالت آفلاین بسته است');
+  }
+
   function runSplashThen(done) {
     setStage('splash');
     hide(el('termsScreen'));
     hide(el('registerScreen'));
     hide(el('app'));
     hideOfflineDialog();
+    hideRetryOnline();
     var splash = el('splashScreen');
     if (splash) {
       try {
@@ -301,12 +426,7 @@
     });
   }
 
-  function afterSplashRoute() {
-    if (!termsAccepted()) {
-      showTermsOnly();
-      return;
-    }
-    // شرایط قبلاً قبول شده
+  function continueAfterTermsOrSession() {
     getSessionSafe().then(function (session) {
       if (session && session.user) {
         loadProfile(session.user.id).then(function (profile) {
@@ -316,55 +436,52 @@
       }
       var local = getLocalCafeUser();
       if (!isOnline()) {
-        if (local) {
-          showOfflineDialog();
-        } else {
-          showRegisterOnly();
-        }
+        if (local) showOfflineDialog();
+        else showRegisterOnly();
         return;
       }
-      // آنلاین بدون نشست → ثبت‌نام/ورود
       showRegisterOnly();
     });
   }
 
-  // بعد از auth موفق: مستقیم پیشخوان — بدون اسپلش دوباره
+  function afterSplashRoute() {
+    // شرایط: هر باز شدن برنامه در نشست جدید یک‌بار — نه با localStorage دائمی
+    if (!termsSeenThisSession()) {
+      showTermsOnly();
+      return;
+    }
+    continueAfterTermsOrSession();
+  }
+
   window.kafeAfterAuthSuccess = function (profile) {
+    markTermsSeenThisSession();
     hide(el('registerScreen'));
     hide(el('termsScreen'));
     hide(el('splashScreen'));
+    hideRetryOnline();
+    hideOfflineDialog();
+    window.__kafeOfflineLimited = false;
+    try {
+      document.body.classList.remove('is-offline');
+    } catch (e) {}
     enterMainApp(profile || getLocalCafeUser());
   };
 
+  // قبول شرایط — فقط پرچم نشست؛ kafeTermsAccepted برای رد خودکار استفاده نمی‌شود
   window.acceptTermsAndContinue = function () {
+    markTermsSeenThisSession();
+    // سازگاری قدیمی: هنوز نوشته می‌شود ولی boot از آن برای رد شرایط استفاده نمی‌کند
     try {
       localStorage.setItem('kafeTermsAccepted', '1');
     } catch (e) {}
     hide(el('termsScreen'));
-
-    getSessionSafe().then(function (session) {
-      if (session && session.user) {
-        loadProfile(session.user.id).then(function (profile) {
-          enterMainApp(profile || getLocalCafeUser());
-        });
-        return;
-      }
-      var local = getLocalCafeUser();
-      if (!isOnline()) {
-        if (local) {
-          showOfflineDialog();
-        } else {
-          showRegisterOnly();
-        }
-        return;
-      }
-      showRegisterOnly();
-    });
+    continueAfterTermsOrSession();
   };
 
   function patchRegisterUser() {
     var prev = window.registerUser;
-    if (typeof prev !== 'function' || prev.__kafeBootV3Patched) return;
+    if (typeof prev !== 'function') return false;
+    if (prev.__kafeBootV4Patched) return true;
     window.registerUser = async function () {
       if (!isOnline()) {
         try {
@@ -391,22 +508,44 @@
         window.kafeAfterAuthSuccess(profile);
       }
     };
-    window.registerUser.__kafeBootV3Patched = true;
+    window.registerUser.__kafeBootV4Patched = true;
+    return true;
   }
+
+  function pollRegisterUser() {
+    if (patchRegisterUser()) return;
+    var tries = 0;
+    var t = setInterval(function () {
+      tries++;
+      if (patchRegisterUser() || tries > 40) clearInterval(t);
+    }, 250);
+    setTimeout(patchRegisterUser, 400);
+    setTimeout(patchRegisterUser, 1500);
+  }
+
+  // online → ادامه از صفحه انتظار
+  window.addEventListener('online', function () {
+    try {
+      document.body.classList.remove('is-offline');
+    } catch (e) {}
+    var retry = document.getElementById('kafeRetryOnlineScreen');
+    if (retry && retry.style.display === 'flex') {
+      tryRetryOnline();
+    }
+  });
+
+  window.addEventListener('offline', function () {
+    try {
+      document.body.classList.add('is-offline');
+    } catch (e) {}
+  });
 
   var booted = false;
   function boot() {
-    patchRegisterUser();
+    pollRegisterUser();
+    installOfflineLocks();
     if (booted) return;
     booted = true;
-
-    // اگر در همین نشست قبلاً به main رسیده‌ایم و رفرش نرم نیست — از تکرار اسپلش جلوگیری نسبی
-    var prev = getStage();
-    if (prev === 'main' && el('app') && el('app').style.display === 'block') {
-      return;
-    }
-
-    // همیشه: اول اسپلش، بعد مسیریابی
     runSplashThen(afterSplashRoute);
   }
 
@@ -422,6 +561,6 @@
     boot();
   }
   window.addEventListener('load', function () {
-    setTimeout(patchRegisterUser, 300);
+    setTimeout(pollRegisterUser, 300);
   });
 })();
