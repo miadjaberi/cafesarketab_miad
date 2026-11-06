@@ -1,10 +1,8 @@
-/** boot-flow-fix.js V4
- * مدیر پروژه 2026-11-06:
- * اسپلش → شرایط (یک‌بار در نشست با sessionStorage) → ثبت‌نام/آفلاین → پیشخوان
- * kafeTermsAccepted برای رد کردن شرایط استفاده نمی‌شود
- * آفلاین خیر → صفحه تلاش مجدد + ادامه با online
- * patchRegisterUser با پولینگ
- * آفلاین: قفل پنل مدیریت و سفارش/خرید
+/** boot-flow-fix.js V4.1
+ * V4 + مشاور فنی:
+ * - isOnline واقعی (HEAD با تایم‌اوت ۳ث)
+ * - loadProfile / continueAfterTerms با تایم‌اوت ۴ث → fallback getLocalCafeUser
+ * - لودر کوچک بین بستن شرایط و مرحله بعد
  */
 (function () {
   'use strict';
@@ -13,6 +11,8 @@
 
   var MIN_SPLASH = 1600;
   var MAX_SESSION_WAIT = 3500;
+  var PROFILE_TIMEOUT = 4000;
+  var NET_PROBE_TIMEOUT = 3000;
   var TERMS_SESSION_KEY = 'kafeTermsSeenThisSessionV4';
   var STAGE_KEY = 'kafeBootStageV4';
 
@@ -46,11 +46,100 @@
     node.style.display = 'block';
   }
 
-  function isOnline() {
+  function navigatorSaysOnline() {
     try {
       if (typeof navigator !== 'undefined' && navigator.onLine === false) return false;
     } catch (e) {}
     return true;
+  }
+
+  /** تشخیص اتصال واقعی — وای‌فای بدون اینترنت = آفلاین */
+  function probeOnline() {
+    return new Promise(function (resolve) {
+      if (!navigatorSaysOnline()) {
+        resolve(false);
+        return;
+      }
+      var done = false;
+      function finish(v) {
+        if (done) return;
+        done = true;
+        resolve(!!v);
+      }
+      setTimeout(function () {
+        finish(false);
+      }, NET_PROBE_TIMEOUT);
+
+      var urls = [];
+      try {
+        if (window.SUPABASE_URL) urls.push(String(window.SUPABASE_URL).replace(/\/$/, '') + '/auth/v1/health');
+      } catch (e0) {}
+      try {
+        var base = (document.querySelector('base') && document.querySelector('base').href) || location.href;
+        urls.push(new URL('data.js', base).href);
+        urls.push(new URL('manifest.webmanifest', base).href);
+      } catch (e1) {
+        urls.push('./data.js');
+      }
+
+      function tryOne(i) {
+        if (done) return;
+        if (i >= urls.length) {
+          finish(false);
+          return;
+        }
+        var ctrl = null;
+        var timer = null;
+        try {
+          if (typeof AbortController !== 'undefined') ctrl = new AbortController();
+        } catch (e2) {}
+        timer = setTimeout(function () {
+          try {
+            if (ctrl) ctrl.abort();
+          } catch (e3) {}
+          tryOne(i + 1);
+        }, Math.min(1500, NET_PROBE_TIMEOUT));
+
+        var opts = { method: 'HEAD', cache: 'no-store', mode: 'cors' };
+        if (ctrl) opts.signal = ctrl.signal;
+
+        fetch(urls[i], opts)
+          .then(function (res) {
+            clearTimeout(timer);
+            // حتی opaque یا 404 یعنی شبکه پاسخ داده
+            finish(true);
+          })
+          .catch(function () {
+            clearTimeout(timer);
+            // fallback GET کوچک
+            var opts2 = { method: 'GET', cache: 'no-store', mode: 'cors' };
+            try {
+              if (typeof AbortController !== 'undefined') {
+                var c2 = new AbortController();
+                opts2.signal = c2.signal;
+                setTimeout(function () {
+                  try {
+                    c2.abort();
+                  } catch (e4) {}
+                }, 1200);
+              }
+            } catch (e5) {}
+            fetch(urls[i], opts2)
+              .then(function () {
+                finish(true);
+              })
+              .catch(function () {
+                tryOne(i + 1);
+              });
+          });
+      }
+      tryOne(0);
+    });
+  }
+
+  // همگام برای قفل‌های سریع؛ مسیر boot از probeOnline استفاده می‌کند
+  function isOnline() {
+    return navigatorSaysOnline();
   }
 
   function termsSeenThisSession() {
@@ -83,8 +172,36 @@
     } catch (e) {}
   }
 
+  function ensureBootLoader() {
+    var id = 'kafeBootTransitionLoader';
+    var box = document.getElementById(id);
+    if (box) return box;
+    box = document.createElement('div');
+    box.id = id;
+    box.style.cssText =
+      'display:none;position:fixed;inset:0;z-index:10088;align-items:center;justify-content:center;' +
+      'background:rgba(7,11,20,0.55);pointer-events:none;';
+    box.innerHTML =
+      '<div style="width:42px;height:42px;border-radius:50%;border:3px solid rgba(240,216,120,0.25);' +
+      'border-top-color:#F0D878;animation:kafeBootSpin 0.8s linear infinite;"></div>' +
+      '<style>@keyframes kafeBootSpin{to{transform:rotate(360deg)}}</style>';
+    document.body.appendChild(box);
+    return box;
+  }
+
+  function showBootLoader() {
+    var box = ensureBootLoader();
+    box.style.display = 'flex';
+  }
+
+  function hideBootLoader() {
+    var box = document.getElementById('kafeBootTransitionLoader');
+    if (box) box.style.display = 'none';
+  }
+
   function enterMainApp(profile) {
     setStage('main');
+    hideBootLoader();
     hide(el('termsScreen'));
     hide(el('splashScreen'));
     hide(el('registerScreen'));
@@ -92,7 +209,7 @@
     hideRetryOnline();
     showBlock(el('app'));
     try {
-      document.body.classList.toggle('is-offline', !isOnline());
+      document.body.classList.toggle('is-offline', !navigatorSaysOnline());
     } catch (e0) {}
     try {
       if (profile && typeof updateUserDisplay === 'function') {
@@ -108,6 +225,7 @@
 
   function showTermsOnly() {
     setStage('terms');
+    hideBootLoader();
     hide(el('splashScreen'));
     hide(el('registerScreen'));
     hide(el('app'));
@@ -124,22 +242,24 @@
 
   function showRegisterOnly() {
     setStage('auth');
+    hideBootLoader();
     hide(el('splashScreen'));
     hide(el('termsScreen'));
     hide(el('app'));
     hideOfflineDialog();
     hideRetryOnline();
     showFlex(el('registerScreen'));
-    if (!isOnline()) {
-      try {
-        if (typeof showNotification === 'function') {
-          showNotification('برای ثبت‌نام باید به اینترنت متصل باشید', 'error');
-        }
-      } catch (e) {}
-    }
+    probeOnline().then(function (ok) {
+      if (!ok) {
+        try {
+          if (typeof showNotification === 'function') {
+            showNotification('برای ثبت‌نام باید به اینترنت متصل باشید', 'error');
+          }
+        } catch (e) {}
+      }
+    });
   }
 
-  /* —— دیالوگ آفلاین بله/خیر —— */
   function ensureOfflineDialog() {
     var id = 'kafeOfflineChoiceDialog';
     var box = document.getElementById(id);
@@ -182,6 +302,7 @@
 
   function showOfflineDialog() {
     setStage('offline-choice');
+    hideBootLoader();
     hide(el('splashScreen'));
     hide(el('termsScreen'));
     hide(el('registerScreen'));
@@ -196,7 +317,6 @@
     if (box) box.style.display = 'none';
   }
 
-  /* —— صفحه تلاش مجدد (به‌جای صفحه خالی) —— */
   function ensureRetryOnline() {
     var id = 'kafeRetryOnlineScreen';
     var box = document.getElementById(id);
@@ -229,6 +349,7 @@
 
   function showRetryOnline() {
     setStage('wait-online');
+    hideBootLoader();
     hide(el('app'));
     hide(el('registerScreen'));
     hide(el('splashScreen'));
@@ -237,7 +358,11 @@
     var box = ensureRetryOnline();
     box.style.display = 'flex';
     var hint = document.getElementById('kafeRetryOnlineHint');
-    if (hint) hint.textContent = isOnline() ? 'در حال بررسی…' : 'هنوز آفلاین هستید';
+    if (hint) hint.textContent = 'در حال بررسی اتصال…';
+    probeOnline().then(function (ok) {
+      if (hint) hint.textContent = ok ? 'متصل شدید — ادامه…' : 'هنوز آفلاین هستید';
+      if (ok) tryRetryOnline();
+    });
   }
 
   function hideRetryOnline() {
@@ -247,17 +372,22 @@
 
   function tryRetryOnline() {
     var hint = document.getElementById('kafeRetryOnlineHint');
-    if (!isOnline()) {
-      if (hint) hint.textContent = 'هنوز متصل نیستید. صبر کنید یا دوباره تلاش کنید.';
-      return;
-    }
-    if (hint) hint.textContent = 'متصل شدید — ادامه…';
-    hideRetryOnline();
-    continueAfterTermsOrSession();
+    showBootLoader();
+    probeOnline().then(function (ok) {
+      if (!ok) {
+        hideBootLoader();
+        if (hint) hint.textContent = 'هنوز متصل نیستید. صبر کنید یا دوباره تلاش کنید.';
+        return;
+      }
+      if (hint) hint.textContent = 'متصل شدید — ادامه…';
+      hideRetryOnline();
+      continueAfterTermsOrSession();
+    });
   }
 
   function goOfflineLimited() {
     setStage('main-offline');
+    hideBootLoader();
     try {
       document.body.classList.add('is-offline');
       window.__kafeOfflineLimited = true;
@@ -270,7 +400,6 @@
     installOfflineLocks();
   }
 
-  /* قفل مدیریت و سفارش در آفلاین */
   function installOfflineLocks() {
     if (window.__kafeOfflineLocksV4) return;
     window.__kafeOfflineLocksV4 = true;
@@ -278,7 +407,7 @@
     document.addEventListener(
       'click',
       function (ev) {
-        if (!window.__kafeOfflineLimited && isOnline()) return;
+        if (!window.__kafeOfflineLimited && navigatorSaysOnline()) return;
         var t = ev.target && ev.target.closest ? ev.target.closest('button, a') : null;
         if (!t) return;
         var oc = t.getAttribute('onclick') || '';
@@ -293,7 +422,7 @@
           label.indexOf('خرید') >= 0 ||
           label.indexOf('سفارش') >= 0;
         if (isAdmin || isOrder) {
-          if (window.__kafeOfflineLimited || !isOnline()) {
+          if (window.__kafeOfflineLimited || !navigatorSaysOnline()) {
             ev.preventDefault();
             ev.stopPropagation();
             try {
@@ -312,12 +441,11 @@
       true
     );
 
-    // wrap توابع اگر موجود باشند
     function blockWhenOffline(name, msg) {
       var prev = window[name];
       if (typeof prev !== 'function' || prev.__kafeOffLock) return;
       window[name] = function () {
-        if (window.__kafeOfflineLimited || !isOnline()) {
+        if (window.__kafeOfflineLimited || !navigatorSaysOnline()) {
           try {
             if (typeof showNotification === 'function') showNotification(msg, 'error');
           } catch (e) {}
@@ -334,6 +462,7 @@
 
   function runSplashThen(done) {
     setStage('splash');
+    hideBootLoader();
     hide(el('termsScreen'));
     hide(el('registerScreen'));
     hide(el('app'));
@@ -403,9 +532,18 @@
 
   function loadProfile(userId) {
     return new Promise(function (resolve) {
+      var done = false;
+      function finish(v) {
+        if (done) return;
+        done = true;
+        resolve(v || null);
+      }
+      setTimeout(function () {
+        finish(null);
+      }, PROFILE_TIMEOUT);
       try {
         if (!window.supabaseClient || !userId) {
-          resolve(null);
+          finish(null);
           return;
         }
         window.supabaseClient
@@ -414,38 +552,60 @@
           .eq('id', userId)
           .maybeSingle()
           .then(function (pr) {
-            if (pr && !pr.error && pr.data) resolve(pr.data);
-            else resolve(null);
+            if (pr && !pr.error && pr.data) finish(pr.data);
+            else finish(null);
           })
           .catch(function () {
-            resolve(null);
+            finish(null);
           });
       } catch (e) {
-        resolve(null);
+        finish(null);
       }
     });
   }
 
   function continueAfterTermsOrSession() {
-    getSessionSafe().then(function (session) {
-      if (session && session.user) {
-        loadProfile(session.user.id).then(function (profile) {
-          enterMainApp(profile || getLocalCafeUser());
-        });
-        return;
-      }
+    showBootLoader();
+    var finished = false;
+    function doneRoute() {
+      if (finished) return;
+      finished = true;
+      hideBootLoader();
+    }
+
+    // سقف کل مسیر ۴ ثانیه — بعدش local و نه صفحه خالی
+    var safety = setTimeout(function () {
+      if (finished) return;
+      doneRoute();
       var local = getLocalCafeUser();
-      if (!isOnline()) {
-        if (local) showOfflineDialog();
-        else showRegisterOnly();
-        return;
-      }
-      showRegisterOnly();
+      if (local) enterMainApp(local);
+      else showRegisterOnly();
+    }, PROFILE_TIMEOUT);
+
+    probeOnline().then(function (online) {
+      getSessionSafe().then(function (session) {
+        if (session && session.user) {
+          loadProfile(session.user.id).then(function (profile) {
+            clearTimeout(safety);
+            doneRoute();
+            enterMainApp(profile || getLocalCafeUser());
+          });
+          return;
+        }
+        clearTimeout(safety);
+        doneRoute();
+        var local = getLocalCafeUser();
+        if (!online) {
+          if (local) showOfflineDialog();
+          else showRegisterOnly();
+          return;
+        }
+        showRegisterOnly();
+      });
     });
   }
 
   function afterSplashRoute() {
-    // شرایط: هر باز شدن برنامه در نشست جدید یک‌بار — نه با localStorage دائمی
     if (!termsSeenThisSession()) {
       showTermsOnly();
       return;
@@ -460,6 +620,7 @@
     hide(el('splashScreen'));
     hideRetryOnline();
     hideOfflineDialog();
+    hideBootLoader();
     window.__kafeOfflineLimited = false;
     try {
       document.body.classList.remove('is-offline');
@@ -467,14 +628,13 @@
     enterMainApp(profile || getLocalCafeUser());
   };
 
-  // قبول شرایط — فقط پرچم نشست؛ kafeTermsAccepted برای رد خودکار استفاده نمی‌شود
   window.acceptTermsAndContinue = function () {
     markTermsSeenThisSession();
-    // سازگاری قدیمی: هنوز نوشته می‌شود ولی boot از آن برای رد شرایط استفاده نمی‌کند
     try {
       localStorage.setItem('kafeTermsAccepted', '1');
     } catch (e) {}
     hide(el('termsScreen'));
+    showBootLoader();
     continueAfterTermsOrSession();
   };
 
@@ -483,7 +643,8 @@
     if (typeof prev !== 'function') return false;
     if (prev.__kafeBootV4Patched) return true;
     window.registerUser = async function () {
-      if (!isOnline()) {
+      var online = await probeOnline();
+      if (!online) {
         try {
           if (typeof showNotification === 'function') {
             showNotification('برای ثبت‌نام باید به اینترنت متصل باشید', 'error');
@@ -523,7 +684,6 @@
     setTimeout(patchRegisterUser, 1500);
   }
 
-  // online → ادامه از صفحه انتظار
   window.addEventListener('online', function () {
     try {
       document.body.classList.remove('is-offline');
