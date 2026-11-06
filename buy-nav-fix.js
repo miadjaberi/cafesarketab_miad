@@ -1,11 +1,10 @@
-/** buy-nav-fix.js V8.1
- * خرید اشتراک = یک page-swipe واقعی داخل pagesContainer
- * همان انیمیشن نرم scrollToPage (scroll-behavior: smooth)
+/** buy-nav-fix.js V9
+ * خرید = صفحه pageBuy؛ بدون highlightBuyNav (مالک هایلایت: final-nav-fix)
  */
 (function () {
   'use strict';
-  if (window.__KAFE_BUY_NAV_FIX_V8__) return;
-  window.__KAFE_BUY_NAV_FIX_V8__ = true;
+  if (window.__KAFE_BUY_NAV_FIX_V9__) return;
+  window.__KAFE_BUY_NAV_FIX_V9__ = true;
 
   var BUY_PAGE_ID = 'pageBuy';
 
@@ -73,16 +72,14 @@
       '<p style="color:#C8C0B0;font-size:0.8rem;margin:6px 0 0;">انتخاب طرح و ارسال فیش</p>' +
       '</div>' +
       '<div id="kafeBuyFormHost"></div>';
-    container.appendChild(page);
+    var shop = document.getElementById('pageShop');
+    if (shop && shop.parentNode === container) {
+      if (shop.nextSibling) container.insertBefore(page, shop.nextSibling);
+      else container.appendChild(page);
+    } else {
+      container.appendChild(page);
+    }
     return page;
-  }
-
-  function buyPageIndex() {
-    var container = document.getElementById('pagesContainer');
-    if (!container) return -1;
-    var page = document.getElementById(BUY_PAGE_ID);
-    if (!page) return -1;
-    return Array.prototype.indexOf.call(container.children, page);
   }
 
   function mountFormIntoPage() {
@@ -91,82 +88,34 @@
     var page = ensureBuyPage();
     if (!page) return false;
     var host = document.getElementById('kafeBuyFormHost') || page;
-
-    if (box.parentNode !== host) {
-      host.appendChild(box);
-    }
-
+    if (box.parentNode !== host) host.appendChild(box);
     box.style.position = 'relative';
     box.style.inset = 'auto';
-    box.style.top = 'auto';
-    box.style.left = 'auto';
-    box.style.right = 'auto';
-    box.style.bottom = 'auto';
     box.style.width = '100%';
     box.style.height = 'auto';
     box.style.background = 'transparent';
     box.style.display = 'flex';
     box.style.zIndex = '1';
-
-    box.querySelectorAll('button').forEach(function (btn) {
-      var t = (btn.textContent || '').trim();
-      var oc = btn.getAttribute('onclick') || '';
-      if (t === '✕' || t === '×' || oc.indexOf('subscriptionModalBox') >= 0) {
-        if (btn.__kafeBuyPageClose) return;
-        btn.__kafeBuyPageClose = true;
-        btn.addEventListener(
-          'click',
-          function (ev) {
-            ev.preventDefault();
-            try {
-              box.remove();
-            } catch (e) {}
-            if (typeof window.scrollToPage === 'function') window.scrollToPage(0);
-          },
-          true
-        );
-      }
-    });
     return true;
-  }
-
-  function highlightBuyNav(on) {
-    try {
-      var items = document.querySelectorAll('.bottom-nav .nav-item-bottom');
-      items.forEach(function (item) {
-        var label = (item.textContent || '').replace(/\s+/g, ' ').trim();
-        var isBuy = label.indexOf('خرید') >= 0 && !item.classList.contains('center-btn');
-        if (on) {
-          item.classList.toggle('active', isBuy);
-        }
-      });
-    } catch (e) {}
   }
 
   function openBuy() {
     injectCSS();
     ensureBuyPage();
-
     function go() {
       mountFormIntoPage();
-      var idx = buyPageIndex();
-      if (idx >= 0 && typeof window.scrollToPage === 'function') {
-        window.scrollToPage(idx);
+      if (typeof window.scrollToPage === 'function') {
+        window.scrollToPage('pageBuy');
       }
-      highlightBuyNav(true);
     }
-
     if (typeof window.openSubscriptionPurchase === 'function') {
       try {
         var ret = window.openSubscriptionPurchase();
         setTimeout(go, 60);
         setTimeout(go, 200);
         setTimeout(go, 500);
-        if (ret && typeof ret.then === 'function') {
-          ret.then(go).catch(go);
-        }
+        if (ret && typeof ret.then === 'function') ret.then(go).catch(go);
       } catch (e) {
-        console.error('[buy-nav]', e);
         go();
       }
     } else {
@@ -190,8 +139,8 @@
 
   function bindBuy() {
     var buyBtn = findBuyButton();
-    if (!buyBtn || buyBtn.__kafeBuyV8) return;
-    buyBtn.__kafeBuyV8 = true;
+    if (!buyBtn || buyBtn.__kafeBuyV9) return;
+    buyBtn.__kafeBuyV9 = true;
     buyBtn.setAttribute('onclick', 'void(0)');
     buyBtn.addEventListener('click', function (ev) {
       ev.preventDefault();
@@ -199,36 +148,16 @@
     });
   }
 
-  function bindOtherNav() {
-    var nav = document.getElementById('bottomNav');
-    if (!nav || nav.__kafeBuyNavV8) return;
-    nav.__kafeBuyNavV8 = true;
-    nav.addEventListener(
-      'click',
-      function (ev) {
-        var t =
-          ev.target && ev.target.closest
-            ? ev.target.closest('button.nav-item-bottom')
-            : null;
-        if (!t) return;
-        var label = (t.textContent || '').replace(/\s+/g, ' ').trim();
-        var isBuy = label.indexOf('خرید') >= 0 && !t.classList.contains('center-btn');
-        if (!isBuy) highlightBuyNav(false);
-      },
-      true
-    );
-  }
-
   function wrapOpen() {
     var prev = window.openSubscriptionPurchase;
-    if (typeof prev !== 'function' || prev.__kafeBuyPageWrapV8) return;
+    if (typeof prev !== 'function' || prev.__kafeBuyPageWrapV9) return;
     var wrapped = function () {
       var ret = prev.apply(this, arguments);
       setTimeout(mountFormIntoPage, 80);
       setTimeout(mountFormIntoPage, 250);
       return ret;
     };
-    wrapped.__kafeBuyPageWrapV8 = true;
+    wrapped.__kafeBuyPageWrapV9 = true;
     window.openSubscriptionPurchase = wrapped;
   }
 
@@ -236,7 +165,6 @@
     injectCSS();
     ensureBuyPage();
     bindBuy();
-    bindOtherNav();
     wrapOpen();
   }
 
