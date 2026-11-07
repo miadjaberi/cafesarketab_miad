@@ -97,5 +97,12 @@
     inject('./ui-unify-v1.js?v=20261106e', 'ui-unify');
     inject('./admin-ui-four-fixes.js?v=20261106e', 'admin-four');
     inject('./admin-messages-session-fix.js?v=20261107a', 'msg-session');
+    /* QA فقط با ?qa=1 یا localStorage.kafeQA=1 — بدون اثر روی کاربر عادی */
+    try {
+      var wantQA =
+        /[?&]qa=1(?:&|$)/.test(location.search) ||
+        (typeof localStorage !== 'undefined' && localStorage.getItem('kafeQA') === '1');
+      if (wantQA) inject('./qa-harness.js?v=20261107qa', 'qa-harness');
+    } catch (eQA) {}
   })();
 })();
