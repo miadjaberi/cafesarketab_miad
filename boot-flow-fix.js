@@ -1,9 +1,8 @@
-/** boot-flow-fix.js V4.2
- * V4 + مشاور فنی:
- * - isOnline واقعی (HEAD با تایم‌اوت ۳ث)
- * - loadProfile / continueAfterTerms با تایم‌اوت ۴ث → fallback getLocalCafeUser
- * - لودر کوچک بین بستن شرایط و مرحله بعد
- * - V4.2: _probe روی URLها؛ بعد از safety فقط نشست واقعی مسیر را عوض می‌کند
+/** boot-flow-fix.js V4.3
+ * - تشخیص دسترسی واقعی به Supabase Auth health با GET و timeout
+ * - ورود آنلاین فقط با session و پروفایل تأییدشده از سرور
+ * - مسیر آفلاین محدود فقط با انتخاب صریح کاربر
+ * - کنترل یگانه شرایط، اسپلش و انتقال به صفحه ورود
  */
 (function () {
   'use strict';
@@ -41,51 +40,33 @@
     return new Promise(function (resolve) {
       if (!navigatorSaysOnline()) { resolve(false); return; }
       var done = false;
-      function finish(v) { if (done) return; done = true; resolve(!!v); }
-      setTimeout(function () { finish(false); }, NET_PROBE_TIMEOUT);
-      var urls = [];
-      var probeTok = String(Date.now());
-      try {
-        var sb = (window.SUPABASE_URL && String(window.SUPABASE_URL)) || 'https://evxxvnlwtbaqpjbjaxdk.supabase.co';
-        urls.push(String(sb).replace(/\/$/, '') + '/auth/v1/health?_probe=' + probeTok);
-      } catch (e0) {
-        urls.push('https://evxxvnlwtbaqpjbjaxdk.supabase.co/auth/v1/health?_probe=' + probeTok);
-      }
-      try {
-        var base = (document.querySelector('base') && document.querySelector('base').href) || location.href;
-        var u1 = new URL('data.js', base);
-        u1.searchParams.set('_probe', probeTok);
-        urls.push(u1.href);
-        var u2 = new URL('manifest.webmanifest', base);
-        u2.searchParams.set('_probe', probeTok);
-        urls.push(u2.href);
-      } catch (e1) {
-        urls.push('./data.js?_probe=' + probeTok);
-      }
-      function tryOne(i) {
+      var ctrl = null;
+      var timer = setTimeout(function () {
+        try { if (ctrl) ctrl.abort(); } catch (e) {}
+        finish(false);
+      }, NET_PROBE_TIMEOUT);
+      function finish(v) {
         if (done) return;
-        if (i >= urls.length) { finish(false); return; }
-        var ctrl = null, timer = null;
-        try { if (typeof AbortController !== 'undefined') ctrl = new AbortController(); } catch (e2) {}
-        timer = setTimeout(function () {
-          try { if (ctrl) ctrl.abort(); } catch (e3) {}
-          tryOne(i + 1);
-        }, Math.min(1500, NET_PROBE_TIMEOUT));
-        var opts = { method: 'HEAD', cache: 'no-store', mode: 'cors' };
-        if (ctrl) opts.signal = ctrl.signal;
-        fetch(urls[i], opts).then(function () { clearTimeout(timer); finish(true); }).catch(function () {
-          clearTimeout(timer);
-          var opts2 = { method: 'GET', cache: 'no-store', mode: 'cors' };
-          try {
-            if (typeof AbortController !== 'undefined') {
-              var c2 = new AbortController(); opts2.signal = c2.signal;
-              setTimeout(function () { try { c2.abort(); } catch (e4) {} }, 1200);
-            }
-          } catch (e5) {}
-          fetch(urls[i], opts2).then(function () { finish(true); }).catch(function () { tryOne(i + 1); });
-        });
+        done = true;
+        clearTimeout(timer);
+        resolve(!!v);
       }
-      tryOne(0);
+      var probeTok = String(Date.now());
+      // فقط سلامت Supabase معیار آنلاین‌بودن ورود است؛ پاسخ کش‌شدهٔ GitHub Pages
+      // یا fallback صفحه اصلی نباید به‌اشتباه اینترنتِ آمادهٔ احراز هویت تلقی شود.
+      var healthUrl = 'https://evxxvnlwtbaqpjbjaxdk.supabase.co/auth/v1/health?_probe=' + probeTok;
+      var opts = { method: 'GET', cache: 'no-store', mode: 'cors', credentials: 'omit' };
+      try {
+        if (typeof AbortController !== 'undefined') {
+          ctrl = new AbortController();
+          opts.signal = ctrl.signal;
+        }
+      } catch (e0) {}
+      fetch(healthUrl, opts).then(function (response) {
+        finish(!!(response && response.ok));
+      }).catch(function () {
+        finish(false);
+      });
     });
   }
   function isOnline() { return navigatorSaysOnline(); }
