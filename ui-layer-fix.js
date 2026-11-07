@@ -2,6 +2,9 @@
 (function () {
   'use strict';
 
+  /* فلگ ماندگار نسخه‌های قدیمی را در هر بار اجرای برنامه بی‌اثر و پاک کن. */
+  try { localStorage.removeItem('kafeQA'); } catch (eLegacyQA) {}
+
   function closeSettings() {
     var panel = document.getElementById('settingsPanel');
     if (!panel) return;
