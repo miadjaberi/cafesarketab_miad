@@ -1,5 +1,5 @@
 /**
- * qa-harness.js v3
+ * qa-harness.js v4
  * درخواست: ?qa=1 یا sessionStorage.kafeQA=1 (نه ماندگار localStorage)
  * مجوز نمایش: profiles.role=admin از سرور — فقط محدودکننده UI؛ بدون نوشتن DB
  * آفلاین: بدون نشست مدیر → پیام نیاز به اینترنت؛ بدون دور زدن OTP
@@ -89,55 +89,30 @@
         return;
       }
       if (!browserOnline()) {
-        /* آفلاین: فقط اگر نشست از قبل در حافظه باشد و role قابل خواندن محلی/کش باشد */
-        c.auth
-          .getSession()
-          .then(function (sr) {
-            var ses = sr && sr.data && sr.data.session;
-            if (!ses || !ses.user) {
-              resolve({
-                ok: false,
-                reason:
-                  'برای ورود مدیر و اجرای آزمون مدیریتی، اتصال اینترنت لازم است. ورود مدیر به کد تلگرام (آنلاین) وابسته است.',
-                offlineHint: true
-              });
-              return;
-            }
-            /* تلاش خواندن نقش؛ اگر شبکه قطع باشد ممکن است خطا بدهد */
-            return c
-              .from('profiles')
-              .select('role')
-              .eq('id', ses.user.id)
-              .maybeSingle()
-              .then(function (prof) {
-                if (prof && !prof.error && prof.data && prof.data.role === 'admin') {
-                  resolve({ ok: true, offlineSession: true });
-                } else {
-                  resolve({
-                    ok: false,
-                    reason:
-                      'نشست هست ولی نقش admin از سرور تأیید نشد. در آفلاین بدون تأیید قبلی معتبر، آزمون مدیریتی اجرا نمی‌شود.',
-                    offlineHint: true
-                  });
-                }
-              })
-              .catch(function () {
-                resolve({
-                  ok: false,
-                  reason:
-                    'برای ورود مدیر و اجرای آزمون مدیریتی، اتصال اینترنت لازم است.',
-                  offlineHint: true
-                });
-              });
-          })
-          .catch(function () {
+        /* فقط نشست همین تب که قبلاً آنلاین و با role=admin تأیید شده مجاز است */
+        c.auth.getSession().then(function (sr) {
+          var ses = sr && sr.data && sr.data.session;
+          var previouslyVerified = false;
+          try {
+            previouslyVerified = sessionStorage.getItem('kafeQA') === '1';
+          } catch (e) {}
+          if (ses && ses.user && previouslyVerified) {
+            resolve({ ok: true, offlineSession: true });
+          } else {
             resolve({
               ok: false,
               reason:
-                'برای ورود مدیر و اجرای آزمون مدیریتی، اتصال اینترنت لازم است.',
+                'برای ورود مدیر و اجرای آزمون مدیریتی، ابتدا آنلاین با OTP تلگرام وارد شوید. حالت آفلاین فقط در همان نشستِ قبلاً تأییدشده مجاز است.',
               offlineHint: true
             });
+          }
+        }).catch(function () {
+          resolve({
+            ok: false,
+            reason: 'برای ورود مدیر و اجرای آزمون مدیریتی، اتصال اینترنت لازم است.',
+            offlineHint: true
           });
+        });
         return;
       }
 
@@ -196,21 +171,23 @@
       panel.id = 'kafeQAPanel';
       document.body.appendChild(panel);
     }
+    panel.setAttribute('data-qa-denied', '1');
     panel.setAttribute('dir', 'rtl');
+    /* پیام غیرمسدودکننده: فرم ورود و OTP باید قابل استفاده بمانند */
     panel.style.cssText =
-      'position:fixed;inset:0;z-index:120000;background:rgba(7,11,20,0.96);color:#F5F0E4;display:flex;align-items:center;justify-content:center;padding:20px;font-family:Tahoma,sans-serif;';
+      'position:fixed;left:10px;right:10px;top:10px;z-index:120000;max-height:42vh;overflow:auto;background:rgba(7,11,20,0.97);color:#F5F0E4;border:1px solid rgba(201,168,76,.55);border-radius:14px;display:block;padding:14px;font-family:Tahoma,sans-serif;box-shadow:0 8px 28px rgba(0,0,0,.35);';
     while (panel.firstChild) panel.removeChild(panel.firstChild);
 
-    var box = el('div', 'max-width:360px;text-align:center;line-height:1.7');
-    var h = el('div', 'font-size:1.2rem;color:#F0D878;font-weight:800;margin-bottom:12px');
-    h.textContent = 'دسترسی محدود';
-    var p1 = el('p', 'font-size:0.9rem;opacity:0.9');
-    p1.textContent = 'ابزار تست فقط برای مدیر مجاز است.';
-    var p2 = el('p', 'font-size:0.8rem;color:#c9a84c;margin-top:10px');
+    var box = el('div', 'max-width:480px;margin:0 auto;text-align:center;line-height:1.7');
+    var h = el('div', 'font-size:1.05rem;color:#F0D878;font-weight:800;margin-bottom:6px');
+    h.textContent = 'ابزار QA — ورود مدیر لازم است';
+    var p1 = el('p', 'font-size:0.86rem;opacity:0.95;margin:4px 0');
+    p1.textContent = 'این پیام مانع استفاده از صفحه ورود برنامه نمی‌شود.';
+    var p2 = el('p', 'font-size:0.8rem;color:#F0D878;margin:6px 0');
     p2.textContent = String(reason || '');
     var btn = el(
       'button',
-      'margin-top:18px;padding:10px 18px;border-radius:10px;border:1px solid #555;background:#1a1a2e;color:#eee'
+      'margin-top:8px;padding:8px 16px;border-radius:10px;border:1px solid #555;background:#1a1a2e;color:#eee'
     );
     btn.type = 'button';
     btn.textContent = 'بستن';
@@ -568,26 +545,58 @@
       });
   }
 
+  var bootInProgress = false;
+  var adminVerified = false;
+
   function boot() {
+    if (bootInProgress) return;
+    bootInProgress = true;
     verifyAdminFromServer().then(function (v) {
+      bootInProgress = false;
       if (!v || !v.ok) {
-        showDenied(v && v.reason ? v.reason : 'دسترسی رد شد');
-        try {
-          sessionStorage.removeItem('kafeQA');
-        } catch (e) {}
+        if (!adminVerified) showDenied(v && v.reason ? v.reason : 'دسترسی رد شد');
         return;
       }
+      adminVerified = true;
+      var denied = document.getElementById('kafeQAPanel');
+      if (denied && denied.getAttribute('data-qa-denied') === '1') {
+        denied.style.display = 'none';
+        denied.removeAttribute('data-qa-denied');
+      }
       try {
-        if (trimQaParam()) sessionStorage.setItem('kafeQA', '1');
+        if (trimQaParam() || v.offlineSession) sessionStorage.setItem('kafeQA', '1');
       } catch (e2) {}
       ensurePanel();
       setTimeout(runAll, 400);
+    }).catch(function () {
+      bootInProgress = false;
+      if (!adminVerified) showDenied('بررسی مجوز مدیر انجام نشد؛ اتصال اینترنت را بررسی کنید.');
     });
+  }
+
+  function watchAdminSignIn() {
+    var c = getClient();
+    if (!c || !c.auth || typeof c.auth.onAuthStateChange !== 'function') return false;
+    if (window.__KAFE_QA_AUTH_WATCH__) return true;
+    window.__KAFE_QA_AUTH_WATCH__ = true;
+    c.auth.onAuthStateChange(function (event) {
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        /* پس از ورود واقعی/OTP، نقش از سرور دوباره بررسی می‌شود */
+        setTimeout(boot, 250);
+      } else if (event === 'SIGNED_OUT') {
+        adminVerified = false;
+        var panel = document.getElementById('kafeQAPanel');
+        if (panel) panel.style.display = 'none';
+        try { sessionStorage.removeItem('kafeQA'); } catch (e) {}
+      }
+    });
+    return true;
   }
 
   function waitClientThenBoot(attempt) {
     attempt = attempt || 0;
     if (getClient() || attempt > 40) {
+      watchAdminSignIn();
       boot();
       return;
     }
