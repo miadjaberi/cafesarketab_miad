@@ -108,6 +108,6 @@
       } catch (e) {}
       return false;
     }
-    if (wantsQAInject()) inject('./qa-harness.js?v=20261107qa3', 'qa-harness');
+    if (wantsQAInject()) inject('./qa-harness.js?v=20261107qa4', 'qa-harness');
   })();
 })();
