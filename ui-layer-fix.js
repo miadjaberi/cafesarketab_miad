@@ -102,9 +102,21 @@
       try {
         var sp = new URLSearchParams(location.search || '');
         var q = sp.get('qa');
-        if (q != null && String(q).trim() === '1') return true;
-        if (/(?:^|[?&])qa\s*=\s*1(?:&|$)/.test(location.search || '')) return true;
-        if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('kafeQA') === '1') return true;
+        var requested = q != null && String(q).trim() === '1';
+        if (!requested) requested = /(?:^|[?&])qa\s*=\s*1(?:&|$)/.test(location.search || '');
+        if (requested) {
+          /* درخواست URL فقط یک‌بار مصرف است؛ تأیید مدیر جداگانه در harness انجام می‌شود. */
+          try { sessionStorage.setItem('kafeQARequested', '1'); } catch (e1) {}
+          try {
+            var cleanUrl = new URL(location.href);
+            cleanUrl.searchParams.delete('qa');
+            history.replaceState(history.state, '', cleanUrl.pathname + cleanUrl.search + cleanUrl.hash);
+          } catch (e2) {}
+          return true;
+        }
+        if (typeof sessionStorage !== 'undefined' &&
+            (sessionStorage.getItem('kafeQA') === '1' ||
+             sessionStorage.getItem('kafeQARequested') === '1')) return true;
       } catch (e) {}
       return false;
     }
