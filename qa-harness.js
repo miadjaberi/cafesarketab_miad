@@ -237,22 +237,15 @@
       'بسیاری از دکمه‌ها با listener پچ وصل می‌شوند'
     );
 
-    /* صریح: نه کلیک واقعی روی دکمه — فقط فراخوانی مستقیم تابع */
-    if (typeof window.scrollToPage === 'function') {
-      try {
-        window.scrollToPage('pageTools');
-        add(
-          'green',
-          'ناوبری آزمایشی',
-          'با فراخوانی مستقیم تابع scrollToPage("pageTools") انجام شد — نه کلیک واقعی روی دکمه نوار پایین',
-          ''
-        );
-      } catch (e) {
-        add('yellow', 'ناوبری آزمایشی', 'خطا در scrollToPage', String(e && e.message ? e.message : e).slice(0, 100));
-      }
-    } else {
-      add('yellow', 'ناوبری آزمایشی', 'تابع scrollToPage در دسترس نبود', '');
-    }
+    /* در نسخه همراه مدیر، بارگذاری QA نباید خودش صفحه برنامه را جابه‌جا کند. */
+    add(
+      typeof window.scrollToPage === 'function' ? 'green' : 'yellow',
+      'ناوبری — وجود تابع',
+      typeof window.scrollToPage === 'function'
+        ? 'تابع scrollToPage موجود است؛ برای حفظ وضعیت مدیر خودکار فراخوانی نشد.'
+        : 'تابع scrollToPage در زمان بررسی موجود نبود',
+      'واکنش واقعی با لمس مدیر در همراه QA ثبت می‌شود.'
+    );
 
     add(
       'yellow',
@@ -567,7 +560,16 @@
         if (trimQaParam() || v.offlineSession) sessionStorage.setItem('kafeQA', '1');
       } catch (e2) {}
       ensurePanel();
-      setTimeout(runAll, 400);
+      setTimeout(function () {
+        runAll();
+        window.__KAFE_QA_ADMIN_VERIFIED__ = true;
+        try { window.dispatchEvent(new Event('kafe:qa-admin-verified')); } catch (e) {}
+        /* پنل قدیمی پس از بررسی اولیه کنار می‌رود تا مدیر در خود برنامه کار کند. */
+        setTimeout(function () {
+          var oldPanel = document.getElementById('kafeQAPanel');
+          if (oldPanel) oldPanel.style.display = 'none';
+        }, 700);
+      }, 400);
     }).catch(function () {
       bootInProgress = false;
       if (!adminVerified) showDenied('بررسی مجوز مدیر انجام نشد؛ اتصال اینترنت را بررسی کنید.');
@@ -585,6 +587,8 @@
         setTimeout(boot, 250);
       } else if (event === 'SIGNED_OUT') {
         adminVerified = false;
+        window.__KAFE_QA_ADMIN_VERIFIED__ = false;
+        try { window.dispatchEvent(new Event('kafe:qa-end')); } catch (e) {}
         var panel = document.getElementById('kafeQAPanel');
         if (panel) panel.style.display = 'none';
         try { sessionStorage.removeItem('kafeQA'); } catch (e) {}
