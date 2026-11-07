@@ -101,6 +101,19 @@
     desc.style.cssText = 'font-size:11px;opacity:.85;line-height:1.6;margin-bottom:7px';
     statusNode = document.createElement('div');
     statusNode.style.cssText = 'font-size:11px;color:#F0D878;margin-bottom:8px';
+    var outcome = document.createElement('select');
+    outcome.id = 'kafeQAInspectorOutcome';
+    outcome.style.cssText = 'width:100%;box-sizing:border-box;padding:8px;border-radius:8px;border:1px solid #8b7440;background:#fff;color:#111;font:12px Tahoma,sans-serif;margin:4px 0';
+    [
+      ['pending', 'نیازمند بررسی'],
+      ['pass', 'سالم'],
+      ['issue', 'دارای مشکل'],
+      ['partial', 'ناقص'],
+      ['not-run', 'آزمایش نشده']
+    ].forEach(function (item) {
+      var option = document.createElement('option');
+      option.value = item[0]; option.textContent = item[1]; outcome.appendChild(option);
+    });
     var note = document.createElement('textarea');
     note.id = 'kafeQAInspectorNote';
     note.rows = 2;
@@ -111,15 +124,16 @@
     actions.appendChild(makeButton('ثبت یادداشت', function () {
       var value = safeText(note.value, 500);
       if (!value) return;
-      push(notes, { at: now(), view: getView(), note: value });
+      push(notes, { at: now(), view: getView(), outcome: outcome.value, note: value });
       note.value = '';
       record('یادداشت مدیر', value);
     }));
     actions.appendChild(makeButton('ممیزی کد فقط‌خواندنی', runSourceAudit));
     actions.appendChild(makeButton('کپی گزارش', copyReport));
     actions.appendChild(makeButton('کوچک‌سازی', function () { panel.style.display = 'none'; showLauncher(); }));
+    actions.appendChild(makeButton('پایان بررسی', stop));
     panel.appendChild(title); panel.appendChild(desc); panel.appendChild(statusNode);
-    panel.appendChild(note); panel.appendChild(actions);
+    panel.appendChild(outcome); panel.appendChild(note); panel.appendChild(actions);
     var feed = document.createElement('div');
     feed.id = 'kafeQAInspectorFeed';
     feed.style.cssText = 'margin-top:8px;max-height:110px;overflow:auto';
@@ -146,7 +160,7 @@
     if (!feed) return;
     while (feed.firstChild) feed.removeChild(feed.firstChild);
     events.slice(-8).reverse().forEach(function (e) { addCard(feed, e.type, e.detail); });
-    notes.slice(-4).reverse().forEach(function (n) { addCard(feed, 'یادداشت مدیر', n.view + '\n' + n.note); });
+    notes.slice(-4).reverse().forEach(function (n) { addCard(feed, 'یادداشت مدیر — ' + n.outcome, n.view + '\n' + n.note); });
   }
   function observe() {
     document.addEventListener('click', function (ev) {
@@ -271,7 +285,7 @@
       events.map(function (e) { return e.at + ' | ' + e.type + ' | ' + e.detail; }).join('\n'),
       '',
       '--- یادداشت‌های مدیر ---',
-      notes.map(function (n) { return n.at + ' | ' + n.view + ' | ' + n.note; }).join('\n'),
+      notes.map(function (n) { return n.at + ' | ' + n.outcome + ' | ' + n.view + ' | ' + n.note; }).join('\n'),
       '',
       '--- خطاها ---',
       errors.map(function (e) { return e.at + ' | ' + e.type + ' | ' + e.detail + (e.file ? ' | ' + e.file + ':' + e.line : ''); }).join('\n'),
