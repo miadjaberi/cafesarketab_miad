@@ -1,0 +1,26 @@
+name: Validate Kafe Miad fix branch
+on:
+  push:
+    branches:
+      - fix/qa-harness-2026-11-07
+  workflow_dispatch:
+jobs:
+  syntax-and-manifest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Check JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do
+            echo "Checking $file"
+            node --check "$file"
+          done < <(find . -type f -name '*.js' -not -path './.git/*' -print0)
+      - name: Validate PWA manifest JSON
+        run: node -e "JSON.parse(require('fs').readFileSync('manifest.webmanifest','utf8')); console.log('manifest JSON OK')"
