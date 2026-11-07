@@ -1,13 +1,14 @@
-/** boot-flow-fix.js V4.1
+/** boot-flow-fix.js V4.2
  * V4 + مشاور فنی:
  * - isOnline واقعی (HEAD با تایم‌اوت ۳ث)
  * - loadProfile / continueAfterTerms با تایم‌اوت ۴ث → fallback getLocalCafeUser
  * - لودر کوچک بین بستن شرایط و مرحله بعد
+ * - V4.2: _probe روی URLها؛ بعد از safety فقط نشست واقعی مسیر را عوض می‌کند
  */
 (function () {
   'use strict';
-  if (window.__KAFE_BOOT_FLOW_V4__) return;
-  window.__KAFE_BOOT_FLOW_V4__ = true;
+  if (window.__KAFE_BOOT_FLOW_V42__) return;
+  window.__KAFE_BOOT_FLOW_V42__ = true;
 
   var MIN_SPLASH = 1600;
   var MAX_SESSION_WAIT = 3500;
@@ -43,12 +44,24 @@
       function finish(v) { if (done) return; done = true; resolve(!!v); }
       setTimeout(function () { finish(false); }, NET_PROBE_TIMEOUT);
       var urls = [];
-      try { if (window.SUPABASE_URL) urls.push(String(window.SUPABASE_URL).replace(/\/$/, '') + '/auth/v1/health'); } catch (e0) {}
+      var probeTok = String(Date.now());
+      try {
+        var sb = (window.SUPABASE_URL && String(window.SUPABASE_URL)) || 'https://evxxvnlwtbaqpjbjaxdk.supabase.co';
+        urls.push(String(sb).replace(/\/$/, '') + '/auth/v1/health?_probe=' + probeTok);
+      } catch (e0) {
+        urls.push('https://evxxvnlwtbaqpjbjaxdk.supabase.co/auth/v1/health?_probe=' + probeTok);
+      }
       try {
         var base = (document.querySelector('base') && document.querySelector('base').href) || location.href;
-        urls.push(new URL('data.js', base).href);
-        urls.push(new URL('manifest.webmanifest', base).href);
-      } catch (e1) { urls.push('./data.js'); }
+        var u1 = new URL('data.js', base);
+        u1.searchParams.set('_probe', probeTok);
+        urls.push(u1.href);
+        var u2 = new URL('manifest.webmanifest', base);
+        u2.searchParams.set('_probe', probeTok);
+        urls.push(u2.href);
+      } catch (e1) {
+        urls.push('./data.js?_probe=' + probeTok);
+      }
       function tryOne(i) {
         if (done) return;
         if (i >= urls.length) { finish(false); return; }
@@ -250,25 +263,39 @@
   function continueAfterTermsOrSession() {
     showBootLoader();
     var finished = false;
-    function doneRoute() { if (finished) return; finished = true; hideBootLoader(); }
+    function doneRoute() {
+      if (finished) return;
+      finished = true;
+      hideBootLoader();
+    }
     var safety = setTimeout(function () {
       if (finished) return;
       doneRoute();
       var local = getLocalCafeUser();
-      if (local) enterMainApp(local); else showRegisterOnly();
+      if (local) enterMainApp(local);
+      else showRegisterOnly();
     }, PROFILE_TIMEOUT);
     probeOnline().then(function (online) {
+      if (finished) return;
       getSessionSafe().then(function (session) {
         if (session && session.user) {
           loadProfile(session.user.id).then(function (profile) {
-            clearTimeout(safety); doneRoute();
+            clearTimeout(safety);
+            finished = true;
+            hideBootLoader();
             enterMainApp(profile || getLocalCafeUser());
           });
           return;
         }
-        clearTimeout(safety); doneRoute();
+        if (finished) return;
+        clearTimeout(safety);
+        doneRoute();
         var local = getLocalCafeUser();
-        if (!online) { if (local) showOfflineDialog(); else showRegisterOnly(); return; }
+        if (!online) {
+          if (local) showOfflineDialog();
+          else showRegisterOnly();
+          return;
+        }
         showRegisterOnly();
       });
     });
