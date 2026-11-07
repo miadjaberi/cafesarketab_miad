@@ -1,36 +1,26 @@
-# QA Harness — شاخه آزمایشی
+# QA Harness v3
 
 ## شاخه
-- نام: `fix/qa-harness-2026-11-07`
-- پایه: `main` @ `3ec561c0135df1ce0ca4029c39de98296a881989`
-- Commit ابزار: `6505e4efd04e72009ce140b46b97e09f22eb1b64`
+`fix/qa-harness-2026-11-07`  
+آخرین Commit ابزار: `cf2ce519b8aee299d5132f5ee51fab94d53a55cd`
 
-## محدودیت‌ها (الزامی)
-- هیچ Merge به `main` بدون دستور مالک
-- هیچ تغییر Supabase / داده کاربران
-- بدون OTP، ساخت حساب، سفارش، آپلود فیش
+## فعال‌سازی
+- URL: `?qa=1` (با trim)
+- نشست موقت: `sessionStorage.kafeQA=1` (بعد از تأیید مدیر)
+- **localStorage.kafeQA حذف می‌شود** تا برای کاربر عادی نماند
 
-## ترتیب بارگذاری
-1. `index.html` → اسکریپت‌های اصلی (`main.js` و …)
-2. `ui-layer-fix.js` (از HTML)
-3. پچ‌های معمول (boot، nav، buy، …)
-4. **فقط اگر** `?qa=1` یا `localStorage.kafeQA=1` → `qa-harness.js`
+## مجوز
+- UI gate: `profiles.role === 'admin'` از سرور
+- مرز امنیتی قطعی نیست؛ ابزار **هیچ نوشتنی** روی DB ندارد
 
-کاربر عادی بدون پارامتر QA هیچ فایل اضافه‌ای نمی‌گیرد.
+## آفلاین
+- ورود مدیر فقط آنلاین (OTP تلگرام)
+- بدون نشست معتبر مدیر در آفلاین: پیام «برای ورود مدیر و اجرای آزمون مدیریتی، اتصال اینترنت لازم است»
+- اگر نشست از قبل باشد و role تأیید شود: تست‌های فقط‌خواندنی ممکن است
 
-## محیط آزمایش
-GitHub Pages فعلی فقط از **main** سرو می‌شود.
-تا قبل از ادغام:
-- بررسی کد و فایل‌ها روی همین شاخه
-- یا پیش‌نمایش موقت (مثلاً `raw.githack` / Pages شاخه) در صورت راه‌اندازی جدا
-- **نسخه عملیاتی main را برای آزمایش QA عوض نکنید** مگر با تأیید صریح
+## Preview (نه main Pages)
+1. https://raw.githack.com/miadjaberi/cafesarketab_miad/fix/qa-harness-2026-11-07/index.html?qa=1
+2. https://cdn.jsdelivr.net/gh/miadjaberi/cafesarketab_miad@fix/qa-harness-2026-11-07/index.html?qa=1
 
-پس از ادغام آزمایشی (فقط با دستور):
-`https://miadjaberi.github.io/cafesarketab_miad/?qa=1`
-
-## فایل‌ها
-| فایل | نقش |
-|------|-----|
-| `qa-harness.js` | پنل گزارش + تست‌های فقط‌خواندنی |
-| `ui-layer-fix.js` | inject شرطی |
-| `docs/QA-HARNESS.md` | همین سند |
+## ناوبری در گزارش
+صریحاً: `scrollToPage("pageTools")` مستقیم — **نه** کلیک واقعی دکمه.
