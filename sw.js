@@ -1,5 +1,5 @@
 /* کافه سرکتاب میعاد — Service Worker */
-const CACHE_VERSION = 'kafe-miad-v22.79-qa-v6';
+const CACHE_VERSION = 'kafe-miad-v22.80-qa-v7';
 const SHELL_CACHE = `shell-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = [
@@ -13,6 +13,7 @@ const PRECACHE_URLS = [
   './dalil-images-fix.js',
   './pwa-icon-dynamic.js',
   './app.js',
+  './vip-offline-cache.js?v=20261107a',
   './pwa-register.js',
   './ui-layer-fix.js',
   './qa-harness.js?v=20261107qa6',
@@ -46,8 +47,7 @@ self.addEventListener('install', (event) => {
       .then((cache) =>
         cache.addAll(PRECACHE_URLS.map((u) => new Request(u, { cache: 'reload' })))
       )
-      .then(() => self.skipWaiting())
-      .catch(() => self.skipWaiting())
+      .catch(() => {})
   );
 });
 

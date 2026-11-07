@@ -86,7 +86,7 @@
         (document.body || document.documentElement).appendChild(s);
       } catch (e) {}
     }
-    inject('./boot-flow-fix.js?v=20261106e', 'boot-flow');
+    inject('./boot-flow-fix.js?v=20261107a', 'boot-flow');
     inject('./nav-swipe-fix.js?v=20261106e', 'nav-swipe');
     inject('./buy-nav-fix.js?v=20261106e', 'buy-nav');
     inject('./final-nav-fix.js?v=20261106e', 'final-nav');
