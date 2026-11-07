@@ -1,12 +1,14 @@
-/** buy-nav-fix.js V9
- * خرید = صفحه pageBuy؛ بدون highlightBuyNav (مالک هایلایت: final-nav-fix)
+/** buy-nav-fix.js V10
+ * یک مسیر قطعی: فرم خرید فقط داخل pageBuy.
+ * مودال fixed روی body دیده نمی‌شود و فوری به host منتقل می‌شود.
  */
 (function () {
   'use strict';
-  if (window.__KAFE_BUY_NAV_FIX_V9__) return;
-  window.__KAFE_BUY_NAV_FIX_V9__ = true;
+  if (window.__KAFE_BUY_NAV_FIX_V10__) return;
+  window.__KAFE_BUY_NAV_FIX_V10__ = true;
 
   var BUY_PAGE_ID = 'pageBuy';
+  var mounting = false;
 
   function injectCSS() {
     var id = 'kafe-buy-page-css';
@@ -17,6 +19,11 @@
       document.head.appendChild(st);
     }
     st.textContent = [
+      /* لایه fixed روی body = مخفی تا منتقل شود (جلوگیری از قفل کلیک) */
+      'body > #subscriptionModalBox{',
+      '  opacity:0!important;visibility:hidden!important;pointer-events:none!important;',
+      '  z-index:-1!important;',
+      '}',
       '#' + BUY_PAGE_ID + '{',
       '  box-sizing:border-box!important;',
       '  padding:12px 12px 80px!important;',
@@ -82,45 +89,86 @@
     return page;
   }
 
+  function stripFixedStyles(box) {
+    if (!box) return;
+    box.style.position = 'relative';
+    box.style.inset = 'auto';
+    box.style.top = 'auto';
+    box.style.right = 'auto';
+    box.style.bottom = 'auto';
+    box.style.left = 'auto';
+    box.style.width = '100%';
+    box.style.height = 'auto';
+    box.style.minHeight = '60vh';
+    box.style.background = 'transparent';
+    box.style.display = 'flex';
+    box.style.flexDirection = 'column';
+    box.style.zIndex = '1';
+    box.style.padding = '0';
+    box.style.margin = '0';
+    box.style.opacity = '1';
+    box.style.visibility = 'visible';
+    box.style.pointerEvents = 'auto';
+    box.style.border = 'none';
+    box.style.boxShadow = 'none';
+  }
+
   function mountFormIntoPage() {
     var box = document.getElementById('subscriptionModalBox');
     if (!box) return false;
     var page = ensureBuyPage();
     if (!page) return false;
     var host = document.getElementById('kafeBuyFormHost') || page;
-    if (box.parentNode !== host) host.appendChild(box);
-    box.style.position = 'relative';
-    box.style.inset = 'auto';
-    box.style.width = '100%';
-    box.style.height = 'auto';
-    box.style.background = 'transparent';
-    box.style.display = 'flex';
-    box.style.zIndex = '1';
+    if (box.parentNode !== host) {
+      host.appendChild(box);
+    }
+    stripFixedStyles(box);
     return true;
   }
 
+  window.mountBuyFormIntoPage = mountFormIntoPage;
+
+  function scrollToBuy() {
+    if (typeof window.scrollToPage === 'function') {
+      try {
+        window.scrollToPage('pageBuy');
+      } catch (e) {}
+    }
+  }
+
   function openBuy() {
+    if (mounting) return;
+    mounting = true;
     injectCSS();
     ensureBuyPage();
-    function go() {
+    scrollToBuy();
+
+    function finish() {
       mountFormIntoPage();
-      if (typeof window.scrollToPage === 'function') {
-        window.scrollToPage('pageBuy');
-      }
+      scrollToBuy();
+      mounting = false;
     }
-    if (typeof window.openSubscriptionPurchase === 'function') {
+
+    var opener = window.__kafeOpenSubscriptionCore || window.openSubscriptionPurchase;
+    if (typeof opener === 'function') {
       try {
-        var ret = window.openSubscriptionPurchase();
-        setTimeout(go, 60);
-        setTimeout(go, 200);
-        setTimeout(go, 500);
-        if (ret && typeof ret.then === 'function') ret.then(go).catch(go);
+        var ret = opener();
+        if (ret && typeof ret.then === 'function') {
+          ret.then(finish).catch(finish);
+        } else {
+          finish();
+        }
       } catch (e) {
-        go();
+        finish();
       }
     } else {
-      go();
+      finish();
     }
+    //兜兜: اگر DOM با تأخیر ساخته شد
+    setTimeout(function () {
+      mountFormIntoPage();
+      mounting = false;
+    }, 100);
   }
 
   function findBuyButton() {
@@ -139,26 +187,77 @@
 
   function bindBuy() {
     var buyBtn = findBuyButton();
-    if (!buyBtn || buyBtn.__kafeBuyV9) return;
-    buyBtn.__kafeBuyV9 = true;
+    if (!buyBtn || buyBtn.__kafeBuyV10) return;
+    buyBtn.__kafeBuyV10 = true;
     buyBtn.setAttribute('onclick', 'void(0)');
     buyBtn.addEventListener('click', function (ev) {
       ev.preventDefault();
+      ev.stopPropagation();
       openBuy();
     });
   }
 
   function wrapOpen() {
     var prev = window.openSubscriptionPurchase;
-    if (typeof prev !== 'function' || prev.__kafeBuyPageWrapV9) return;
+    if (typeof prev !== 'function') return;
+    if (prev.__kafeBuyPageWrapV10) return;
+    if (!window.__kafeOpenSubscriptionCore) {
+      window.__kafeOpenSubscriptionCore = prev.__kafeBuyPageWrapV9
+        ? window.__kafeOpenSubscriptionCore || prev
+        : prev;
+      // اگر قبلاً V9 پیچیده بود، سعی می‌کنیم به تابع اصلی برسیم
+      if (prev.__kafeBuyPageWrapV9 && typeof window.__kafeOpenSubscriptionCore === 'function') {
+        /* keep */
+      } else {
+        window.__kafeOpenSubscriptionCore = prev;
+      }
+    }
+    var core = window.__kafeOpenSubscriptionCore;
     var wrapped = function () {
-      var ret = prev.apply(this, arguments);
-      setTimeout(mountFormIntoPage, 80);
-      setTimeout(mountFormIntoPage, 250);
+      injectCSS();
+      ensureBuyPage();
+      scrollToBuy();
+      var ret = core.apply(this, arguments);
+      function after() {
+        mountFormIntoPage();
+        scrollToBuy();
+      }
+      if (ret && typeof ret.then === 'function') {
+        ret.then(after).catch(after);
+      } else {
+        after();
+      }
+      setTimeout(after, 50);
+      setTimeout(after, 150);
       return ret;
     };
-    wrapped.__kafeBuyPageWrapV9 = true;
+    wrapped.__kafeBuyPageWrapV10 = true;
     window.openSubscriptionPurchase = wrapped;
+  }
+
+  /** هر بار که باکس روی body ظاهر شد → فوری به pageBuy */
+  function watchBodyOverlay() {
+    if (window.__kafeBuyBodyWatch) return;
+    window.__kafeBuyBodyWatch = true;
+    try {
+      var mo = new MutationObserver(function (muts) {
+        for (var i = 0; i < muts.length; i++) {
+          var nodes = muts[i].addedNodes || [];
+          for (var j = 0; j < nodes.length; j++) {
+            var n = nodes[j];
+            if (n && n.id === 'subscriptionModalBox') {
+              mountFormIntoPage();
+              scrollToBuy();
+            }
+          }
+        }
+        var box = document.getElementById('subscriptionModalBox');
+        if (box && box.parentNode === document.body) {
+          mountFormIntoPage();
+        }
+      });
+      mo.observe(document.body, { childList: true });
+    } catch (e) {}
   }
 
   function run() {
@@ -166,16 +265,18 @@
     ensureBuyPage();
     bindBuy();
     wrapOpen();
+    watchBodyOverlay();
   }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
-      setTimeout(run, 100);
+      setTimeout(run, 80);
     });
   } else {
-    setTimeout(run, 100);
+    setTimeout(run, 80);
   }
   window.addEventListener('load', function () {
-    setTimeout(run, 250);
+    setTimeout(run, 200);
+    setTimeout(wrapOpen, 600);
   });
 })();

@@ -1,11 +1,11 @@
-/** final-nav-fix.js V3
+/** final-nav-fix.js V3.1
  * مشاور فنی: بدون حلقه ensurePageOrder؛ sole owner برای scrollToPage/هایلایت
- * نصب فرم خرید وقتی pageBuy با کشیدن فعال و host خالی است
+ * نصب فرم خرید وقتی pageBuy فعال است — فقط از طریق mountBuyFormIntoPage (یک مسیر)
  */
 (function () {
   'use strict';
-  if (window.__KAFE_FINAL_NAV_FIX_V3__) return;
-  window.__KAFE_FINAL_NAV_FIX_V3__ = true;
+  if (window.__KAFE_FINAL_NAV_FIX_V31__) return;
+  window.__KAFE_FINAL_NAV_FIX_V31__ = true;
 
   var ORDER = ['pageShop', 'pageBuy', 'pageModals', 'pageTools'];
   var LEGACY_NUM = { 0: 'pageShop', 1: 'pageModals', 2: 'pageTools', 3: 'pageBuy' };
@@ -14,9 +14,7 @@
   function navButtons() {
     var nav = document.getElementById('bottomNav');
     if (!nav) return [];
-    return Array.prototype.slice.call(
-      nav.querySelectorAll('button.nav-item-bottom')
-    );
+    return Array.prototype.slice.call(nav.querySelectorAll('button.nav-item-bottom'));
   }
 
   function isSettingsOpen() {
@@ -49,79 +47,60 @@
     var modals = document.getElementById('pageModals');
     var tools = document.getElementById('pageTools');
 
-    if (buy.parentNode !== container) {
-      if (pageOrderObserver) {
-        try { pageOrderObserver.disconnect(); } catch (e) {}
-      }
-      if (shop && shop.parentNode === container) {
-        if (shop.nextSibling) container.insertBefore(buy, shop.nextSibling);
-        else container.appendChild(buy);
-      } else {
-        container.insertBefore(buy, container.firstChild);
-      }
-      if (pageOrderObserver) {
-        try { pageOrderObserver.observe(container, { childList: true }); } catch (e2) {}
+    var desired = [];
+    if (shop) desired.push(shop);
+    if (buy) desired.push(buy);
+    if (modals) desired.push(modals);
+    if (tools) desired.push(tools);
+
+    var current = [];
+    for (var i = 0; i < container.children.length; i++) {
+      var c = container.children[i];
+      if (c && (c.id === 'pageShop' || c.id === 'pageBuy' || c.id === 'pageModals' || c.id === 'pageTools')) {
+        current.push(c);
       }
     }
 
-    var cur = [];
-    Array.prototype.forEach.call(container.children, function (ch) {
-      if (ch && ORDER.indexOf(ch.id) >= 0) cur.push(ch.id);
-    });
-    var want = ORDER.filter(function (id) {
-      return document.getElementById(id);
-    });
-    if (cur.length === want.length && cur.join(',') === want.join(',')) {
-      return;
-    }
+    var same =
+      current.length === desired.length &&
+      current.every(function (node, idx) {
+        return node === desired[idx];
+      });
+    if (same) return;
 
     if (pageOrderObserver) {
-      try { pageOrderObserver.disconnect(); } catch (e3) {}
+      try {
+        pageOrderObserver.disconnect();
+      } catch (e) {}
     }
 
-    if (shop && buy && shop.parentNode === container) {
-      if (shop.nextSibling !== buy) {
+    if (shop && buy && shop.nextSibling !== buy) {
+      try {
         container.insertBefore(buy, shop.nextSibling);
-      }
-    }
-    if (modals && buy && buy.parentNode === container && buy.nextSibling !== modals) {
-      if (modals.parentNode === container) {
-        container.insertBefore(modals, buy.nextSibling);
-      }
-    }
-    if (tools && modals && modals.parentNode === container) {
-      if (modals.nextSibling !== tools && tools.parentNode === container) {
-        container.insertBefore(tools, modals.nextSibling);
-      }
-    } else if (tools && buy && buy.parentNode === container && !modals) {
-      if (buy.nextSibling !== tools) container.insertBefore(tools, buy.nextSibling);
+      } catch (e2) {}
+    } else if (shop && buy && !buy.parentNode) {
+      try {
+        container.insertBefore(buy, shop.nextSibling);
+      } catch (e3) {}
     }
 
-    if (pageOrderObserver) {
-      try { pageOrderObserver.observe(container, { childList: true }); } catch (e4) {}
-    }
-  }
-
-  var orderTimer = null;
-  function scheduleEnsureOrder() {
-    if (orderTimer) return;
-    orderTimer = setTimeout(function () {
-      orderTimer = null;
-      ensurePageOrder();
-    }, 80);
+    watchPageOrder();
   }
 
   function watchPageOrder() {
     var container = document.getElementById('pagesContainer');
-    if (!container || container.__kafeOrderWatchV3) return;
-    container.__kafeOrderWatchV3 = true;
+    if (!container) return;
+    if (pageOrderObserver) {
+      try {
+        pageOrderObserver.disconnect();
+      } catch (e) {}
+    }
     try {
       pageOrderObserver = new MutationObserver(function () {
-        scheduleEnsureOrder();
+        ensurePageOrder();
       });
       pageOrderObserver.observe(container, { childList: true });
-    } catch (e) {}
-    ensurePageOrder();
+    } catch (e4) {}
   }
 
   function getActivePageId() {
@@ -132,14 +111,13 @@
     var bestArea = -1;
     Array.prototype.forEach.call(container.children, function (ch) {
       if (!ch || !ch.id) return;
+      if (ORDER.indexOf(ch.id) < 0) return;
       var r = ch.getBoundingClientRect();
-      var left = Math.max(cr.left, r.left);
-      var right = Math.min(cr.right, r.right);
-      var top = Math.max(cr.top, r.top);
-      var bottom = Math.min(cr.bottom, r.bottom);
-      var w = right - left;
-      var h = bottom - top;
-      var area = w > 0 && h > 0 ? w * h : 0;
+      var left = Math.max(r.left, cr.left);
+      var right = Math.min(r.right, cr.right);
+      var top = Math.max(r.top, cr.top);
+      var bottom = Math.min(r.bottom, cr.bottom);
+      var area = Math.max(0, right - left) * Math.max(0, bottom - top);
       if (area > bestArea) {
         bestArea = area;
         bestId = ch.id;
@@ -152,22 +130,25 @@
     var host = document.getElementById('kafeBuyFormHost');
     if (!host) return;
     if (host.children && host.children.length > 0) return;
-    var box = document.getElementById('subscriptionModalBox');
-    if (box) {
-      host.appendChild(box);
-      return;
+    if (typeof window.mountBuyFormIntoPage === 'function') {
+      var box = document.getElementById('subscriptionModalBox');
+      if (box) {
+        window.mountBuyFormIntoPage();
+        return;
+      }
     }
     if (typeof window.openSubscriptionPurchase === 'function') {
       try {
-        window.openSubscriptionPurchase();
-        setTimeout(function () {
-          var b = document.getElementById('subscriptionModalBox');
-          if (b && host && b.parentNode !== host) host.appendChild(b);
-        }, 120);
-        setTimeout(function () {
-          var b2 = document.getElementById('subscriptionModalBox');
-          if (b2 && host && b2.parentNode !== host) host.appendChild(b2);
-        }, 400);
+        var ret = window.openSubscriptionPurchase();
+        function after() {
+          if (typeof window.mountBuyFormIntoPage === 'function') window.mountBuyFormIntoPage();
+          else {
+            var b = document.getElementById('subscriptionModalBox');
+            if (b && host && b.parentNode !== host) host.appendChild(b);
+          }
+        }
+        if (ret && typeof ret.then === 'function') ret.then(after).catch(after);
+        else after();
       } catch (e) {}
     }
   }
