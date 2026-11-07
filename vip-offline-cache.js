@@ -3,6 +3,7 @@
   'use strict';
   var PREFIX = 'kafeVipOfflineCache:';
   var NOTICE_KEY = 'kafeVipPendingNoticeShown';
+  var lastUid = null;
   function readJSON(key, fallback) { try { return JSON.parse(localStorage.getItem(key) || 'null') || fallback; } catch (e) { return fallback; } }
   function currentLocalUser() { return readJSON('cafeUser', {}); }
   function readCache(uid) { return uid ? readJSON(PREFIX + String(uid), null) : null; }
@@ -40,6 +41,7 @@
       var local = currentLocalUser();
       uid = local && local.id ? String(local.id) : null;
     }
+    lastUid = uid ? String(uid) : null;
     var previous = applyCache(uid);
     if (!uid || !client || !client.auth || !navigator.onLine) return previous;
     var session;
@@ -90,8 +92,11 @@
       c.auth.onAuthStateChange(function (event) {
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') setTimeout(function () { refresh().catch(function () {}); }, 0);
         if (event === 'SIGNED_OUT') {
-          try { localStorage.setItem('userSubscription', JSON.stringify({ active: false, expiry: null, plan: null })); } catch (e) {}
+          var signedOutUid = lastUid;
+          try { if (signedOutUid) localStorage.removeItem(PREFIX + String(signedOutUid)); } catch (e0) {}
+          try { localStorage.setItem('userSubscription', JSON.stringify({ active: false, expiry: null, plan: null })); } catch (e1) {}
           window.__kafeVipOfflineState = null;
+          lastUid = null;
         }
       });
     }
