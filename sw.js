@@ -1,5 +1,5 @@
 /* کافه سرکتاب میعاد — Service Worker */
-const CACHE_VERSION = 'kafe-miad-v22.76-msg-session';
+const CACHE_VERSION = 'kafe-miad-v22.77-boot-v42';
 const SHELL_CACHE = `shell-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = [
