@@ -246,6 +246,7 @@
     var finished = false;
     var onlineState = null;
 
+    // مهلت کلی باید مجموع بررسی شبکه، نشست و پروفایل را پوشش دهد؛ وگرنه تایمر ۴ثانیه‌ای زودتر از پاسخ معتبر، صفحه ورود را نشان می‌دهد.
     var safety = setTimeout(function () {
       if (finished) return;
       finished = true;
@@ -254,7 +255,7 @@
       // ورود محلی فقط پس از تشخیص آفلاین و انتخاب صریح مسیر محدود آفلاین مجاز است.
       if (onlineState === false && local) showOfflineDialog();
       else showRegisterOnly();
-    }, PROFILE_TIMEOUT);
+    }, NET_PROBE_TIMEOUT + MAX_SESSION_WAIT + PROFILE_TIMEOUT + 500);
 
     probeOnline().then(function (online) {
       onlineState = online;
