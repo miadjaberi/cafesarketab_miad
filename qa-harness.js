@@ -1,38 +1,52 @@
 /**
- * qa-harness.js v2 — تست داخلی فقط‌خواندنی، فقط مدیر با role=admin از سرور
- * فعال‌سازی درخواست: ?qa=1 یا localStorage.kafeQA=1
- * مجوز واقعی: نشست Supabase + profiles.role === 'admin' (نه فلگ محلی)
+ * qa-harness.js v3
+ * درخواست: ?qa=1 یا sessionStorage.kafeQA=1 (نه ماندگار localStorage)
+ * مجوز نمایش: profiles.role=admin از سرور — فقط محدودکننده UI؛ بدون نوشتن DB
+ * آفلاین: بدون نشست مدیر → پیام نیاز به اینترنت؛ بدون دور زدن OTP
  */
 (function () {
   'use strict';
-  if (window.__KAFE_QA_HARNESS_V2__) return;
-  window.__KAFE_QA_HARNESS_V2__ = true;
+  if (window.__KAFE_QA_HARNESS_V3__) return;
+  window.__KAFE_QA_HARNESS_V3__ = true;
 
-  function wantsQA() {
+  function trimQaParam() {
     try {
       var sp = new URLSearchParams(location.search || '');
       var q = sp.get('qa');
       if (q != null && String(q).trim() === '1') return true;
-      // پشتیبان بدون URLSearchParams
+    } catch (e) {}
+    try {
       if (/(?:^|[?&])qa\s*=\s*1(?:&|$)/.test(location.search || '')) return true;
-      if (localStorage.getItem('kafeQA') === '1') return true;
+    } catch (e2) {}
+    return false;
+  }
+
+  function wantsQA() {
+    if (trimQaParam()) return true;
+    try {
+      if (sessionStorage.getItem('kafeQA') === '1') return true;
     } catch (e) {}
     return false;
   }
   if (!wantsQA()) return;
 
+  /* پاک‌سازی فلگ قدیمی ماندگار تا کاربران عادی گیر نکنند */
+  try {
+    localStorage.removeItem('kafeQA');
+  } catch (eL) {}
+
   var results = [];
   var jsErrors = [];
   var startedAt = new Date().toISOString();
   var preLoadNote =
-    'خطاهای رخ‌داده قبل از لود این اسکریپت ممکن است ثبت نشده باشند (محدودیت ابزار).';
+    'خطاهای قبل از لود اسکریپت QA ممکن است ثبت نشده باشند.';
 
   window.addEventListener('error', function (ev) {
     jsErrors.push({
       t: new Date().toISOString(),
       msg: String((ev && ev.message) || 'error'),
       file: String((ev && ev.filename) || ''),
-      line: ev && ev.lineno != null ? ev.lineno : ''
+      line: ev && ev.lineno != null ? String(ev.lineno) : ''
     });
   });
   window.addEventListener('unhandledrejection', function (ev) {
@@ -48,9 +62,9 @@
   function add(status, title, detail, tip) {
     results.push({
       status: status,
-      title: title,
-      detail: detail || '',
-      tip: tip || '',
+      title: String(title || ''),
+      detail: String(detail || ''),
+      tip: String(tip || ''),
       at: new Date().toISOString()
     });
   }
@@ -59,14 +73,74 @@
     return window.supabaseClient || window.v12Supabase || null;
   }
 
-  /** مجوز سمت سرور: session + profiles.role=admin */
+  function browserOnline() {
+    try {
+      return navigator.onLine !== false;
+    } catch (e) {
+      return true;
+    }
+  }
+
   function verifyAdminFromServer() {
     return new Promise(function (resolve) {
       var c = getClient();
       if (!c || !c.auth) {
-        resolve({ ok: false, reason: 'کلاینت Supabase آماده نیست' });
+        resolve({ ok: false, reason: 'کلاینت Supabase آماده نیست', offlineHint: !browserOnline() });
         return;
       }
+      if (!browserOnline()) {
+        /* آفلاین: فقط اگر نشست از قبل در حافظه باشد و role قابل خواندن محلی/کش باشد */
+        c.auth
+          .getSession()
+          .then(function (sr) {
+            var ses = sr && sr.data && sr.data.session;
+            if (!ses || !ses.user) {
+              resolve({
+                ok: false,
+                reason:
+                  'برای ورود مدیر و اجرای آزمون مدیریتی، اتصال اینترنت لازم است. ورود مدیر به کد تلگرام (آنلاین) وابسته است.',
+                offlineHint: true
+              });
+              return;
+            }
+            /* تلاش خواندن نقش؛ اگر شبکه قطع باشد ممکن است خطا بدهد */
+            return c
+              .from('profiles')
+              .select('role')
+              .eq('id', ses.user.id)
+              .maybeSingle()
+              .then(function (prof) {
+                if (prof && !prof.error && prof.data && prof.data.role === 'admin') {
+                  resolve({ ok: true, offlineSession: true });
+                } else {
+                  resolve({
+                    ok: false,
+                    reason:
+                      'نشست هست ولی نقش admin از سرور تأیید نشد. در آفلاین بدون تأیید قبلی معتبر، آزمون مدیریتی اجرا نمی‌شود.',
+                    offlineHint: true
+                  });
+                }
+              })
+              .catch(function () {
+                resolve({
+                  ok: false,
+                  reason:
+                    'برای ورود مدیر و اجرای آزمون مدیریتی، اتصال اینترنت لازم است.',
+                  offlineHint: true
+                });
+              });
+          })
+          .catch(function () {
+            resolve({
+              ok: false,
+              reason:
+                'برای ورود مدیر و اجرای آزمون مدیریتی، اتصال اینترنت لازم است.',
+              offlineHint: true
+            });
+          });
+        return;
+      }
+
       var done = false;
       function finish(v) {
         if (done) return;
@@ -74,15 +148,22 @@
         resolve(v);
       }
       setTimeout(function () {
-        finish({ ok: false, reason: 'زمان‌اتمام بررسی نقش مدیر' });
+        finish({
+          ok: false,
+          reason: 'زمان‌اتمام بررسی نقش مدیر از سرور'
+        });
       }, 5000);
+
       c.auth
         .getSession()
         .then(function (sr) {
-          var ses = sr && sr.data && sr.data.session;
-          var user = ses && ses.user;
+          var user = sr && sr.data && sr.data.session && sr.data.session.user;
           if (!user || !user.id) {
-            finish({ ok: false, reason: 'نشست مدیر نیست — ابتدا با OTP تلگرام وارد پنل مدیریت شوید' });
+            finish({
+              ok: false,
+              reason:
+                'نشست مدیر نیست. ابتدا آنلاین با OTP تلگرام وارد پنل مدیریت شوید، سپس ?qa=1 را باز کنید.'
+            });
             return null;
           }
           return c.from('profiles').select('role').eq('id', user.id).maybeSingle();
@@ -93,11 +174,8 @@
             finish({ ok: false, reason: 'خطا در خواندن نقش از سرور' });
             return;
           }
-          if (prof.data && prof.data.role === 'admin') {
-            finish({ ok: true });
-          } else {
-            finish({ ok: false, reason: 'نقش admin در سرور تأیید نشد' });
-          }
+          if (prof.data && prof.data.role === 'admin') finish({ ok: true });
+          else finish({ ok: false, reason: 'نقش admin در سرور تأیید نشد' });
         })
         .catch(function () {
           finish({ ok: false, reason: 'خطا در ارتباط احراز مدیر' });
@@ -105,36 +183,48 @@
     });
   }
 
-  function showDenied(reason) {
-    var id = 'kafeQAPanel';
-    var panel = document.getElementById(id);
-    if (!panel) {
-      panel = document.createElement('div');
-      panel.id = id;
-      panel.setAttribute('dir', 'rtl');
-      panel.style.cssText =
-        'position:fixed;inset:0;z-index:120000;background:rgba(7,11,20,0.96);color:#F5F0E4;display:flex;align-items:center;justify-content:center;padding:20px;font-family:Tahoma,sans-serif;';
-      document.body.appendChild(panel);
-    }
-    panel.style.display = 'flex';
-    panel.innerHTML =
-      '<div style="max-width:360px;text-align:center;line-height:1.7">' +
-      '<div style="font-size:1.2rem;color:#F0D878;font-weight:800;margin-bottom:12px">دسترسی محدود</div>' +
-      '<p style="font-size:0.9rem;opacity:0.9">ابزار تست فقط برای مدیر مجاز است.</p>' +
-      '<p style="font-size:0.8rem;color:#c9a84c;margin-top:10px">' +
-      String(reason || '') +
-      '</p>' +
-      '<button type="button" id="kafeQADenyClose" style="margin-top:18px;padding:10px 18px;border-radius:10px;border:1px solid #555;background:#1a1a2e;color:#eee">بستن</button>' +
-      '</div>';
-    var btn = document.getElementById('kafeQADenyClose');
-    if (btn)
-      btn.onclick = function () {
-        panel.style.display = 'none';
-      };
+  function el(tag, styles) {
+    var n = document.createElement(tag);
+    if (styles) n.style.cssText = styles;
+    return n;
   }
 
-  function hasOnclickAttr(el) {
-    return !!(el && el.getAttribute && (el.getAttribute('onclick') || '').trim());
+  function showDenied(reason) {
+    var panel = document.getElementById('kafeQAPanel');
+    if (!panel) {
+      panel = el('div');
+      panel.id = 'kafeQAPanel';
+      document.body.appendChild(panel);
+    }
+    panel.setAttribute('dir', 'rtl');
+    panel.style.cssText =
+      'position:fixed;inset:0;z-index:120000;background:rgba(7,11,20,0.96);color:#F5F0E4;display:flex;align-items:center;justify-content:center;padding:20px;font-family:Tahoma,sans-serif;';
+    while (panel.firstChild) panel.removeChild(panel.firstChild);
+
+    var box = el('div', 'max-width:360px;text-align:center;line-height:1.7');
+    var h = el('div', 'font-size:1.2rem;color:#F0D878;font-weight:800;margin-bottom:12px');
+    h.textContent = 'دسترسی محدود';
+    var p1 = el('p', 'font-size:0.9rem;opacity:0.9');
+    p1.textContent = 'ابزار تست فقط برای مدیر مجاز است.';
+    var p2 = el('p', 'font-size:0.8rem;color:#c9a84c;margin-top:10px');
+    p2.textContent = String(reason || '');
+    var btn = el(
+      'button',
+      'margin-top:18px;padding:10px 18px;border-radius:10px;border:1px solid #555;background:#1a1a2e;color:#eee'
+    );
+    btn.type = 'button';
+    btn.textContent = 'بستن';
+    btn.onclick = function () {
+      panel.style.display = 'none';
+      try {
+        sessionStorage.removeItem('kafeQA');
+      } catch (e) {}
+    };
+    box.appendChild(h);
+    box.appendChild(p1);
+    box.appendChild(p2);
+    box.appendChild(btn);
+    panel.appendChild(box);
   }
 
   function checkLoad() {
@@ -143,7 +233,7 @@
     var reg = document.getElementById('registerScreen');
     add(
       app || terms || reg ? 'green' : 'red',
-      'بارگذاری برنامه (وجود پوسته)',
+      'بارگذاری برنامه',
       'app=' + !!app + ' terms=' + !!terms + ' register=' + !!reg,
       ''
     );
@@ -157,53 +247,34 @@
       return;
     }
     var btns = nav.querySelectorAll('button.nav-item-bottom');
-    add(
-      btns.length ? 'green' : 'red',
-      'نوار پایین — وجود دکمه (سطح A)',
-      btns.length + ' دکمه',
-      ''
-    );
+    add(btns.length ? 'green' : 'red', 'نوار پایین — وجود دکمه (سطح A)', btns.length + ' دکمه', '');
 
-    var labels = [];
     var withOnclick = 0;
     for (var i = 0; i < btns.length; i++) {
-      var b = btns[i];
-      var lab = (b.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 20);
-      labels.push(lab || '#' + i);
-      if (hasOnclickAttr(b)) withOnclick++;
+      if ((btns[i].getAttribute('onclick') || '').trim()) withOnclick++;
     }
     add(
       'yellow',
       'نوار پایین — نشانه رویداد (سطح B)',
-      'onclick صریح: ' +
-        withOnclick +
-        '/' +
-        btns.length +
-        ' · بقیه معمولاً با addEventListener در پچ‌ها (در DevTools کامل دیده نمی‌شود)',
-      labels.join(' | ')
+      'onclick صریح: ' + withOnclick + '/' + btns.length,
+      'بسیاری از دکمه‌ها با listener پچ وصل می‌شوند'
     );
 
-    // کلیک بی‌خطر فقط روی دکمه ابزارها اگر برچسبش ابزار باشد — فقط وجود handler با dispatch خنثی
-    var safeClicked = false;
-    for (var j = 0; j < btns.length; j++) {
-      var btn = btns[j];
-      if (btn.classList.contains('center-btn')) continue;
-      var t = (btn.textContent || '').replace(/\s+/g, ' ');
-      if (t.indexOf('ابزار') >= 0) {
-        try {
-          if (typeof window.scrollToPage === 'function') {
-            window.scrollToPage('pageTools');
-            safeClicked = true;
-            add('green', 'ناوبری بی‌خطر (سطح B+)', 'scrollToPage(pageTools) فراخوانی شد', 'عملیات نوشتن داده ندارد');
-          }
-        } catch (e) {
-          add('yellow', 'ناوبری بی‌خطر', 'خطا در scrollToPage', String(e.message || e).slice(0, 80));
-        }
-        break;
+    /* صریح: نه کلیک واقعی روی دکمه — فقط فراخوانی مستقیم تابع */
+    if (typeof window.scrollToPage === 'function') {
+      try {
+        window.scrollToPage('pageTools');
+        add(
+          'green',
+          'ناوبری آزمایشی',
+          'با فراخوانی مستقیم تابع scrollToPage("pageTools") انجام شد — نه کلیک واقعی روی دکمه نوار پایین',
+          ''
+        );
+      } catch (e) {
+        add('yellow', 'ناوبری آزمایشی', 'خطا در scrollToPage', String(e && e.message ? e.message : e).slice(0, 100));
       }
-    }
-    if (!safeClicked) {
-      add('yellow', 'ناوبری بی‌خطر', 'دکمه ابزارها یا scrollToPage در دسترس نبود', '');
+    } else {
+      add('yellow', 'ناوبری آزمایشی', 'تابع scrollToPage در دسترس نبود', '');
     }
 
     add(
@@ -216,13 +287,13 @@
 
   function checkAuthForms() {
     var reg = document.getElementById('registerScreen');
+    if (!reg) {
+      add('yellow', 'فرم ثبت‌نام — وجود', 'الان در DOM فعال نیست', 'بدون ساخت حساب');
+      return;
+    }
     var name = document.querySelector('#registerScreen input[type="text"]');
     var phone = document.querySelector('#registerScreen input[type="tel"]');
     var pin = document.querySelector('#registerScreen input[type="password"]');
-    if (!reg) {
-      add('yellow', 'فرم ثبت‌نام — وجود', 'صفحه ثبت‌نام الان در DOM فعال/مرئی نیست', 'بدون ساخت حساب');
-      return;
-    }
     add(
       'green',
       'فرم ثبت‌نام — وجود فیلد (A)',
@@ -233,15 +304,12 @@
   }
 
   function checkNetworkLayered() {
-    var navOn = true;
-    try {
-      navOn = navigator.onLine !== false;
-    } catch (e) {}
+    var navOn = browserOnline();
     add(
       navOn ? 'green' : 'red',
       'شبکه — navigator.onLine',
       navOn ? 'مرورگر آنلاین گزارش کرد' : 'مرورگر آفلاین گزارش کرد',
-      'این با رسیدن واقعی به سرور یکی نیست'
+      'جدا از رسیدن واقعی به سرور'
     );
 
     return new Promise(function (resolve) {
@@ -257,19 +325,18 @@
           fin();
         }
       }, 3000);
-      var url = './data.js?_qa=' + Date.now();
-      fetch(url, { method: 'GET', cache: 'no-store' })
+      fetch('./data.js?_qa=' + Date.now(), { method: 'GET', cache: 'no-store' })
         .then(function (res) {
           add(
             res.ok ? 'green' : 'yellow',
             'شبکه — پاسخ فایل همان‌مبدأ',
-            'status=' + res.status + ' (اتصال به هاست صفحات)',
+            'status=' + res.status,
             ''
           );
           fin();
         })
         .catch(function () {
-          add('red', 'شبکه — پاسخ فایل همان‌مبدأ', 'fetch ناموفق', 'نت یا مسدودسازی');
+          add('red', 'شبکه — پاسخ فایل همان‌مبدأ', 'fetch ناموفق', '');
           fin();
         });
     });
@@ -283,7 +350,7 @@
         resolve();
         return;
       }
-      add('green', 'Supabase — کلاینت', 'موجود (بدون افشای کلید)', '');
+      add('green', 'Supabase — کلاینت', 'موجود (کلید افشا نمی‌شود)', '');
       var done = false;
       function fin() {
         if (done) return;
@@ -303,7 +370,7 @@
           add(
             'green',
             'Supabase — نشست',
-            has ? 'نشست فعال (شناسه کاربر نمایش داده نمی‌شود)' : 'بدون نشست',
+            has ? 'نشست فعال (بدون شناسه کاربر در گزارش)' : 'بدون نشست',
             ''
           );
           return c.from('products').select('id').limit(1);
@@ -311,10 +378,14 @@
         .then(function (r) {
           if (!r) return;
           if (r.error) {
-            add('yellow', 'Supabase — خواندن عمومی products', String(r.error.message || r.error).slice(0, 100), '');
+            add(
+              'yellow',
+              'Supabase — خواندن products',
+              String(r.error.message || r.error).slice(0, 100),
+              'فقط‌خواندنی'
+            );
           } else {
-            add('green', 'Supabase — خواندن عمومی products', 'select فقط‌خواندنی OK',
-              'اتصال واقعی به سرویس تأیید شد');
+            add('green', 'Supabase — خواندن products', 'select فقط‌خواندنی OK', '');
           }
           fin();
         })
@@ -330,12 +401,8 @@
       add('green', 'خطاهای JS پس از لود QA', 'موردی ثبت نشد', preLoadNote);
     } else {
       jsErrors.slice(0, 8).forEach(function (err, i) {
-        add(
-          'red',
-          'خطای JS #' + (i + 1),
-          err.msg + (err.file ? ' @ ' + err.file + ':' + err.line : ''),
-          ''
-        );
+        var d = err.msg + (err.file ? ' @ ' + err.file + ':' + err.line : '');
+        add('red', 'خطای JS #' + (i + 1), d.slice(0, 200), '');
       });
     }
   }
@@ -357,10 +424,10 @@
 
   function buildReportText() {
     var lines = [
-      'گزارش QA کافه سرکتاب میعاد (فقط مدیر)',
+      'گزارش QA کافه سرکتاب میعاد (فقط مدیر · UI gate)',
       'شروع: ' + startedAt,
       'پایان: ' + new Date().toISOString(),
-      'URL: ' + String(location.href).replace(/([?&])qa=[^&]*/g, '$1qa=1').split('#')[0],
+      'navigator.onLine: ' + browserOnline(),
       '',
       '--- اجرا شده ---'
     ];
@@ -371,74 +438,115 @@
       lines.push('');
     });
     lines.push('--- انجام‌نشده (عمدی) ---');
-    lines.push('🟡 ثبت‌نام واقعی / OTP / سفارش / پرداخت / فیش / تغییر نقش / حذف داده');
+    lines.push('🟡 ثبت‌نام واقعی / OTP / سفارش / پرداخت / فیش / تغییر نقش');
+    lines.push('🟡 کلیک واقعی روی دکمه نوار (فقط scrollToPage مستقیم تست شد)');
     return lines.join('\n');
   }
 
   function ensurePanel() {
-    var id = 'kafeQAPanel';
-    var panel = document.getElementById(id);
+    var panel = document.getElementById('kafeQAPanel');
     if (panel && panel.getAttribute('data-qa-ready') === '1') return panel;
     if (!panel) {
-      panel = document.createElement('div');
-      panel.id = id;
+      panel = el('div');
+      panel.id = 'kafeQAPanel';
       document.body.appendChild(panel);
     }
     panel.setAttribute('data-qa-ready', '1');
     panel.setAttribute('dir', 'rtl');
     panel.style.cssText =
       'position:fixed;inset:0;z-index:120000;background:rgba(7,11,20,0.94);color:#F5F0E4;overflow:auto;padding:16px;font-family:Tahoma,sans-serif;font-size:14px;display:block;';
-    panel.innerHTML =
-      '<div style="max-width:480px;margin:0 auto">' +
-      '<h2 style="color:#F0D878;margin:0 0 8px;font-size:1.1rem">تست و عیب‌یابی داخلی</h2>' +
-      '<p style="opacity:0.85;font-size:0.8rem;line-height:1.6;margin:0 0 12px">فقط مدیر · فقط‌خواندنی · بدون داده خصوصی کاربران</p>' +
-      '<div id="kafeQAList"></div>' +
-      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px">' +
-      '<button type="button" id="kafeQARun" style="padding:10px 14px;border-radius:10px;border:none;background:linear-gradient(180deg,#e8c76b,#c9a84c);color:#1A1208;font-weight:800">اجرای مجدد</button>' +
-      '<button type="button" id="kafeQACopy" style="padding:10px 14px;border-radius:10px;border:1px solid rgba(201,168,76,0.5);background:#111827;color:#F0D878;font-weight:700">کپی گزارش</button>' +
-      '<button type="button" id="kafeQAClose" style="padding:10px 14px;border-radius:10px;border:1px solid #444;background:#1a1a2e;color:#ccc">بستن</button>' +
-      '</div>' +
-      '<p id="kafeQACopyMsg" style="font-size:0.75rem;color:#8a8;margin-top:8px"></p></div>';
-    document.getElementById('kafeQARun').onclick = function () {
+    while (panel.firstChild) panel.removeChild(panel.firstChild);
+
+    var wrap = el('div', 'max-width:480px;margin:0 auto');
+    var h = el('h2', 'color:#F0D878;margin:0 0 8px;font-size:1.1rem');
+    h.textContent = 'تست و عیب‌یابی داخلی';
+    var sub = el('p', 'opacity:0.85;font-size:0.8rem;line-height:1.6;margin:0 0 12px');
+    sub.textContent = 'فقط مدیر · فقط‌خواندنی · بدون داده خصوصی · فلگ نشست‌موقت';
+    var list = el('div');
+    list.id = 'kafeQAList';
+    var row = el('div', 'display:flex;gap:8px;flex-wrap:wrap;margin-top:16px');
+
+    function mkBtn(id, label, css) {
+      var b = el('button', css);
+      b.type = 'button';
+      b.id = id;
+      b.textContent = label;
+      return b;
+    }
+    var run = mkBtn(
+      'kafeQARun',
+      'اجرای مجدد',
+      'padding:10px 14px;border-radius:10px;border:none;background:linear-gradient(180deg,#e8c76b,#c9a84c);color:#1A1208;font-weight:800'
+    );
+    var copy = mkBtn(
+      'kafeQACopy',
+      'کپی گزارش',
+      'padding:10px 14px;border-radius:10px;border:1px solid rgba(201,168,76,0.5);background:#111827;color:#F0D878;font-weight:700'
+    );
+    var close = mkBtn(
+      'kafeQAClose',
+      'بستن',
+      'padding:10px 14px;border-radius:10px;border:1px solid #444;background:#1a1a2e;color:#ccc'
+    );
+    var msg = el('p', 'font-size:0.75rem;color:#8a8;margin-top:8px');
+    msg.id = 'kafeQACopyMsg';
+
+    run.onclick = function () {
       runAll();
     };
-    document.getElementById('kafeQAClose').onclick = function () {
+    close.onclick = function () {
       panel.style.display = 'none';
+      try {
+        sessionStorage.removeItem('kafeQA');
+      } catch (e) {}
     };
-    document.getElementById('kafeQACopy').onclick = function () {
+    copy.onclick = function () {
       var t = buildReportText();
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(t).then(function () {
-          var m = document.getElementById('kafeQACopyMsg');
-          if (m) m.textContent = 'گزارش کپی شد';
+          msg.textContent = 'گزارش کپی شد';
         });
-      } else window.prompt('کپی:', t);
+      } else {
+        window.prompt('کپی:', t);
+      }
     };
+
+    row.appendChild(run);
+    row.appendChild(copy);
+    row.appendChild(close);
+    wrap.appendChild(h);
+    wrap.appendChild(sub);
+    wrap.appendChild(list);
+    wrap.appendChild(row);
+    wrap.appendChild(msg);
+    panel.appendChild(wrap);
     return panel;
   }
 
   function render() {
     var list = document.getElementById('kafeQAList');
     if (!list) return;
-    list.innerHTML = results
-      .map(function (r) {
-        return (
-          '<div style="border:1px solid rgba(201,168,76,0.25);border-radius:12px;padding:10px 12px;margin-bottom:8px;background:rgba(255,255,255,0.04)">' +
-          '<div style="font-weight:800">' +
-          statusIcon(r.status) +
-          ' ' +
-          r.title +
-          '</div>' +
-          (r.detail
-            ? '<div style="font-size:0.8rem;opacity:0.9;margin-top:4px;line-height:1.5">' + r.detail + '</div>'
-            : '') +
-          (r.tip
-            ? '<div style="font-size:0.75rem;color:#c9a84c;margin-top:4px">راهکار: ' + r.tip + '</div>'
-            : '') +
-          '</div>'
-        );
-      })
-      .join('');
+    while (list.firstChild) list.removeChild(list.firstChild);
+    results.forEach(function (r) {
+      var card = el(
+        'div',
+        'border:1px solid rgba(201,168,76,0.25);border-radius:12px;padding:10px 12px;margin-bottom:8px;background:rgba(255,255,255,0.04)'
+      );
+      var title = el('div', 'font-weight:800');
+      title.textContent = statusIcon(r.status) + ' ' + r.title;
+      card.appendChild(title);
+      if (r.detail) {
+        var d = el('div', 'font-size:0.8rem;opacity:0.9;margin-top:4px;line-height:1.5');
+        d.textContent = r.detail;
+        card.appendChild(d);
+      }
+      if (r.tip) {
+        var t = el('div', 'font-size:0.75rem;color:#c9a84c;margin-top:4px');
+        t.textContent = 'راهکار: ' + r.tip;
+        card.appendChild(t);
+      }
+      list.appendChild(card);
+    });
   }
 
   function runAll() {
@@ -450,26 +558,28 @@
     checkAuthForms();
     checkJsErrors();
     render();
-    checkNetworkLayered().then(function () {
-      return checkSupabaseReadOnly();
-    }).then(function () {
-      checkJsErrors();
-      render();
-    });
+    checkNetworkLayered()
+      .then(function () {
+        return checkSupabaseReadOnly();
+      })
+      .then(function () {
+        checkJsErrors();
+        render();
+      });
   }
 
   function boot() {
     verifyAdminFromServer().then(function (v) {
       if (!v || !v.ok) {
         showDenied(v && v.reason ? v.reason : 'دسترسی رد شد');
+        try {
+          sessionStorage.removeItem('kafeQA');
+        } catch (e) {}
         return;
       }
-      // فقط پس از تأیید نقش سرور، فلگ محلی برای راحتی مدیر معنی دارد
       try {
-        if (new URLSearchParams(location.search).get('qa') === '1') {
-          localStorage.setItem('kafeQA', '1');
-        }
-      } catch (e) {}
+        if (trimQaParam()) sessionStorage.setItem('kafeQA', '1');
+      } catch (e2) {}
       ensurePanel();
       setTimeout(runAll, 400);
     });

@@ -98,17 +98,16 @@
     inject('./admin-ui-four-fixes.js?v=20261106e', 'admin-four');
     inject('./admin-messages-session-fix.js?v=20261107a', 'msg-session');
 
-    /* QA: فقط درخواست فعال‌سازی؛ مجوز نهایی داخل qa-harness با role سرور */
     function wantsQAInject() {
       try {
         var sp = new URLSearchParams(location.search || '');
         var q = sp.get('qa');
         if (q != null && String(q).trim() === '1') return true;
         if (/(?:^|[?&])qa\s*=\s*1(?:&|$)/.test(location.search || '')) return true;
-        if (typeof localStorage !== 'undefined' && localStorage.getItem('kafeQA') === '1') return true;
+        if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('kafeQA') === '1') return true;
       } catch (e) {}
       return false;
     }
-    if (wantsQAInject()) inject('./qa-harness.js?v=20261107qa2', 'qa-harness');
+    if (wantsQAInject()) inject('./qa-harness.js?v=20261107qa3', 'qa-harness');
   })();
 })();
