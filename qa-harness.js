@@ -29,7 +29,8 @@
     } catch (e) {}
     return false;
   }
-  if (!wantsQA()) return;
+  var qaRequestedThisLoad = wantsQA();
+  if (!qaRequestedThisLoad) return;
 
   /* پاک‌سازی فلگ قدیمی ماندگار؛ درخواست URL یک‌بارمصرف است. */
   try { localStorage.removeItem('kafeQA'); } catch (eL) {}
@@ -562,8 +563,7 @@
         denied.removeAttribute('data-qa-denied');
       }
       try {
-        if (trimQaParam() || v.offlineSession ||
-            sessionStorage.getItem('kafeQARequested') === '1') {
+        if (qaRequestedThisLoad || trimQaParam() || v.offlineSession) {
           sessionStorage.setItem('kafeQA', '1');
         }
         sessionStorage.removeItem('kafeQARequested');
