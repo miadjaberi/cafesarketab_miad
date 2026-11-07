@@ -97,12 +97,18 @@
     inject('./ui-unify-v1.js?v=20261106e', 'ui-unify');
     inject('./admin-ui-four-fixes.js?v=20261106e', 'admin-four');
     inject('./admin-messages-session-fix.js?v=20261107a', 'msg-session');
-    /* QA فقط با ?qa=1 یا localStorage.kafeQA=1 — بدون اثر روی کاربر عادی */
-    try {
-      var wantQA =
-        /[?&]qa=1(?:&|$)/.test(location.search) ||
-        (typeof localStorage !== 'undefined' && localStorage.getItem('kafeQA') === '1');
-      if (wantQA) inject('./qa-harness.js?v=20261107qa', 'qa-harness');
-    } catch (eQA) {}
+
+    /* QA: فقط درخواست فعال‌سازی؛ مجوز نهایی داخل qa-harness با role سرور */
+    function wantsQAInject() {
+      try {
+        var sp = new URLSearchParams(location.search || '');
+        var q = sp.get('qa');
+        if (q != null && String(q).trim() === '1') return true;
+        if (/(?:^|[?&])qa\s*=\s*1(?:&|$)/.test(location.search || '')) return true;
+        if (typeof localStorage !== 'undefined' && localStorage.getItem('kafeQA') === '1') return true;
+      } catch (e) {}
+      return false;
+    }
+    if (wantsQAInject()) inject('./qa-harness.js?v=20261107qa2', 'qa-harness');
   })();
 })();
