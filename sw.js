@@ -1,5 +1,5 @@
 /* کافه سرکتاب میعاد — Service Worker */
-const CACHE_VERSION = 'kafe-miad-v22.80-qa-v7';
+const CACHE_VERSION = 'kafe-miad-v22.80-stable-20261107b';
 const SHELL_CACHE = `shell-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = [
@@ -16,22 +16,29 @@ const PRECACHE_URLS = [
   './vip-offline-cache.js?v=20261107a',
   './pwa-register.js',
   './ui-layer-fix.js',
-  './qa-harness.js?v=20261107qa6',
-  './qa-inspector.js?v=20261107qa6',
-  './boot-flow-fix.js',
-  './nav-swipe-fix.js',
-  './buy-nav-fix.js',
-  './final-nav-fix.js',
-  './kafe-seven-fixes.js',
-  './fix-four-bugs.js',
-  './hamzad-ui-fix.js',
-  './modal-menu-layout.js',
-  './modal-ui-theme.js',
-  './modal-guide-size-fix.js',
-  './rename-raml.js',
-  './ui-unify-v1.js',
-  './admin-ui-four-fixes.js',
-  './admin-messages-session-fix.js',
+  './boot-flow-fix.js?v=20261107a',
+  './nav-swipe-fix.js?v=20261106e',
+  './buy-nav-fix.js?v=20261106e',
+  './final-nav-fix.js?v=20261106e',
+  './kafe-seven-fixes.js?v=20261106e',
+  './fix-four-bugs.js?v=20261106e',
+  './hamzad-ui-fix.js?v=20261106e',
+  './modal-menu-layout.js?v=20261106e',
+  './modal-ui-theme.js?v=20261106e',
+  './modal-guide-size-fix.js?v=20261106e',
+  './rename-raml.js?v=20261106e',
+  './ui-unify-v1.js?v=20261106e',
+  './admin-ui-four-fixes.js?v=20261106e',
+  './admin-messages-session-fix.js?v=20261107a',
+  './brand-public-fix.js?v=fix2',
+  './ui-feedback.js?v=fix2',
+  './admin-messages-fix.js?v=fix2',
+  './admin-save-feedback.js?v=fix2',
+  './field-pattern.css?v=22.22-fix',
+  './icon192.png',
+  './icon512.png',
+  './favicon.png',
+  './apple-touch-icon.png',
   './theme-atelier.css',
   './assets/splash.jpg',
   './theme-lock.css',
@@ -42,12 +49,14 @@ const PRECACHE_URLS = [
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches
-      .open(SHELL_CACHE)
-      .then((cache) =>
-        cache.addAll(PRECACHE_URLS.map((u) => new Request(u, { cache: 'reload' })))
-      )
-      .catch(() => {})
+    caches.open(SHELL_CACHE).then((cache) =>
+      Promise.all(PRECACHE_URLS.map((url) =>
+        cache.add(new Request(url, { cache: 'reload' })).catch((error) => {
+          // یک فایل اختیاریِ ناموجود نباید کل کش پوسته را از نصب بازدارد.
+          console.warn('[Kafe SW] precache skipped:', url, error);
+        })
+      ))
+    )
   );
 });
 

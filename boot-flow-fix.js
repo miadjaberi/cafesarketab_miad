@@ -263,41 +263,65 @@
   function continueAfterTermsOrSession() {
     showBootLoader();
     var finished = false;
-    function doneRoute() {
+    var onlineState = null;
+
+    var safety = setTimeout(function () {
       if (finished) return;
       finished = true;
       hideBootLoader();
-    }
-    var safety = setTimeout(function () {
-      if (finished) return;
-      doneRoute();
       var local = getLocalCafeUser();
-      if (local) enterMainApp(local);
+      // ورود محلی فقط پس از تشخیص آفلاین و انتخاب صریح مسیر محدود آفلاین مجاز است.
+      if (onlineState === false && local) showOfflineDialog();
       else showRegisterOnly();
     }, PROFILE_TIMEOUT);
+
     probeOnline().then(function (online) {
+      onlineState = online;
       if (finished) return;
       getSessionSafe().then(function (session) {
+        if (finished) return;
+
         if (session && session.user) {
           loadProfile(session.user.id).then(function (profile) {
+            if (finished) return;
             clearTimeout(safety);
             finished = true;
             hideBootLoader();
-            enterMainApp(profile || getLocalCafeUser());
+
+            if (profile) {
+              enterMainApp(profile);
+              return;
+            }
+
+            // نشست معتبر بدون پروفایل سرور، مجوز ورود به برنامه نیست.
+            var local = getLocalCafeUser();
+            if (!online && local) {
+              showOfflineDialog();
+            } else {
+              showRegisterOnly();
+              try {
+                if (typeof showNotification === 'function') {
+                  showNotification('نشست دریافت شد اما پروفایل کاربر از سرور تأیید نشد؛ لطفاً دوباره با شماره و PIN وارد شوید.', 'error');
+                }
+              } catch (e) {}
+            }
           });
           return;
         }
-        if (finished) return;
+
         clearTimeout(safety);
-        doneRoute();
+        finished = true;
+        hideBootLoader();
         var local = getLocalCafeUser();
-        if (!online) {
-          if (local) showOfflineDialog();
-          else showRegisterOnly();
-          return;
-        }
-        showRegisterOnly();
+        if (!online && local) showOfflineDialog();
+        else showRegisterOnly();
       });
+    }).catch(function () {
+      if (finished) return;
+      finished = true;
+      clearTimeout(safety);
+      hideBootLoader();
+      showRegisterOnly();
     });
   }
   function afterSplashRoute() {

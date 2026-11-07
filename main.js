@@ -4070,13 +4070,14 @@ async function submitProductOrder() {
             if (!container) return;
             container.addEventListener('scroll', function() {
                 var width = container.offsetWidth || 1;
-                // پشتیبانی از RTL: در برخی مرورگرها scrollLeft منفی است
+                // نقاط دیداری قدیمی حفظ می‌شوند؛ مالک نهایی نوار ناوبری final-nav-fix است.
                 var scrollPos = Math.abs(container.scrollLeft);
                 var index = Math.round(scrollPos / width);
                 if (index > 2) index = 2;
                 if (index < 0) index = 0;
                 updateSwipeDots(index);
-                updateBottomNav(index);
+                if (typeof window.updateBottomNav === 'function') window.updateBottomNav();
+                else updateBottomNav(index);
             });
         }
 

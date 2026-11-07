@@ -80,8 +80,10 @@
       try {
         if (document.querySelector('script[data-kafe-patch="' + key + '"]')) return;
         var s = document.createElement('script');
+        // اجرای اصلاحیه‌ها باید به ترتیب فهرست تزریق باشد؛ async پیش‌فرض ترتیب را می‌شکند.
+        s.async = false;
         s.src = src;
-        s.async = true;
+        s.defer = false;
         s.setAttribute('data-kafe-patch', key);
         (document.body || document.documentElement).appendChild(s);
       } catch (e) {}
@@ -101,31 +103,6 @@
     inject('./admin-ui-four-fixes.js?v=20261106e', 'admin-four');
     inject('./admin-messages-session-fix.js?v=20261107a', 'msg-session');
 
-    function wantsQAInject() {
-      try {
-        var sp = new URLSearchParams(location.search || '');
-        var q = sp.get('qa');
-        var requested = q != null && String(q).trim() === '1';
-        if (!requested) requested = /(?:^|[?&])qa\s*=\s*1(?:&|$)/.test(location.search || '');
-        if (requested) {
-          /* درخواست URL فقط یک‌بار مصرف است؛ تأیید مدیر جداگانه در harness انجام می‌شود. */
-          try { sessionStorage.setItem('kafeQARequested', '1'); } catch (e1) {}
-          try {
-            var cleanUrl = new URL(location.href);
-            cleanUrl.searchParams.delete('qa');
-            history.replaceState(history.state, '', cleanUrl.pathname + cleanUrl.search + cleanUrl.hash);
-          } catch (e2) {}
-          return true;
-        }
-        if (typeof sessionStorage !== 'undefined' &&
-            (sessionStorage.getItem('kafeQA') === '1' ||
-             sessionStorage.getItem('kafeQARequested') === '1')) return true;
-      } catch (e) {}
-      return false;
-    }
-    if (wantsQAInject()) {
-      inject('./qa-harness.js?v=20261107qa6', 'qa-harness');
-      inject('./qa-inspector.js?v=20261107qa6', 'qa-inspector');
-    }
+    // ابزار QA به درخواست مدیر فعلاً از مسیر اجرای عادی برنامه خارج است.
   })();
 })();
