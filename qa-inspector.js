@@ -12,6 +12,7 @@
   var events = [];
   var notes = [];
   var errors = [];
+  var networkEvents = [];
   var sourceAudit = [];
   var maxEvents = 500;
   var observer = null;
@@ -163,6 +164,18 @@
     notes.slice(-4).reverse().forEach(function (n) { addCard(feed, 'یادداشت مدیر — ' + n.outcome, n.view + '\n' + n.note); });
   }
   function observe() {
+    window.addEventListener('online', function () {
+      if (!active) return;
+      push(networkEvents, { at: now(), state: 'online', detail: 'مرورگر اتصال شبکه را آنلاین گزارش کرد' });
+      record('وضعیت شبکه', 'آنلاین — دسترسی واقعی به هر سرویس باید جداگانه سنجیده شود');
+      renderFeed();
+    });
+    window.addEventListener('offline', function () {
+      if (!active) return;
+      push(networkEvents, { at: now(), state: 'offline', detail: 'مرورگر اتصال شبکه را آفلاین گزارش کرد' });
+      record('وضعیت شبکه', 'آفلاین — نشست مدیر فقط در همین نشستِ قبلاً تأییدشده قابل بررسی است');
+      renderFeed();
+    });
     document.addEventListener('click', function (ev) {
       if (!active) return;
       var n = ev.target && ev.target.closest ? ev.target.closest('button,a,[role="button"],[onclick]') : ev.target;
@@ -287,6 +300,11 @@
       '--- یادداشت‌های مدیر ---',
       notes.map(function (n) { return n.at + ' | ' + n.outcome + ' | ' + n.view + ' | ' + n.note; }).join('\n'),
       '',
+      '--- وضعیت شبکه و تفکیک آنلاین/آفلاین ---',
+      'وضعیت فعلی مرورگر: ' + (navigator.onLine === false ? 'آفلاین' : 'آنلاین'),
+      networkEvents.map(function (e) { return e.at + ' | ' + e.state + ' | ' + e.detail; }).join('\\n'),
+      'توجه: navigator.onLine فقط وضعیت گزارش‌شده مرورگر است؛ موفقیت ارتباط با سرور باید از نتیجه درخواست‌های واقعی خوانده شود.',
+      '',
       '--- خطاها ---',
       errors.map(function (e) { return e.at + ' | ' + e.type + ' | ' + e.detail + (e.file ? ' | ' + e.file + ':' + e.line : ''); }).join('\n'),
       '',
@@ -322,6 +340,14 @@
     if (launcher) launcher.style.display = 'none';
     lastView = getView();
     lastModalState = getOpenLayers();
+    var initialOnline = navigator.onLine !== false;
+    push(networkEvents, {
+      at: now(),
+      state: initialOnline ? 'online' : 'offline',
+      detail: initialOnline
+        ? 'شروع QA در وضعیت آنلاین مرورگر؛ اتصال سرور جداگانه ارزیابی می‌شود'
+        : 'شروع QA در وضعیت آفلاین؛ فقط نشست قبلاً تأییدشده همین تب مجاز است'
+    });
     record('شروع همراهی مدیر', 'صفحه آغازین: ' + lastView + '؛ پنجره‌ها: ' + lastModalState);
     observe();
     renderFeed();
