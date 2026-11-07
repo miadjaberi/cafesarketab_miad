@@ -1,5 +1,5 @@
 /* کافه سرکتاب میعاد — Service Worker */
-const CACHE_VERSION = 'kafe-miad-v22.78-buy-v10';
+const CACHE_VERSION = 'kafe-miad-v22.79-qa-v6';
 const SHELL_CACHE = `shell-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = [
@@ -15,6 +15,8 @@ const PRECACHE_URLS = [
   './app.js',
   './pwa-register.js',
   './ui-layer-fix.js',
+  './qa-harness.js?v=20261107qa6',
+  './qa-inspector.js?v=20261107qa6',
   './boot-flow-fix.js',
   './nav-swipe-fix.js',
   './buy-nav-fix.js',
