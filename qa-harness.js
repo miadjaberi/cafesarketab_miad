@@ -24,16 +24,16 @@
   function wantsQA() {
     if (trimQaParam()) return true;
     try {
-      if (sessionStorage.getItem('kafeQA') === '1') return true;
+      if (sessionStorage.getItem('kafeQA') === '1' ||
+          sessionStorage.getItem('kafeQARequested') === '1') return true;
     } catch (e) {}
     return false;
   }
   if (!wantsQA()) return;
 
-  /* پاک‌سازی فلگ قدیمی ماندگار تا کاربران عادی گیر نکنند */
-  try {
-    localStorage.removeItem('kafeQA');
-  } catch (eL) {}
+  /* پاک‌سازی فلگ قدیمی ماندگار؛ درخواست URL یک‌بارمصرف است. */
+  try { localStorage.removeItem('kafeQA'); } catch (eL) {}
+  try { sessionStorage.removeItem('kafeQARequested'); } catch (eR) {}
 
   var results = [];
   var jsErrors = [];
@@ -547,6 +547,11 @@
     verifyAdminFromServer().then(function (v) {
       bootInProgress = false;
       if (!v || !v.ok) {
+        /* درخواست ناموفق نباید در نشست بماند و در مراجعه بعدی پنل محدودیت بسازد. */
+        try {
+          sessionStorage.removeItem('kafeQARequested');
+          sessionStorage.removeItem('kafeQA');
+        } catch (eDenied) {}
         if (!adminVerified) showDenied(v && v.reason ? v.reason : 'دسترسی رد شد');
         return;
       }
@@ -557,7 +562,11 @@
         denied.removeAttribute('data-qa-denied');
       }
       try {
-        if (trimQaParam() || v.offlineSession) sessionStorage.setItem('kafeQA', '1');
+        if (trimQaParam() || v.offlineSession ||
+            sessionStorage.getItem('kafeQARequested') === '1') {
+          sessionStorage.setItem('kafeQA', '1');
+        }
+        sessionStorage.removeItem('kafeQARequested');
       } catch (e2) {}
       ensurePanel();
       setTimeout(function () {
@@ -591,7 +600,10 @@
         try { window.dispatchEvent(new Event('kafe:qa-end')); } catch (e) {}
         var panel = document.getElementById('kafeQAPanel');
         if (panel) panel.style.display = 'none';
-        try { sessionStorage.removeItem('kafeQA'); } catch (e) {}
+        try {
+          sessionStorage.removeItem('kafeQA');
+          sessionStorage.removeItem('kafeQARequested');
+        } catch (e) {}
       }
     });
     return true;
