@@ -6412,29 +6412,9 @@ document.addEventListener('DOMContentLoaded',function(){try{window.applyGalleryI
     })();
   };
 
-  // جلوگیری از اسپلش خودکار قبلی
-  document.addEventListener('DOMContentLoaded', function(){
-    var splash = document.getElementById('splashScreen');
-    if (splash) {
-      splash.classList.add('waiting');
-      splash.style.display = 'none';
-    }
-    var termsAccepted = false;
-    try { termsAccepted = localStorage.getItem('kafeTermsAccepted') === '1'; } catch (e) {}
-    var terms = document.getElementById('termsScreen');
-    var reg = document.getElementById('registerScreen');
-    var app = document.getElementById('app');
-    if (reg) reg.style.display = 'none';
-    if (app) app.style.display = 'none';
-    if (termsAccepted) {
-      if (terms) { terms.style.display = 'none'; terms.classList.add('hidden'); }
-      // ادامه همان مسیر بعد از موافقت قبلی
-      try { if (typeof window.acceptTermsAndContinue === 'function') window.acceptTermsAndContinue(); } catch (eA) {}
-    } else if (terms) {
-      terms.classList.remove('hidden');
-      terms.style.display = 'flex';
-    }
-  }, true);
+  // نمایش شرایط و اسپلش فقط توسط boot-flow-fix.js کنترل می‌شود؛
+  // کنترل‌گر قدیمی DOMContentLoaded حذف شد تا دو مسیر هم‌زمان اجرا نشوند.
+
 })();
 
 
