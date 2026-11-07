@@ -37,7 +37,7 @@
   }
   function record(type, detail) {
     if (!active) return;
-    push(events, { at: now(), type: type, detail: detail || '' });
+    push(events, { at: now(), type: type, detail: detail || '', network: navigator.onLine === false ? 'offline' : 'online' });
   }
   function getView() {
     var ids = ['pageShop', 'pageBuy', 'pageModals', 'pageTools', 'adminPanel', 'settingsPanel', 'menuDrawer'];
@@ -125,7 +125,7 @@
     actions.appendChild(makeButton('ثبت یادداشت', function () {
       var value = safeText(note.value, 500);
       if (!value) return;
-      push(notes, { at: now(), view: getView(), outcome: outcome.value, note: value });
+      push(notes, { at: now(), view: getView(), outcome: outcome.value, note: value, network: navigator.onLine === false ? 'offline' : 'online' });
       note.value = '';
       record('یادداشت مدیر', value);
     }));
@@ -294,11 +294,14 @@
       'پایان: ' + now(),
       'وضعیت: ثبت مشاهده و ممیزی فقط‌خواندنی؛ بدون عملیات حساس',
       '',
-      '--- رویدادهای رابط کاربری ---',
-      events.map(function (e) { return e.at + ' | ' + e.type + ' | ' + e.detail; }).join('\n'),
+      '--- رویدادهای رابط — آنلاین ---',
+      events.filter(function (e) { return e.network === 'online'; }).map(function (e) { return e.at + ' | ' + e.type + ' | ' + e.detail; }).join('\\n'),
+      '',
+      '--- رویدادهای رابط — آفلاین ---',
+      events.filter(function (e) { return e.network === 'offline'; }).map(function (e) { return e.at + ' | ' + e.type + ' | ' + e.detail; }).join('\\n'),
       '',
       '--- یادداشت‌های مدیر ---',
-      notes.map(function (n) { return n.at + ' | ' + n.outcome + ' | ' + n.view + ' | ' + n.note; }).join('\n'),
+      notes.map(function (n) { return n.at + ' | ' + n.network + ' | ' + n.outcome + ' | ' + n.view + ' | ' + n.note; }).join('\\n'),
       '',
       '--- وضعیت شبکه و تفکیک آنلاین/آفلاین ---',
       'وضعیت فعلی مرورگر: ' + (navigator.onLine === false ? 'آفلاین' : 'آنلاین'),
