@@ -2,6 +2,9 @@
 (function () {
   'use strict';
 
+  /* فلگ ماندگار نسخه‌های قدیمی را در هر بار اجرای برنامه بی‌اثر و پاک کن. */
+  try { localStorage.removeItem('kafeQA'); } catch (eLegacyQA) {}
+
   function closeSettings() {
     var panel = document.getElementById('settingsPanel');
     if (!panel) return;
@@ -77,16 +80,17 @@
       try {
         if (document.querySelector('script[data-kafe-patch="' + key + '"]')) return;
         var s = document.createElement('script');
+        s.async = false;
         s.src = src;
-        s.async = true;
+        s.defer = false;
         s.setAttribute('data-kafe-patch', key);
         (document.body || document.documentElement).appendChild(s);
       } catch (e) {}
     }
-    inject('./boot-flow-fix.js?v=20261106e', 'boot-flow');
-    inject('./nav-swipe-fix.js?v=20261106e', 'nav-swipe');
-    inject('./buy-nav-fix.js?v=20261106e', 'buy-nav');
-    inject('./final-nav-fix.js?v=20261106e', 'final-nav');
+    inject('./boot-flow-fix.js?v=20261108a', 'boot-flow');
+    inject('./nav-swipe-fix.js?v=20261108a', 'nav-swipe');
+    inject('./buy-nav-fix.js?v=20261108a', 'buy-nav');
+    inject('./final-nav-fix.js?v=20261108a', 'final-nav');
     inject('./kafe-seven-fixes.js?v=20261106e', 'seven');
     inject('./fix-four-bugs.js?v=20261106e', 'four-bugs');
     inject('./hamzad-ui-fix.js?v=20261106e', 'hamzad-ui');

@@ -80,7 +80,7 @@
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
       navigator.serviceWorker.register('./sw.js', { scope: './' }).then(function (reg) {
-        if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+        // Let an update activate after old clients close; do not force reload active sessions.
       }).catch(function () {});
     });
   }

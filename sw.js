@@ -1,5 +1,5 @@
 /* کافه سرکتاب میعاد — Service Worker */
-const CACHE_VERSION = 'kafe-miad-v22.78-buy-v10';
+const CACHE_VERSION = 'kafe-miad-v22.81-offline-20261108a';
 const SHELL_CACHE = `shell-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = [
@@ -13,39 +13,50 @@ const PRECACHE_URLS = [
   './dalil-images-fix.js',
   './pwa-icon-dynamic.js',
   './app.js',
+  './vip-offline-cache.js?v=20261108a',
   './pwa-register.js',
   './ui-layer-fix.js',
-  './boot-flow-fix.js',
-  './nav-swipe-fix.js',
-  './buy-nav-fix.js',
-  './final-nav-fix.js',
-  './kafe-seven-fixes.js',
-  './fix-four-bugs.js',
-  './hamzad-ui-fix.js',
-  './modal-menu-layout.js',
-  './modal-ui-theme.js',
-  './modal-guide-size-fix.js',
-  './rename-raml.js',
-  './ui-unify-v1.js',
-  './admin-ui-four-fixes.js',
-  './admin-messages-session-fix.js',
+  './boot-flow-fix.js?v=20261108a',
+  './nav-swipe-fix.js?v=20261108a',
+  './buy-nav-fix.js?v=20261108a',
+  './final-nav-fix.js?v=20261108a',
+  './kafe-seven-fixes.js?v=20261106e',
+  './fix-four-bugs.js?v=20261106e',
+  './hamzad-ui-fix.js?v=20261106e',
+  './modal-menu-layout.js?v=20261106e',
+  './modal-ui-theme.js?v=20261106e',
+  './modal-guide-size-fix.js?v=20261106e',
+  './rename-raml.js?v=20261106e',
+  './ui-unify-v1.js?v=20261106e',
+  './admin-ui-four-fixes.js?v=20261106e',
+  './admin-messages-session-fix.js?v=20261107a',
+  './brand-public-fix.js?v=fix2',
+  './ui-feedback.js?v=fix2',
+  './admin-messages-fix.js?v=fix2',
+  './admin-save-feedback.js?v=fix2',
+  './field-pattern.css?v=22.22-fix',
+  './icon192.png',
+  './icon512.png',
+  './favicon.png',
+  './apple-touch-icon.png',
   './theme-atelier.css',
   './assets/splash.jpg',
   './theme-lock.css',
   './fonts/vazirmatn.css',
   './fonts/Vazirmatn-wght.woff2',
-  './manifest.webmanifest'
+  './manifest.webmanifest',
+  './vendor/supabase-js.min.js'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches
-      .open(SHELL_CACHE)
-      .then((cache) =>
-        cache.addAll(PRECACHE_URLS.map((u) => new Request(u, { cache: 'reload' })))
-      )
-      .then(() => self.skipWaiting())
-      .catch(() => self.skipWaiting())
+    caches.open(SHELL_CACHE).then((cache) =>
+      Promise.all(PRECACHE_URLS.map((url) =>
+        cache.add(new Request(url, { cache: 'reload' })).catch((error) => {
+          console.warn('[Kafe SW] precache skipped:', url, error);
+        })
+      ))
+    )
   );
 });
 
@@ -115,7 +126,15 @@ self.addEventListener('fetch', (event) => {
         }
         return res;
       })
-      .catch(() => caches.match(req).then((c) => c || caches.match('./index.html')))
+      .catch(() =>
+        caches.match(req).then((cached) => {
+          if (cached) return cached;
+          if (req.mode === 'navigate') {
+            return caches.match('./index.html').then((shell) => shell || Response.error());
+          }
+          return Response.error();
+        })
+      )
   );
 });
 

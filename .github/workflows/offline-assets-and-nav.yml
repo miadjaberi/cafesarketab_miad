@@ -1,0 +1,146 @@
+name: Offline assets and nav HTML
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - fix/qa-harness-2026-11-07
+    paths:
+      - '.github/workflows/offline-assets-and-nav.yml'
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: fix/qa-harness-2026-11-07
+      - name: Install local Supabase UMD + patch index.html
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p vendor
+          curl -fsSL "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.js" -o vendor/supabase-js.min.js
+          test -s vendor/supabase-js.min.js
+          grep -q createClient vendor/supabase-js.min.js
+
+          python3 <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          t = p.read_text(encoding='utf-8')
+
+          # Supabase: local first
+          old_cdn = '<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>'
+          new_cdn = '''<!-- Supabase: SDK محلی اول (آفلاین) + لودر CDN فقط اگر محلی نبود -->
+              <script src="./vendor/supabase-js.min.js"></script>
+              <script src="./offline-supabase-loader.js?v=20261108a"></script>'''
+          if old_cdn in t:
+              t = t.replace(old_cdn, new_cdn, 1)
+              print('CDN script replaced')
+          elif './vendor/supabase-js.min.js' in t:
+              print('local supabase already present')
+          else:
+              raise SystemExit('supabase script marker not found')
+
+          old_nav = '''        <nav class="bottom-nav" id="bottomNav">
+                      <!-- ۰. فروشگاه -->
+                      <button class="nav-item-bottom active" onclick="scrollToPage(0)">
+                          <span class="nav-icon-bottom"><i class="fas fa-store"></i></span>
+                          <span class="nav-label-bottom">فروشگاه</span>
+                      </button>
+
+                      <!-- ۱. اشتراک و سفارش -->
+                      <button class="nav-item-bottom" onclick="openSubOrdersPanel()">
+                          <span class="nav-icon-bottom"><i class="fas fa-crown"></i></span>
+                          <span class="nav-label-bottom">خرید</span>
+                      </button>
+
+                      <!-- ۲. منو وسط (مودال‌ها) -->
+                      <button class="nav-item-bottom center-btn" onclick="toggleMenuDrawer()">
+                          <span class="nav-icon-bottom"><i class="fas fa-bars"></i></span>
+                          <span class="nav-label-bottom">منو</span>
+                      </button>
+
+                      <!-- ۳. ابزارها -->
+                      <button class="nav-item-bottom" onclick="scrollToPage(2)">
+                          <span class="nav-icon-bottom"><i class="fas fa-tools"></i></span>
+                          <span class="nav-label-bottom">ابزارها</span>
+                      </button>
+
+                      <!-- ۴. تنظیمات -->
+                      <button class="nav-item-bottom" onclick="toggleUserSettings()">
+                          <span class="nav-icon-bottom"><i class="fas fa-user-cog"></i></span>
+                          <span class="nav-label-bottom">تنظیمات</span>
+                      </button>
+                  </nav>'''
+          new_nav = '''        <nav class="bottom-nav" id="bottomNav">
+                      <!-- ۰. فروشگاه -->
+                      <button type="button" class="nav-item-bottom active" onclick="scrollToPage('pageShop')">
+                          <span class="nav-icon-bottom"><i class="fas fa-store"></i></span>
+                          <span class="nav-label-bottom">فروشگاه</span>
+                      </button>
+
+                      <!-- ۱. خرید اشتراک -->
+                      <button type="button" class="nav-item-bottom" onclick="scrollToPage('pageBuy')">
+                          <span class="nav-icon-bottom"><i class="fas fa-crown"></i></span>
+                          <span class="nav-label-bottom">خرید اشتراک</span>
+                      </button>
+
+                      <!-- ۲. منو (مودال‌ها) -->
+                      <button type="button" class="nav-item-bottom center-btn" onclick="toggleMenuDrawer()">
+                          <span class="nav-icon-bottom"><i class="fas fa-bars"></i></span>
+                          <span class="nav-label-bottom">منو</span>
+                      </button>
+
+                      <!-- ۳. ابزارها -->
+                      <button type="button" class="nav-item-bottom" onclick="scrollToPage('pageTools')">
+                          <span class="nav-icon-bottom"><i class="fas fa-tools"></i></span>
+                          <span class="nav-label-bottom">ابزارها</span>
+                      </button>
+
+                      <!-- ۴. تنظیمات کاربر -->
+                      <button type="button" class="nav-item-bottom" onclick="toggleUserSettings()">
+                          <span class="nav-icon-bottom"><i class="fas fa-user-cog"></i></span>
+                          <span class="nav-label-bottom">تنظیمات کاربر</span>
+                      </button>
+                  </nav>'''
+          # normalize whitespace for match flexibility
+          if old_nav in t:
+              t = t.replace(old_nav, new_nav, 1)
+              print('nav replaced exact')
+          elif "scrollToPage('pageShop')" in t and 'خرید اشتراک' in t:
+              print('nav already harmonized')
+          else:
+              # fallback regex-free line replacements
+              t = t.replace('onclick="scrollToPage(0)"', "onclick=\"scrollToPage('pageShop')\"")
+              t = t.replace('onclick="scrollToPage(2)"', "onclick=\"scrollToPage('pageTools')\"")
+              t = t.replace('onclick="openSubOrdersPanel()"', "onclick=\"scrollToPage('pageBuy')\"")
+              t = t.replace('<span class="nav-label-bottom">خرید</span>', '<span class="nav-label-bottom">خرید اشتراک</span>')
+              t = t.replace('<span class="nav-label-bottom">تنظیمات</span>', '<span class="nav-label-bottom">تنظیمات کاربر</span>')
+              print('nav replaced by attributes')
+
+          t = t.replace('vip-offline-cache.js?v=20261107a', 'vip-offline-cache.js?v=20261108a')
+          p.write_text(t, encoding='utf-8')
+          print('index.html written', p.stat().st_size)
+          PY
+
+          node --check offline-supabase-loader.js
+          node --check vendor/supabase-js.min.js
+          node --check boot-flow-fix.js
+          node --check final-nav-fix.js
+          node --check sw.js
+          node -e "JSON.parse(require('fs').readFileSync('manifest.webmanifest','utf8')); console.log('manifest OK')"
+      - name: Commit if changed
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add vendor/supabase-js.min.js index.html offline-supabase-loader.js sw.js || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "fix(offline+html): local supabase vendor + bottom nav labels (Actions)"
+            git push origin HEAD:fix/qa-harness-2026-11-07
+          fi

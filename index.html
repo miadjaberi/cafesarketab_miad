@@ -31,7 +31,9 @@
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <link href="./fonts/vazirmatn.css?v=local1" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Supabase: SDK محلی اول (آفلاین) + لودر CDN فقط اگر محلی نبود -->
+    <script src="./vendor/supabase-js.min.js"></script>
+    <script src="./offline-supabase-loader.js?v=20261108a"></script>
 
     <!-- Main styles (original already expected this file) -->
     <!-- Small extracted style blocks -->
@@ -47,7 +49,7 @@
 
 
     <!-- ===== قبول شرایط (قبل از اسپلش — هر بار) ===== -->
-    <div id="termsScreen">
+    <div id="termsScreen" style="display:none;">
         <div class="terms-inner">
             <div class="terms-header">
                 <h1>بسم الله الرحمن الرحیم</h1>
@@ -173,7 +175,7 @@
     </div>
 
     <!-- ===== SPLASH ===== -->
-    <div id="splashScreen" class="waiting" style="display:none;">
+    <div id="splashScreen" style="display:flex;">
         <img class="splash-bg-img" id="splashBgImg" alt="" src="./assets/splash.jpg" onerror="this.onerror=null;this.src='./icon512.png'" />
         <div class="splash-dim"></div>
         <div class="splash-bg-glow"></div>
@@ -394,33 +396,33 @@
         <!-- ===== BOTTOM NAV ===== -->
         <nav class="bottom-nav" id="bottomNav">
             <!-- ۰. فروشگاه -->
-            <button class="nav-item-bottom active" onclick="scrollToPage(0)">
+            <button type="button" class="nav-item-bottom active" onclick="scrollToPage('pageShop')">
                 <span class="nav-icon-bottom"><i class="fas fa-store"></i></span>
                 <span class="nav-label-bottom">فروشگاه</span>
             </button>
 
-            <!-- ۱. اشتراک و سفارش -->
-            <button class="nav-item-bottom" onclick="openSubOrdersPanel()">
+            <!-- ۱. خرید اشتراک -->
+            <button type="button" class="nav-item-bottom" onclick="scrollToPage('pageBuy')">
                 <span class="nav-icon-bottom"><i class="fas fa-crown"></i></span>
-                <span class="nav-label-bottom">خرید</span>
+                <span class="nav-label-bottom">خرید اشتراک</span>
             </button>
 
-            <!-- ۲. منو وسط (مودال‌ها) -->
-            <button class="nav-item-bottom center-btn" onclick="toggleMenuDrawer()">
+            <!-- ۲. منو (مودال‌ها) -->
+            <button type="button" class="nav-item-bottom center-btn" onclick="toggleMenuDrawer()">
                 <span class="nav-icon-bottom"><i class="fas fa-bars"></i></span>
                 <span class="nav-label-bottom">منو</span>
             </button>
 
             <!-- ۳. ابزارها -->
-            <button class="nav-item-bottom" onclick="scrollToPage(2)">
+            <button type="button" class="nav-item-bottom" onclick="scrollToPage('pageTools')">
                 <span class="nav-icon-bottom"><i class="fas fa-tools"></i></span>
                 <span class="nav-label-bottom">ابزارها</span>
             </button>
 
-            <!-- ۴. تنظیمات -->
-            <button class="nav-item-bottom" onclick="toggleUserSettings()">
+            <!-- ۴. تنظیمات کاربر -->
+            <button type="button" class="nav-item-bottom" onclick="toggleUserSettings()">
                 <span class="nav-icon-bottom"><i class="fas fa-user-cog"></i></span>
-                <span class="nav-label-bottom">تنظیمات</span>
+                <span class="nav-label-bottom">تنظیمات کاربر</span>
             </button>
         </nav><!-- ===== SETTINGS PANEL (کاربر) ===== -->
 <div id="settingsPanel">
@@ -2064,6 +2066,7 @@
     </script>
     <script src="./data.js"></script>
     <script src="./main.js"></script>
+    <script src="./vip-offline-cache.js?v=20261108a"></script>
     <script src="./dalil-images-fix.js"></script>
     <script src="./pwa-icon-dynamic.js"></script>
     <script src="./tools-extra.js"></script>

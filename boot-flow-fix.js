@@ -1,13 +1,14 @@
-/** boot-flow-fix.js V4.2
- * V4 + مشاور فنی:
- * - isOnline واقعی (HEAD با تایم‌اوت ۳ث)
- * - loadProfile / continueAfterTerms با تایم‌اوت ۴ث → fallback getLocalCafeUser
- * - لودر کوچک بین بستن شرایط و مرحله بعد
- * - V4.2: _probe روی URLها؛ بعد از safety فقط نشست واقعی مسیر را عوض می‌کند
+/** boot-flow-fix.js V4.4
+ * - تشخیص دسترسی واقعی به Supabase Auth health با GET و timeout
+ * - ورود آنلاین فقط با session و پروفایل تأییدشده از سرور
+ * - getSession هم‌زمان با probe (بدون صف جعلی)
+ * - مسیر آفلاین محدود فقط با انتخاب صریح کاربر
+ * - کنترل یگانه شرایط، اسپلش و انتقال به صفحه ورود
  */
 (function () {
   'use strict';
-  if (window.__KAFE_BOOT_FLOW_V42__) return;
+  if (window.__KAFE_BOOT_FLOW_V44__) return;
+  window.__KAFE_BOOT_FLOW_V44__ = true;
   window.__KAFE_BOOT_FLOW_V42__ = true;
 
   var MIN_SPLASH = 1600;
@@ -41,51 +42,31 @@
     return new Promise(function (resolve) {
       if (!navigatorSaysOnline()) { resolve(false); return; }
       var done = false;
-      function finish(v) { if (done) return; done = true; resolve(!!v); }
-      setTimeout(function () { finish(false); }, NET_PROBE_TIMEOUT);
-      var urls = [];
-      var probeTok = String(Date.now());
-      try {
-        var sb = (window.SUPABASE_URL && String(window.SUPABASE_URL)) || 'https://evxxvnlwtbaqpjbjaxdk.supabase.co';
-        urls.push(String(sb).replace(/\/$/, '') + '/auth/v1/health?_probe=' + probeTok);
-      } catch (e0) {
-        urls.push('https://evxxvnlwtbaqpjbjaxdk.supabase.co/auth/v1/health?_probe=' + probeTok);
-      }
-      try {
-        var base = (document.querySelector('base') && document.querySelector('base').href) || location.href;
-        var u1 = new URL('data.js', base);
-        u1.searchParams.set('_probe', probeTok);
-        urls.push(u1.href);
-        var u2 = new URL('manifest.webmanifest', base);
-        u2.searchParams.set('_probe', probeTok);
-        urls.push(u2.href);
-      } catch (e1) {
-        urls.push('./data.js?_probe=' + probeTok);
-      }
-      function tryOne(i) {
+      var ctrl = null;
+      var timer = setTimeout(function () {
+        try { if (ctrl) ctrl.abort(); } catch (e) {}
+        finish(false);
+      }, NET_PROBE_TIMEOUT);
+      function finish(v) {
         if (done) return;
-        if (i >= urls.length) { finish(false); return; }
-        var ctrl = null, timer = null;
-        try { if (typeof AbortController !== 'undefined') ctrl = new AbortController(); } catch (e2) {}
-        timer = setTimeout(function () {
-          try { if (ctrl) ctrl.abort(); } catch (e3) {}
-          tryOne(i + 1);
-        }, Math.min(1500, NET_PROBE_TIMEOUT));
-        var opts = { method: 'HEAD', cache: 'no-store', mode: 'cors' };
-        if (ctrl) opts.signal = ctrl.signal;
-        fetch(urls[i], opts).then(function () { clearTimeout(timer); finish(true); }).catch(function () {
-          clearTimeout(timer);
-          var opts2 = { method: 'GET', cache: 'no-store', mode: 'cors' };
-          try {
-            if (typeof AbortController !== 'undefined') {
-              var c2 = new AbortController(); opts2.signal = c2.signal;
-              setTimeout(function () { try { c2.abort(); } catch (e4) {} }, 1200);
-            }
-          } catch (e5) {}
-          fetch(urls[i], opts2).then(function () { finish(true); }).catch(function () { tryOne(i + 1); });
-        });
+        done = true;
+        clearTimeout(timer);
+        resolve(!!v);
       }
-      tryOne(0);
+      var probeTok = String(Date.now());
+      var healthUrl = 'https://evxxvnlwtbaqpjbjaxdk.supabase.co/auth/v1/health?_probe=' + probeTok;
+      var opts = { method: 'GET', cache: 'no-store', mode: 'cors', credentials: 'omit' };
+      try {
+        if (typeof AbortController !== 'undefined') {
+          ctrl = new AbortController();
+          opts.signal = ctrl.signal;
+        }
+      } catch (e0) {}
+      fetch(healthUrl, opts).then(function (response) {
+        finish(!!(response && response.ok));
+      }).catch(function () {
+        finish(false);
+      });
     });
   }
   function isOnline() { return navigatorSaysOnline(); }
@@ -263,53 +244,84 @@
   function continueAfterTermsOrSession() {
     showBootLoader();
     var finished = false;
-    function doneRoute() {
+    var onlineState = null;
+    var safety = setTimeout(function () {
       if (finished) return;
       finished = true;
       hideBootLoader();
-    }
-    var safety = setTimeout(function () {
-      if (finished) return;
-      doneRoute();
       var local = getLocalCafeUser();
-      if (local) enterMainApp(local);
+      if (onlineState === false && local) showOfflineDialog();
       else showRegisterOnly();
-    }, PROFILE_TIMEOUT);
-    probeOnline().then(function (online) {
-      if (finished) return;
-      getSessionSafe().then(function (session) {
-        if (session && session.user) {
-          loadProfile(session.user.id).then(function (profile) {
+    }, Math.max(NET_PROBE_TIMEOUT, MAX_SESSION_WAIT) + PROFILE_TIMEOUT + 800);
+
+    var probeP = probeOnline().then(function (online) {
+      onlineState = online;
+      return online;
+    });
+    var sessionP = getSessionSafe();
+
+    Promise.all([probeP, sessionP])
+      .then(function (pair) {
+        if (finished) return;
+        var online = pair[0];
+        var session = pair[1];
+        onlineState = online;
+
+        if (session && session.user && session.user.id) {
+          return loadProfile(session.user.id).then(function (profile) {
+            if (finished) return;
             clearTimeout(safety);
             finished = true;
             hideBootLoader();
-            enterMainApp(profile || getLocalCafeUser());
+            if (profile && profile.id) {
+              enterMainApp(profile);
+              return;
+            }
+            var local = getLocalCafeUser();
+            if (!online && local) {
+              showOfflineDialog();
+            } else {
+              showRegisterOnly();
+              try {
+                if (typeof showNotification === 'function') {
+                  showNotification('نشست تأیید نشد یا پروفایل از سرور نیامد؛ لطفاً دوباره با شماره و PIN وارد شوید.', 'error');
+                }
+              } catch (e) {}
+            }
           });
-          return;
         }
-        if (finished) return;
+
         clearTimeout(safety);
-        doneRoute();
-        var local = getLocalCafeUser();
-        if (!online) {
-          if (local) showOfflineDialog();
-          else showRegisterOnly();
-          return;
-        }
+        finished = true;
+        hideBootLoader();
+        var local2 = getLocalCafeUser();
+        if (!online && local2) showOfflineDialog();
+        else showRegisterOnly();
+      })
+      .catch(function () {
+        if (finished) return;
+        finished = true;
+        clearTimeout(safety);
+        hideBootLoader();
         showRegisterOnly();
       });
-    });
   }
   function afterSplashRoute() {
     if (!termsSeenThisSession()) { showTermsOnly(); return; }
     continueAfterTermsOrSession();
   }
   window.kafeAfterAuthSuccess = function (profile) {
+    if (!profile || !profile.id) {
+      showRegisterOnly();
+      try { if (typeof showNotification === 'function') showNotification('پروفایل کاربر از سرور تأیید نشد؛ لطفاً دوباره وارد شوید.', 'error'); } catch (e0) {}
+      return false;
+    }
     markTermsSeenThisSession();
     hide(el('registerScreen')); hide(el('termsScreen')); hide(el('splashScreen')); hideRetryOnline(); hideOfflineDialog(); hideBootLoader();
     window.__kafeOfflineLimited = false;
     try { document.body.classList.remove('is-offline'); } catch (e) {}
-    enterMainApp(profile || getLocalCafeUser());
+    enterMainApp(profile);
+    return true;
   };
   window.acceptTermsAndContinue = function () {
     markTermsSeenThisSession();
@@ -326,14 +338,7 @@
         try { if (typeof showNotification === 'function') showNotification('برای ثبت‌نام باید به اینترنت متصل باشید', 'error'); } catch (e) {}
         return;
       }
-      var appBefore = el('app');
-      var wasAppVisible = appBefore && appBefore.style.display === 'block';
       await prev.apply(this, arguments);
-      var reg = el('registerScreen'); var app = el('app');
-      var loggedIn = app && app.style.display === 'block' && reg && (reg.style.display === 'none' || reg.classList.contains('hidden'));
-      if (loggedIn && !wasAppVisible) {
-        hide(app); hide(reg); window.kafeAfterAuthSuccess(getLocalCafeUser());
-      }
     };
     window.registerUser.__kafeBootV4Patched = true;
     return true;

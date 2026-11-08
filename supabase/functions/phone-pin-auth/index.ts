@@ -127,7 +127,38 @@ Deno.serve(async (req: Request) => {
       const { data: racedProfile, error: racedLookupError } = await findProfile(admin, phone);
       if (racedLookupError) return reply(500, { error: "بررسی حساب پس از درخواست هم‌زمان ناموفق بود." });
       if (racedProfile) return reply(409, { error: "این شماره قبلاً ثبت شده است؛ با شماره و PIN وارد شوید." });
-      return reply(409, { error: "حساب احراز هویت از قبل وجود دارد اما پروفایل متناظر پیدا نشد؛ حساب تکراری ساخته نشد." });
+
+      // بازیابی محدود حساب نیمه‌ساخته: فقط اگر همین PIN واقعاً حساب Auth متناظر
+      // با همین شماره را وارد کند و metadata نیز مالکیت phone-login را تأیید کند.
+      // هیچ رمز عبوری بازنشانی نمی‌شود و حساب/پروفایل دیگری تغییر یا حذف نمی‌شود.
+      const { data: orphanSignIn, error: orphanSignInError } = await auth.auth.signInWithPassword({ email, password: pin });
+      const orphanUser = orphanSignIn && orphanSignIn.user;
+      const metadata = orphanUser && orphanUser.user_metadata ? orphanUser.user_metadata : {};
+      if (!orphanSignInError && orphanSignIn && orphanSignIn.session && orphanUser &&
+          orphanUser.email === email && metadata.phone_login === true && metadata.phone === phone) {
+        const { data: byId, error: byIdError } = await findProfileById(admin, orphanUser.id);
+        if (byIdError) return reply(500, { error: "بررسی پروفایل حساب نیمه‌ساخته ناموفق بود؛ حساب حفظ شده است." });
+        let recoveredProfile = null;
+        if (byId) {
+          if (byId.role !== "user" || (byId.phone && byId.phone !== phone)) {
+            return reply(409, { error: "حساب موجود با این شماره قابل بازیابی خودکار نیست؛ هیچ داده‌ای تغییر نکرد." });
+          }
+          const { data: updated, error: updateError } = await admin.from("profiles")
+            .update({ name: byId.name || name, phone, role: "user", registered_at: byId.registered_at || new Date().toISOString() })
+            .eq("id", orphanUser.id).select("id,name,phone,role,registered_at").single();
+          if (updateError || !updated) return reply(500, { error: "تکمیل پروفایل حساب نیمه‌ساخته ناموفق بود؛ حساب حفظ شده است." });
+          recoveredProfile = updated;
+        } else {
+          const { data: inserted, error: insertError } = await admin.from("profiles").insert({
+            id: orphanUser.id, name: String(metadata.name || name).trim().slice(0, 100),
+            phone, role: "user", registered_at: new Date().toISOString()
+          }).select("id,name,phone,role,registered_at").single();
+          if (insertError || !inserted) return reply(500, { error: "حساب احراز هویت تأیید شد اما تکمیل پروفایل ناموفق بود؛ حساب حذف نشده است." });
+          recoveredProfile = inserted;
+        }
+        return reply(200, { created: false, recovered: true, user: { id: orphanUser.id }, session: orphanSignIn.session, profile: recoveredProfile });
+      }
+      return reply(409, { error: "حساب احراز هویت از قبل وجود دارد اما با این PIN تأیید نشد؛ هیچ حسابی بازنشانی یا حذف نشد." });
     }
 
     // A database trigger may have created the profile already. Reuse/update that same row;

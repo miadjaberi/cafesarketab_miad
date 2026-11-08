@@ -4070,13 +4070,14 @@ async function submitProductOrder() {
             if (!container) return;
             container.addEventListener('scroll', function() {
                 var width = container.offsetWidth || 1;
-                // پشتیبانی از RTL: در برخی مرورگرها scrollLeft منفی است
+                // نقاط دیداری قدیمی حفظ می‌شوند؛ مالک نهایی نوار ناوبری final-nav-fix است.
                 var scrollPos = Math.abs(container.scrollLeft);
                 var index = Math.round(scrollPos / width);
                 if (index > 2) index = 2;
                 if (index < 0) index = 0;
                 updateSwipeDots(index);
-                updateBottomNav(index);
+                if (typeof window.updateBottomNav === 'function') window.updateBottomNav();
+                else updateBottomNav(index);
             });
         }
 
@@ -6010,7 +6011,7 @@ async function submitProductOrder() {
       if(!result || !result.session || !result.session.access_token || !result.session.refresh_token || !result.profile || !result.user || !result.user.id){
         throw new Error('پاسخ سرور کامل نیست؛ نشست ورود دریافت نشد.');
       }
-      if(mode === 'register' && result.created !== true && result.migrated !== true){
+      if(mode === 'register' && result.created !== true && result.migrated !== true && result.recovered !== true){
         throw new Error('این شماره قبلاً ثبت شده است؛ برای مهاجرت امن حساب قدیمی باید نشست قبلی همان حساب روی این دستگاه موجود باشد.');
       }
       if(mode === 'login' && result.created === true){
@@ -6030,17 +6031,26 @@ async function submitProductOrder() {
       }
       try{
         localStorage.setItem('cafeUser', JSON.stringify({
+          id: result.profile.id,
+          user_id: result.profile.id,
           name: result.profile.name || name,
           phone: result.profile.phone || phone,
-          registeredAt: result.profile.registered_at || new Date().toISOString(),
-          user_id: result.profile.id
+          role: result.profile.role || 'user',
+          registeredAt: result.profile.registered_at || new Date().toISOString()
         }));
       }catch(storageError){}
-      var registerScreen = document.getElementById('registerScreen');
-      var app = document.getElementById('app');
-      if(registerScreen) registerScreen.style.display = 'none';
-      if(app) app.style.display = 'block';
-      if(typeof updateUserDisplay === 'function') await updateUserDisplay(result.profile);
+      // فقط پاسخ احراز هویتِ تأییدشده اجازه عبور از صفحه ورود را می‌دهد.
+      // نمایش ظاهری صفحه اصلی دیگر معیار موفقیت ورود نیست.
+      if (typeof window.kafeAfterAuthSuccess === 'function') {
+        var bootAccepted = window.kafeAfterAuthSuccess(result.profile);
+        if (bootAccepted === false) throw new Error('پروفایل تأییدشده برای ورود به برنامه پذیرفته نشد.');
+      } else {
+        var registerScreen = document.getElementById('registerScreen');
+        var app = document.getElementById('app');
+        if(registerScreen) registerScreen.style.display = 'none';
+        if(app) app.style.display = 'block';
+        if(typeof updateUserDisplay === 'function') await updateUserDisplay(result.profile);
+      }
       showNotification(mode === 'register' ? 'ثبت‌نام با موفقیت انجام شد.' : 'ورود با موفقیت انجام شد.');
     }catch(e){
       console.error('phone-pin-auth entry', e);
@@ -6412,29 +6422,9 @@ document.addEventListener('DOMContentLoaded',function(){try{window.applyGalleryI
     })();
   };
 
-  // جلوگیری از اسپلش خودکار قبلی
-  document.addEventListener('DOMContentLoaded', function(){
-    var splash = document.getElementById('splashScreen');
-    if (splash) {
-      splash.classList.add('waiting');
-      splash.style.display = 'none';
-    }
-    var termsAccepted = false;
-    try { termsAccepted = localStorage.getItem('kafeTermsAccepted') === '1'; } catch (e) {}
-    var terms = document.getElementById('termsScreen');
-    var reg = document.getElementById('registerScreen');
-    var app = document.getElementById('app');
-    if (reg) reg.style.display = 'none';
-    if (app) app.style.display = 'none';
-    if (termsAccepted) {
-      if (terms) { terms.style.display = 'none'; terms.classList.add('hidden'); }
-      // ادامه همان مسیر بعد از موافقت قبلی
-      try { if (typeof window.acceptTermsAndContinue === 'function') window.acceptTermsAndContinue(); } catch (eA) {}
-    } else if (terms) {
-      terms.classList.remove('hidden');
-      terms.style.display = 'flex';
-    }
-  }, true);
+  // نمایش شرایط و اسپلش فقط توسط boot-flow-fix.js کنترل می‌شود؛
+  // کنترل‌گر قدیمی DOMContentLoaded حذف شد تا دو مسیر هم‌زمان اجرا نشوند.
+
 })();
 
 
