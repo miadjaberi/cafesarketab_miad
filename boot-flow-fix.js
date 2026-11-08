@@ -1,12 +1,14 @@
-/** boot-flow-fix.js V4.3
+/** boot-flow-fix.js V4.4
  * - تشخیص دسترسی واقعی به Supabase Auth health با GET و timeout
  * - ورود آنلاین فقط با session و پروفایل تأییدشده از سرور
+ * - getSession هم‌زمان با probe (بدون صف جعلی)
  * - مسیر آفلاین محدود فقط با انتخاب صریح کاربر
  * - کنترل یگانه شرایط، اسپلش و انتقال به صفحه ورود
  */
 (function () {
   'use strict';
-  if (window.__KAFE_BOOT_FLOW_V42__) return;
+  if (window.__KAFE_BOOT_FLOW_V44__) return;
+  window.__KAFE_BOOT_FLOW_V44__ = true;
   window.__KAFE_BOOT_FLOW_V42__ = true;
 
   var MIN_SPLASH = 1600;
@@ -52,8 +54,6 @@
         resolve(!!v);
       }
       var probeTok = String(Date.now());
-      // فقط سلامت Supabase معیار آنلاین‌بودن ورود است؛ پاسخ کش‌شدهٔ GitHub Pages
-      // یا fallback صفحه اصلی نباید به‌اشتباه اینترنتِ آمادهٔ احراز هویت تلقی شود.
       var healthUrl = 'https://evxxvnlwtbaqpjbjaxdk.supabase.co/auth/v1/health?_probe=' + probeTok;
       var opts = { method: 'GET', cache: 'no-store', mode: 'cors', credentials: 'omit' };
       try {
@@ -245,37 +245,38 @@
     showBootLoader();
     var finished = false;
     var onlineState = null;
-
-    // مهلت کلی باید مجموع بررسی شبکه، نشست و پروفایل را پوشش دهد؛ وگرنه تایمر ۴ثانیه‌ای زودتر از پاسخ معتبر، صفحه ورود را نشان می‌دهد.
     var safety = setTimeout(function () {
       if (finished) return;
       finished = true;
       hideBootLoader();
       var local = getLocalCafeUser();
-      // ورود محلی فقط پس از تشخیص آفلاین و انتخاب صریح مسیر محدود آفلاین مجاز است.
       if (onlineState === false && local) showOfflineDialog();
       else showRegisterOnly();
-    }, NET_PROBE_TIMEOUT + MAX_SESSION_WAIT + PROFILE_TIMEOUT + 500);
+    }, Math.max(NET_PROBE_TIMEOUT, MAX_SESSION_WAIT) + PROFILE_TIMEOUT + 800);
 
-    probeOnline().then(function (online) {
+    var probeP = probeOnline().then(function (online) {
       onlineState = online;
-      if (finished) return;
-      getSessionSafe().then(function (session) {
-        if (finished) return;
+      return online;
+    });
+    var sessionP = getSessionSafe();
 
-        if (session && session.user) {
-          loadProfile(session.user.id).then(function (profile) {
+    Promise.all([probeP, sessionP])
+      .then(function (pair) {
+        if (finished) return;
+        var online = pair[0];
+        var session = pair[1];
+        onlineState = online;
+
+        if (session && session.user && session.user.id) {
+          return loadProfile(session.user.id).then(function (profile) {
             if (finished) return;
             clearTimeout(safety);
             finished = true;
             hideBootLoader();
-
-            if (profile) {
+            if (profile && profile.id) {
               enterMainApp(profile);
               return;
             }
-
-            // نشست معتبر بدون پروفایل سرور، مجوز ورود به برنامه نیست.
             var local = getLocalCafeUser();
             if (!online && local) {
               showOfflineDialog();
@@ -283,36 +284,33 @@
               showRegisterOnly();
               try {
                 if (typeof showNotification === 'function') {
-                  showNotification('نشست دریافت شد اما پروفایل کاربر از سرور تأیید نشد؛ لطفاً دوباره با شماره و PIN وارد شوید.', 'error');
+                  showNotification('نشست تأیید نشد یا پروفایل از سرور نیامد؛ لطفاً دوباره با شماره و PIN وارد شوید.', 'error');
                 }
               } catch (e) {}
             }
           });
-          return;
         }
 
         clearTimeout(safety);
         finished = true;
         hideBootLoader();
-        var local = getLocalCafeUser();
-        if (!online && local) showOfflineDialog();
+        var local2 = getLocalCafeUser();
+        if (!online && local2) showOfflineDialog();
         else showRegisterOnly();
+      })
+      .catch(function () {
+        if (finished) return;
+        finished = true;
+        clearTimeout(safety);
+        hideBootLoader();
+        showRegisterOnly();
       });
-    }).catch(function () {
-      if (finished) return;
-      finished = true;
-      clearTimeout(safety);
-      hideBootLoader();
-      showRegisterOnly();
-    });
   }
   function afterSplashRoute() {
     if (!termsSeenThisSession()) { showTermsOnly(); return; }
     continueAfterTermsOrSession();
   }
   window.kafeAfterAuthSuccess = function (profile) {
-    // ورود آنلاین فقط با پروفایل واقعی و دارای شناسهٔ سرور پذیرفته می‌شود؛
-    // دادهٔ محلی به‌تنهایی هرگز مجوز ورود آنلاین نیست.
     if (!profile || !profile.id) {
       showRegisterOnly();
       try { if (typeof showNotification === 'function') showNotification('پروفایل کاربر از سرور تأیید نشد؛ لطفاً دوباره وارد شوید.', 'error'); } catch (e0) {}
@@ -340,8 +338,6 @@
         try { if (typeof showNotification === 'function') showNotification('برای ثبت‌نام باید به اینترنت متصل باشید', 'error'); } catch (e) {}
         return;
       }
-      // نتیجه را فقط خود مسیر احراز هویت تعیین می‌کند؛
-      // از تغییر display صفحه‌ها برای حدس‌زدن موفقیت استفاده نکن.
       await prev.apply(this, arguments);
     };
     window.registerUser.__kafeBootV4Patched = true;
