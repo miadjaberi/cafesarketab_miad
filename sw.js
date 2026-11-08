@@ -1,5 +1,5 @@
 /* کافه سرکتاب میعاد — Service Worker */
-const CACHE_VERSION = 'kafe-miad-v22.80-stable-20261107b';
+const CACHE_VERSION = 'kafe-miad-v22.81-offline-20261108a';
 const SHELL_CACHE = `shell-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = [
@@ -13,13 +13,13 @@ const PRECACHE_URLS = [
   './dalil-images-fix.js',
   './pwa-icon-dynamic.js',
   './app.js',
-  './vip-offline-cache.js?v=20261107a',
+  './vip-offline-cache.js?v=20261108a',
   './pwa-register.js',
   './ui-layer-fix.js',
-  './boot-flow-fix.js?v=20261107a',
-  './nav-swipe-fix.js?v=20261106e',
-  './buy-nav-fix.js?v=20261106e',
-  './final-nav-fix.js?v=20261106e',
+  './boot-flow-fix.js?v=20261108a',
+  './nav-swipe-fix.js?v=20261108a',
+  './buy-nav-fix.js?v=20261108a',
+  './final-nav-fix.js?v=20261108a',
   './kafe-seven-fixes.js?v=20261106e',
   './fix-four-bugs.js?v=20261106e',
   './hamzad-ui-fix.js?v=20261106e',
@@ -44,7 +44,8 @@ const PRECACHE_URLS = [
   './theme-lock.css',
   './fonts/vazirmatn.css',
   './fonts/Vazirmatn-wght.woff2',
-  './manifest.webmanifest'
+  './manifest.webmanifest',
+  './vendor/supabase-js.min.js'
 ];
 
 self.addEventListener('install', (event) => {
@@ -52,7 +53,6 @@ self.addEventListener('install', (event) => {
     caches.open(SHELL_CACHE).then((cache) =>
       Promise.all(PRECACHE_URLS.map((url) =>
         cache.add(new Request(url, { cache: 'reload' })).catch((error) => {
-          // یک فایل اختیاریِ ناموجود نباید کل کش پوسته را از نصب بازدارد.
           console.warn('[Kafe SW] precache skipped:', url, error);
         })
       ))
@@ -129,8 +129,6 @@ self.addEventListener('fetch', (event) => {
       .catch(() =>
         caches.match(req).then((cached) => {
           if (cached) return cached;
-          // فقط navigation می‌تواند fallback صفحه اصلی بگیرد؛
-          // تصویر/CSS/فونت نباید پاسخ HTML دریافت کند.
           if (req.mode === 'navigate') {
             return caches.match('./index.html').then((shell) => shell || Response.error());
           }
