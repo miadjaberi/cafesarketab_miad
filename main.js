@@ -6031,17 +6031,26 @@ async function submitProductOrder() {
       }
       try{
         localStorage.setItem('cafeUser', JSON.stringify({
+          id: result.profile.id,
+          user_id: result.profile.id,
           name: result.profile.name || name,
           phone: result.profile.phone || phone,
-          registeredAt: result.profile.registered_at || new Date().toISOString(),
-          user_id: result.profile.id
+          role: result.profile.role || 'user',
+          registeredAt: result.profile.registered_at || new Date().toISOString()
         }));
       }catch(storageError){}
-      var registerScreen = document.getElementById('registerScreen');
-      var app = document.getElementById('app');
-      if(registerScreen) registerScreen.style.display = 'none';
-      if(app) app.style.display = 'block';
-      if(typeof updateUserDisplay === 'function') await updateUserDisplay(result.profile);
+      // فقط پاسخ احراز هویتِ تأییدشده اجازه عبور از صفحه ورود را می‌دهد.
+      // نمایش ظاهری صفحه اصلی دیگر معیار موفقیت ورود نیست.
+      if (typeof window.kafeAfterAuthSuccess === 'function') {
+        var bootAccepted = window.kafeAfterAuthSuccess(result.profile);
+        if (bootAccepted === false) throw new Error('پروفایل تأییدشده برای ورود به برنامه پذیرفته نشد.');
+      } else {
+        var registerScreen = document.getElementById('registerScreen');
+        var app = document.getElementById('app');
+        if(registerScreen) registerScreen.style.display = 'none';
+        if(app) app.style.display = 'block';
+        if(typeof updateUserDisplay === 'function') await updateUserDisplay(result.profile);
+      }
       showNotification(mode === 'register' ? 'ثبت‌نام با موفقیت انجام شد.' : 'ورود با موفقیت انجام شد.');
     }catch(e){
       console.error('phone-pin-auth entry', e);
