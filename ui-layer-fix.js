@@ -80,7 +80,6 @@
       try {
         if (document.querySelector('script[data-kafe-patch="' + key + '"]')) return;
         var s = document.createElement('script');
-        // اجرای اصلاحیه‌ها باید به ترتیب فهرست تزریق باشد؛ async پیش‌فرض ترتیب را می‌شکند.
         s.async = false;
         s.src = src;
         s.defer = false;
@@ -88,10 +87,10 @@
         (document.body || document.documentElement).appendChild(s);
       } catch (e) {}
     }
-    inject('./boot-flow-fix.js?v=20261107a', 'boot-flow');
-    inject('./nav-swipe-fix.js?v=20261106e', 'nav-swipe');
-    inject('./buy-nav-fix.js?v=20261106e', 'buy-nav');
-    inject('./final-nav-fix.js?v=20261106e', 'final-nav');
+    inject('./boot-flow-fix.js?v=20261108a', 'boot-flow');
+    inject('./nav-swipe-fix.js?v=20261108a', 'nav-swipe');
+    inject('./buy-nav-fix.js?v=20261108a', 'buy-nav');
+    inject('./final-nav-fix.js?v=20261108a', 'final-nav');
     inject('./kafe-seven-fixes.js?v=20261106e', 'seven');
     inject('./fix-four-bugs.js?v=20261106e', 'four-bugs');
     inject('./hamzad-ui-fix.js?v=20261106e', 'hamzad-ui');
@@ -102,7 +101,5 @@
     inject('./ui-unify-v1.js?v=20261106e', 'ui-unify');
     inject('./admin-ui-four-fixes.js?v=20261106e', 'admin-four');
     inject('./admin-messages-session-fix.js?v=20261107a', 'msg-session');
-
-    // ابزار QA به درخواست مدیر فعلاً از مسیر اجرای عادی برنامه خارج است.
   })();
 })();
