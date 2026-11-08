@@ -126,7 +126,17 @@ self.addEventListener('fetch', (event) => {
         }
         return res;
       })
-      .catch(() => caches.match(req).then((c) => c || caches.match('./index.html')))
+      .catch(() =>
+        caches.match(req).then((cached) => {
+          if (cached) return cached;
+          // فقط navigation می‌تواند fallback صفحه اصلی بگیرد؛
+          // تصویر/CSS/فونت نباید پاسخ HTML دریافت کند.
+          if (req.mode === 'navigate') {
+            return caches.match('./index.html').then((shell) => shell || Response.error());
+          }
+          return Response.error();
+        })
+      )
   );
 });
 
