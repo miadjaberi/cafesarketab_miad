@@ -134,6 +134,14 @@
         ensureDots();
         syncNavigation();
       }, { passive: true });
+      /* صفحه خرید ممکن است کمی بعد و توسط buy-nav-fix ساخته شود. */
+      try {
+        var pageObserver = new MutationObserver(function () {
+          ensureDots();
+          syncNavigation();
+        });
+        pageObserver.observe(container, { childList: true });
+      } catch (e) {}
     }
     var grid = document.getElementById('modalsHomeGrid');
     if (grid && !grid.__kafeTermsTitleWatch) {
