@@ -171,7 +171,7 @@
       if (b.classList.contains('center-btn')) continue;
       var oc = b.getAttribute('onclick') || '';
       var label = (b.textContent || '').replace(/\s+/g, ' ').trim();
-      if (oc.indexOf('openSubOrdersPanel') >= 0 || label.indexOf('خرید') >= 0) return b;
+      if (oc.indexOf('openSubOrdersPanel') >= 0 || oc.indexOf('pageBuy') >= 0 || label.indexOf('خرید') >= 0) return b;
     }
     return null;
   }
