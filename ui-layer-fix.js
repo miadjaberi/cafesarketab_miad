@@ -2,7 +2,6 @@
 (function () {
   'use strict';
 
-  /* فلگ ماندگار نسخه‌های قدیمی را در هر بار اجرای برنامه بی‌اثر و پاک کن. */
   try { localStorage.removeItem('kafeQA'); } catch (eLegacyQA) {}
 
   function closeSettings() {
@@ -87,10 +86,10 @@
         (document.body || document.documentElement).appendChild(s);
       } catch (e) {}
     }
-    inject('./boot-flow-fix.js?v=20261108a', 'boot-flow');
-    inject('./nav-swipe-fix.js?v=20261108a', 'nav-swipe');
-    inject('./buy-nav-fix.js?v=20261108a', 'buy-nav');
-    inject('./final-nav-fix.js?v=20261108a', 'final-nav');
+    inject('./boot-flow-fix.js?v=20261108b', 'boot-flow');
+    inject('./nav-swipe-fix.js?v=20261108b', 'nav-swipe');
+    inject('./buy-nav-fix.js?v=20261108b', 'buy-nav');
+    inject('./final-nav-fix.js?v=20261108b', 'final-nav');
     inject('./kafe-seven-fixes.js?v=20261106e', 'seven');
     inject('./fix-four-bugs.js?v=20261106e', 'four-bugs');
     inject('./hamzad-ui-fix.js?v=20261106e', 'hamzad-ui');
