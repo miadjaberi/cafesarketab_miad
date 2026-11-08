@@ -311,11 +311,19 @@
     continueAfterTermsOrSession();
   }
   window.kafeAfterAuthSuccess = function (profile) {
+    // ورود آنلاین فقط با پروفایل واقعی و دارای شناسهٔ سرور پذیرفته می‌شود؛
+    // دادهٔ محلی به‌تنهایی هرگز مجوز ورود آنلاین نیست.
+    if (!profile || !profile.id) {
+      showRegisterOnly();
+      try { if (typeof showNotification === 'function') showNotification('پروفایل کاربر از سرور تأیید نشد؛ لطفاً دوباره وارد شوید.', 'error'); } catch (e0) {}
+      return false;
+    }
     markTermsSeenThisSession();
     hide(el('registerScreen')); hide(el('termsScreen')); hide(el('splashScreen')); hideRetryOnline(); hideOfflineDialog(); hideBootLoader();
     window.__kafeOfflineLimited = false;
     try { document.body.classList.remove('is-offline'); } catch (e) {}
-    enterMainApp(profile || getLocalCafeUser());
+    enterMainApp(profile);
+    return true;
   };
   window.acceptTermsAndContinue = function () {
     markTermsSeenThisSession();
@@ -332,14 +340,9 @@
         try { if (typeof showNotification === 'function') showNotification('برای ثبت‌نام باید به اینترنت متصل باشید', 'error'); } catch (e) {}
         return;
       }
-      var appBefore = el('app');
-      var wasAppVisible = appBefore && appBefore.style.display === 'block';
+      // نتیجه را فقط خود مسیر احراز هویت تعیین می‌کند؛
+      // از تغییر display صفحه‌ها برای حدس‌زدن موفقیت استفاده نکن.
       await prev.apply(this, arguments);
-      var reg = el('registerScreen'); var app = el('app');
-      var loggedIn = app && app.style.display === 'block' && reg && (reg.style.display === 'none' || reg.classList.contains('hidden'));
-      if (loggedIn && !wasAppVisible) {
-        hide(app); hide(reg); window.kafeAfterAuthSuccess(getLocalCafeUser());
-      }
     };
     window.registerUser.__kafeBootV4Patched = true;
     return true;
