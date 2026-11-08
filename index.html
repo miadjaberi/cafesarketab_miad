@@ -39,14 +39,14 @@
     <link rel="stylesheet" href="./styles.css?v=22.46" />
     <link rel="stylesheet" href="./theme-atelier.css?v=22.46" />
     <link rel="manifest" href="./manifest.webmanifest" />
-    <link rel="stylesheet" href="./theme-lock.css?v=22.46">
+    <link rel="stylesheet" href="./theme-lock.css?v=22.46" />\n    <link rel="stylesheet" href="./ui-flow-coherence.css?v=20261108a" />
 </head>
 <body>
 <div id="offlineBanner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:10080;background:#b45309;color:#fff;text-align:center;padding:8px 12px;font-size:0.82rem;font-weight:700;">📡 اتصال نیست — فقط ابزارهای محلی در دسترس‌اند</div>
 
 
 
-    <!-- ===== قبول شرایط (قبل از اسپلش — هر بار) ===== -->
+    <!-- ===== صفحه شرایط — پس از پایان اسپلش نمایش داده می‌شود ===== -->
     <div id="termsScreen" style="display:none;">
         <div class="terms-inner">
             <div class="terms-header">
@@ -208,49 +208,33 @@
     <div id="app" style="display:none;">
 
         <!-- ===== HEADER ===== -->
-                        <header>
-            <div class="header-top" style="display:flex;flex-direction:row;align-items:center;justify-content:space-between;width:100%;gap:6px;">
-                <div class="header-left" style="display:flex;flex-direction:column;gap:6px;width:70px;min-width:70px;max-width:70px;flex:0 0 70px;">
-                    <div class="header-datetime" style="display:flex;flex-direction:column;gap:6px;width:100%;">
-                        <button class="header-btn" style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;min-height:42px;padding:6px 4px;gap:3px;" onclick="showNotification('📅 ' + new Date().toLocaleDateString('fa-IR'))">
-                            <i class="fas fa-calendar-alt"></i>
-                            <span class="header-label" id="dateDisplay">۱۴۰۴/۰۵/۱۴</span>
-                        </button>
-                        <button class="header-btn" style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;min-height:42px;padding:6px 4px;gap:3px;" onclick="showNotification('🕐 ' + new Date().toLocaleTimeString('fa-IR'))">
-                            <i class="fas fa-clock"></i>
-                            <span class="header-label" id="timeDisplay">۲۱:۵۸</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="header-brand" id="headerBrandLogo" onclick="kafeLogoTap()" style="flex:1 1 auto;min-width:0;display:flex;align-items:center;justify-content:center;cursor:pointer;">
-                    <div class="brand-background">
-                        <div class="brand-pattern"></div>
-                        <div class="brand-content">
-                            <img class="brand-logo-img" id="headerLogoImg" alt="لوگو" src="./icon192.png" />
-                            <span class="brand-text">کافه سرکتاب میعاد</span>
-                            <span class="brand-sub">✦ الملک القدوس ✦</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="header-right" style="display:flex;flex-direction:column;gap:6px;width:70px;min-width:70px;max-width:70px;flex:0 0 70px;">
-                    <div class="header-notifications" style="display:flex;flex-direction:column;gap:6px;width:100%;">
-                        <button type="button" id="notifBellBtn" class="header-btn notif-bell-btn" style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;min-height:42px;padding:6px 4px;gap:3px;position:relative;" onclick="showNotifications()">
-                            <i class="fas fa-bell"></i>
-                            <span class="header-label">اعلان‌ها</span>
-                            <span class="badge" id="notifBadge">0</span>
-                        </button>
-                        <button class="header-btn" style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;min-height:42px;padding:6px 4px;gap:3px;" onclick="window.open('https://google.com','_blank')">
-                            <i class="fab fa-google"></i>
-                            <span class="header-label">گوگل</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-        </header>
-
+                        <header class="app-header" aria-label="سربرگ کافه سرکتاب میعاد">
+  <div class="header-top">
+    <div class="header-brand" id="headerBrandLogo" onclick="kafeLogoTap()" role="button" tabindex="0" aria-label="بازگشت به هویت کافه سرکتاب میعاد">
+      <div class="brand-background">
+        <div class="brand-content">
+          <img class="brand-logo-img" id="headerLogoImg" alt="لوگوی کافه سرکتاب میعاد" src="./icon192.png" />
+          <span class="brand-text">کافه سرکتاب میعاد</span>
+          <span class="brand-sub">✦ الملک القدوس ✦</span>
+        </div>
+      </div>
+    </div>
+    <div class="header-left" aria-label="دسترسی‌های سریع">
+      <button type="button" class="header-btn" aria-label="نمایش تاریخ" title="تاریخ" onclick="showNotification('📅 ' + new Date().toLocaleDateString('fa-IR'))">
+        <i class="fas fa-calendar-alt" aria-hidden="true"></i><span class="header-label" id="dateDisplay">۱۴۰۴/۰۵/۱۴</span>
+      </button>
+      <button type="button" class="header-btn" aria-label="نمایش ساعت" title="ساعت" onclick="showNotification('🕐 ' + new Date().toLocaleTimeString('fa-IR'))">
+        <i class="fas fa-clock" aria-hidden="true"></i><span class="header-label" id="timeDisplay">۲۱:۵۸</span>
+      </button>
+      <button type="button" id="notifBellBtn" class="header-btn notif-bell-btn" aria-label="اعلان‌ها" title="اعلان‌ها" onclick="showNotifications()">
+        <i class="fas fa-bell" aria-hidden="true"></i><span class="header-label">اعلان‌ها</span><span class="badge" id="notifBadge">0</span>
+      </button>
+      <button type="button" class="header-btn" aria-label="باز کردن گوگل" title="وب" onclick="window.open('https://google.com','_blank','noopener')">
+        <i class="fas fa-globe" aria-hidden="true"></i><span class="header-label">وب</span>
+      </button>
+    </div>
+  </div>
+</header>
 
 
         <!-- ===== PAGES CONTAINER (Swipe) ===== -->
@@ -270,7 +254,7 @@
                         این برنامه مرجعی جامع برای علاقه‌مندان به علوم غریبه، جفر، رمل، اعداد و طالع‌بینی است.
                     </p>
                     <p style="color:var(--txt-body,#F5F0E4);line-height:1.85;text-align:justify;font-size:0.9rem;margin-bottom:10px;">
-                        در این برنامه می‌توانید با <strong style="color:var(--txt-title,#F0D878);">۱۸ مودال تخصصی</strong> آشنا شوید.
+                        در این برنامه می‌توانید با <strong style="color:var(--txt-title,#F0D878);">مجموعه‌ای از مودال‌های تخصصی</strong> آشنا شوید.
                     </p>
                     <div style="margin-top:16px;padding:12px;background:rgba(201,168,76,0.08);border-radius:10px;border:1px solid rgba(255,215,0,0.15);">
                         <p style="color:var(--txt-title,#F0D878);font-weight:700;text-align:center;font-size:0.9rem;">🌟 ارتباط با استاد میعاد</p>
@@ -1983,9 +1967,9 @@
 
         <div class="modal-glass" id="developingModal">
   <div class="modal-glass-content">
-    <div class="modal-glass-header"><div class="modal-glass-logo">📋</div><div class="modal-glass-title">شرح حال</div><button class="modal-glass-close" onclick="closeModalGlass('developingModal')">✕</button></div>
+    <div class="modal-glass-header"><div class="modal-glass-logo">📜</div><div class="modal-glass-title">شرایط</div><button class="modal-glass-close" onclick="closeModalGlass('developingModal')">✕</button></div>
     <div class="modal-glass-body">
-      <div class="modal-guide">متن کامل شرایط و ضوابط برای مطالعه در همین پنجره نمایش داده می‌شود.</div>
+      <div class="modal-guide">متن شرایط و ضوابط کافه سرکتاب میعاد را در همین پنجره مطالعه کنید.</div>
       <div id="profileTermsContent" aria-label="متن کامل شرایط و ضوابط" style="max-height:55vh;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;width:100%;box-sizing:border-box;padding:8px 2px;"></div>
       <div id="profileTermsAcknowledgement" style="margin-top:14px;padding:12px;border:1px solid rgba(201,168,76,.45);border-radius:14px;background:rgba(255,255,255,.04);">
         <label for="profileTermsAgreeCheck" style="display:flex;align-items:flex-start;gap:10px;color:#F7F0E4;font-size:.9rem;line-height:1.8;">
