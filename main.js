@@ -6011,7 +6011,7 @@ async function submitProductOrder() {
       if(!result || !result.session || !result.session.access_token || !result.session.refresh_token || !result.profile || !result.user || !result.user.id){
         throw new Error('پاسخ سرور کامل نیست؛ نشست ورود دریافت نشد.');
       }
-      if(mode === 'register' && result.created !== true && result.migrated !== true){
+      if(mode === 'register' && result.created !== true && result.migrated !== true && result.recovered !== true){
         throw new Error('این شماره قبلاً ثبت شده است؛ برای مهاجرت امن حساب قدیمی باید نشست قبلی همان حساب روی این دستگاه موجود باشد.');
       }
       if(mode === 'login' && result.created === true){
