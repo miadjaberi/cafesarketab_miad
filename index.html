@@ -1,1 +1,197 @@
-PLACEHOLDER
+<!DOCTYPE html>
+<!-- کافه سرکتاب میعاد — V700.7 -->
+<html lang="fa" dir="rtl">
+<head>
+    <!-- Critical safety helpers must run first (before any other script) -->
+<meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=5.0, viewport-fit=cover" />
+    <title>کافه سرکتاب میعاد — V700.7</title>
+    <meta name="description" content="کافه سرکتاب میعاد — آموزش، محتوا و فروش محصولات علوم حروف، ابجد، رمل و مشاوره تخصصی">
+    <meta name="theme-color" content="#070B14">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="کافه میعاد">
+    <meta name="application-name" content="کافه سرکتاب میعاد">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="کافه سرکتاب میعاد">
+    <meta property="og:description" content="آموزش، محتوا و فروش محصولات علوم حروف، ابجد، رمل و مشاوره تخصصی">
+    <meta property="og:locale" content="fa_IR">
+    <meta property="og:image" content="./icon512.png">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="کافه سرکتاب میعاد">
+    <meta name="twitter:description" content="آموزش، محتوا و فروش محصولات">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://evxxvnlwtbaqpjbjaxdk.supabase.co; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' data: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.gstatic.com; img-src 'self' data: blob: https://*.supabase.co https://evxxvnlwtbaqpjbjaxdk.supabase.co; connect-src 'self' https://evxxvnlwtbaqpjbjaxdk.supabase.co https://*.supabase.co wss://evxxvnlwtbaqpjbjaxdk.supabase.co wss://*.supabase.co https://cdn.jsdelivr.net https://api.alquran.cloud https://api.quran.com; worker-src 'self'; manifest-src 'self'; media-src 'self' blob:; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
+    <link rel="icon" href="./favicon.png" type="image/png" sizes="128x128">
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" sizes="180x180">
+    <link rel="apple-touch-icon" href="./icon192.png" sizes="192x192">
+
+
+    <!-- Favicon (same base64 as original) -->
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link href="./fonts/vazirmatn.css?v=local1" rel="stylesheet" />
+    <!-- Supabase: SDK محلی اول (آفلاین) + لودر CDN فقط اگر محلی نبود -->
+    <script src="./vendor/supabase-js.min.js"></script>
+    <script src="./offline-supabase-loader.js?v=20261108a"></script>
+
+    <!-- Main styles (original already expected this file) -->
+    <!-- Small extracted style blocks -->
+    
+    <link rel="stylesheet" href="./styles.css?v=22.46" />
+    <link rel="stylesheet" href="./theme-atelier.css?v=22.46" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="stylesheet" href="./theme-lock.css?v=22.46">
+</head>
+<body>
+<div id="offlineBanner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:10080;background:#b45309;color:#fff;text-align:center;padding:8px 12px;font-size:0.82rem;font-weight:700;">📡 اتصال نیست — فقط ابزارهای محلی در دسترس‌اند</div>
+
+
+
+    <!-- ===== قبول شرایط (قبل از اسپلش — هر بار) ===== -->
+    <div id="termsScreen" style="display:none;">
+        <div class="terms-inner">
+            <div class="terms-header">
+                <h1>بسم الله الرحمن الرحیم</h1>
+                <p>شرایط، احتیاط‌ها و تعهدات ورود به کافه سرکتاب میعاد</p>
+            </div>
+
+            <div class="terms-card">
+                <h3>۱. توکل و عدم قطعیت</h3>
+                <p>
+                    تمام محاسبات، استخراج‌ها و نتایج این برنامه صرفاً بر پایه روش‌های سنتی علوم حروف، ابجد، رمل و تجربیات منقول است
+                    و <strong>هیچ قطعیت شرعی یا علمی مطلقی</strong> بر آن‌ها مترتب نیست.
+                    نتیجه نهایی بسته به مشیت الهی، نیت، طهارت و شرایط فرد متفاوت است.
+                </p>
+                <div class="terms-ayah">
+                    «وَمَا تَشَاءُونَ إِلَّا أَن يَشَاءَ اللَّهُ»<br>
+                    <small style="opacity:0.9;">و شما نمی‌خواهید مگر آنکه خدا بخواهد — تکویر ۳۰</small>
+                </div>
+                <p>
+                    کاربر با آگاهی کامل می‌پذیرد که این ابزارها <strong>جایگزین توکل، دعا، مشورت عالم دینی و تشخیص پزشک</strong> نیستند.
+                </p>
+            </div>
+
+            <div class="terms-card">
+                <h3>۲. طهارت بدن و مکان</h3>
+                <p>
+                    در سنت اهل معرفت، ورود به اعمال مرتبط با اسماء، اوراد، رمل و استخراج موکل نیازمند
+                    <strong>طهارت بدن، لباس و مکان</strong> است.
+                    توصیه اکید است پیش از هر محاسبه یا عمل:
+                </p>
+                <p>
+                    • با وضو یا غسل متناسب باشید<br>
+                    • مکان پاک و آرام باشد<br>
+                    • از لهو، غفلت و نیت ناصالح پرهیز شود<br>
+                    • ذکر و توجه قلبی فراموش نشود
+                </p>
+            </div>
+
+            <div class="terms-card">
+                <h3>۳. اصول اخلاقی سرکتاب</h3>
+                <p>
+                    استفاده از دانش حروف و اسرار نباید برای <strong>ضرر به دیگران، سحر حرام، تجسس نامشروع یا فریب</strong> باشد.
+                    مسئولیت نیت و عمل بر عهده خود کاربر است.
+                </p>
+                <div class="terms-ayah">
+                    «إِنَّمَا يَتَقَبَّلُ اللَّهُ مِنَ الْمُتَّقِينَ»<br>
+                    <small style="opacity:0.9;">خداوند فقط از پرهیزگاران می‌پذیرد — مائده ۲۷</small>
+                </div>
+            </div>
+
+            <div class="terms-card">
+                <h3>۴. آداب و شرایط صحیح سرکتاب</h3>
+                <p>
+                    سرکتاب در سنت اهل معرفت، صرفاً یک محاسبه خشک نیست؛ بلکه عملی است که با
+                    <strong>نیت، طهارت، زمان و ادب حضور</strong> پیوند دارد.
+                    رعایت آداب زیر برای صحت معنوی کار توصیه می‌شود:
+                </p>
+                <p>
+                    <strong>الف) نیت:</strong>
+                    نیت باید خالص، مشروع و خالی از ضرر به دیگران باشد.
+                    هدف از سرکتاب، طلب فهم، گشایش حلال، یا راهنمایی در مسیر خیر است؛ نه کنجکاوی بیهوده یا آزمایش خداوند.
+                </p>
+                <p>
+                    <strong>ب) طهارت:</strong>
+                    بدن، لباس و مکان حتی‌الامکان پاک باشد.
+                    با وضو بنشینید، رو به قبله بودن پسندیده است، و از مکان‌های آلوده، شلوغ یا پر از لهو دوری کنید.
+                </p>
+                <p>
+                    <strong>ج) حضور قلب:</strong>
+                    پیش از شروع، لحظه‌ای ذکر و توجه داشته باشید.
+                    عجله، عصبانیت، خستگی شدید یا ذهن پریشان، کیفیت کار را پایین می‌آورد.
+                </p>
+                <p>
+                    <strong>د) صداقت در اطلاعات:</strong>
+                    نام، نام مادر و سایر داده‌ها را تا حد ممکن دقیق و بدون تحریف وارد کنید.
+                    اطلاعات نادرست، نتیجه را از مسیر خارج می‌کند.
+                </p>
+                <p>
+                    <strong>هـ) ادب نتیجه:</strong>
+                    پس از مشاهده نتیجه، شکر کنید، عجله در قضاوت نکنید، و در امور مهم با
+                    <strong>عالم دینی و افراد امین</strong> نیز مشورت نمایید.
+                    نتیجه سرکتاب به‌تنهایی حجت قطعی شرعی نیست.
+                </p>
+                <p>
+                    <strong>و) زمان مناسب:</strong>
+                    بهتر است در ساعات آرامش و پاکی انجام شود.
+                    از ایام و حالات مکروه (از جمله روزهای ۲۷ تا ۲۹ ماه قمری، و نیز حال جنابت یا بی‌طهارتی) پرهیز شود.
+                </p>
+            </div>
+
+            <div class="terms-card">
+                <h3>۵. پرهیز از تفریح و تکرار بی‌مورد</h3>
+                <p>
+                    <strong>برای تفریح و سرگرمی</strong> اقدام به انجام سرکتاب نکنید.
+                    سرکتاب امری جدی است و باید با نیت صادق، طهارت و آمادگی قلبی انجام شود؛ نه از روی کنجکاوی لحظه‌ای یا شوخی.
+                </p>
+                <p>
+                    از <strong>تکرار سرکتاب در چندین نوبت</strong> با یک نیت واحد جداً احتیاط کنید.
+                    اصرار و تکرار پیاپی بدون فاصله و تأمل، نه تنها نتیجه را روشن‌تر نمی‌کند، بلکه ممکن است موجب تشویش نیت و سردرگمی شود.
+                </p>
+            </div>
+
+            <div class="terms-card">
+                <h3>۶. روزهای آخر ماه عربی</h3>
+                <p>
+                    از انجام سرکتاب در <strong>روزهای پایانی ماه قمری (عربی) یعنی ۲۷، ۲۸ و ۲۹</strong> هر ماه عربی پرهیز کنید.
+                    در سنت اهل این علوم، این ایام برای استخراج و عمل توصیه نمی‌شود.
+                </p>
+            </div>
+
+            <div class="terms-card">
+                <h3>۷. پذیرش مسئولیت</h3>
+                <p>
+                    با فشردن دکمه «موافقم»، تأیید می‌کنید که:
+                    مطالب فوق را خوانده‌اید، به محدودیت نتایج آگاهید،
+                    و هرگونه بهره‌برداری را با <strong>توکل به خداوند</strong> و رعایت شرع انجام می‌دهید.
+                    این تأیید در <strong>هر بار ورود</strong> به برنامه لازم است.
+                </p>
+            </div>
+        </div>
+        <div class="terms-footer-bar">
+            <button type="button" class="terms-agree-btn" onclick="acceptTermsAndContinue()">✓ موافقم — ورود به برنامه</button>
+        </div>
+    </div>
+
+    <!-- ===== SPLASH ===== -->
+    <!-- تصویر اسپلش فقط از پنل ادمین (Storage) اعمال می‌شود؛ هیچ تصویر هاردکد وجود ندارد -->
+    <div id="splashScreen" style="display:flex;">
+        <img class="splash-bg-img" id="splashBgImg" alt="" style="display:none;" />
+        <div class="splash-dim"></div>
+        <div class="splash-bg-glow"></div>
+        <div class="splash-center" style="position:relative;z-index:2;">
+            <div class="splash-verse">✦ الملک القدوس ✦</div>
+            <div class="splash-loader"><div class="splash-loader-bar" id="splashLoaderBar"></div></div>
+            <div class="splash-version">نسخه V700.7</div>
+        </div>
+    </div>
+
+    <!-- ===== REGISTER ===== -->
+    <div id="registerScreen">
+        <div class="register-box">
+            <img class="register-logo-img" id="registerLogoImg" alt="لوگو" src="./icon192.png" onclick="kafeRegisterAdminTap()" style="cursor:pointer;-webkit-user-select:none;user-select:none;" />
+            <div class="register-title">کافه سرکتاب میعاد</div>
+            <div class="register-sub" id="authModeDescription">برای ثبت‌نام، نام، شماره تماس و PIN دلخواه ۸ تا ۱۲ رقمی را وارد کنید.</div>
+            <input type="text" class="register-input" id="regName" placeholder="نام و نام خانوادگی" autocomplete="name">
+            <input type="tel" class="register-input" id="regPhone" placeholder="شماره تماس" inputmode="tel" autocomplete="tel" maxlength="11">
