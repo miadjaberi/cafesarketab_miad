@@ -1,1 +1,15 @@
-PLACEHOLDER
+/* styles.css — استایل پایه؛ رنگ و قانون متن نهایی در theme-lock.css است.
+ارتفاع هدر یکسان: 152px */
+/* === CAFE TEXT TOKENS (source of truth via theme-lock) === */
+:root {
+  --txt-title: #F0D878;
+  --txt-body: #F5F0E4;
+  --txt-answer: #F5F0E4;
+  --txt-hint: #C8C0B0;
+  --txt-label: #E8DFD0;
+  --text: #F5F0E4;
+  --text-soft: #D4CBB8;
+  --text-secondary: #C8C0B0;
+  --gold-bright: #F0D878;
+  --gold: #C9A84C;
+}
