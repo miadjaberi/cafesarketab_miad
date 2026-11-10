@@ -1,9 +1,9 @@
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&','<':'<','>':'>','"':'"',"'":'&#39;'}[c]));
 const HAS=typeof claude!=='undefined';let U=null,C=null,db=null,ART='',bi=0,ci=1,ti=0,bt,cur='home',lq='',lc='',curArg=0;
 const LG=`<svg id="lg" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M20 6c1 4 3 6 6 7-3 1-5 3-6 7-1-4-3-6-6-7 3-1 5-3 6-7zM6 22c5-1 10 0 14 4 4-4 9-5 14-4v10c-5-1-10 0-14 3-4-3-9-4-14-3z"/><path d="M20 26v10"/></svg>`;
 const im=u=>/^(\/_blob\/[0-9a-f]+|data:image\/)/.test(u||'')?u:'';
-const GR=['linear-gradient(160deg,#1a1630,#0d0a20)','linear-gradient(170deg,#1a1630,#0d0a20)','linear-gradient(170deg,#1a1630,#0d0a20)','linear-gradient(170deg,#1a1630,#0d0a20)','linear-gradient(170deg,#1a1630,#0d0a20)'];
+const GR=['#1a1630','#1a1630','#1a1630','#1a1630','#1a1630'];
 const D={brand:{name:'اسرار ازل',sub:'سرکتاب • رمل • مکاشفه',logo:'',tg:'khatmjaberi'},
 banners:[{t:'اسرار ازل\nپرده رازها',p:'در این سرا، سرکتاب و رمل و مکاشفه با هم جمع‌اند. با نیت پاک قدم بگذار.',b:'ورود',img:'',go:'lib'},{t:'اشتراک ویژه،\nدسترسی کامل',p:'با اشتراک، به ابزارها و محتوای ویژه دسترسی داشته باشید.',b:'مشاهده اشتراک‌ها',img:'',go:'cafe'},{t:'ابزارهای\nتخصصی',p:'ابجد، رمل، دلیل الحیران، همزاد و اسماء الحسنی در اختیار شماست.',b:'مشاهده ابزارها',img:'',go:'istk'},{t:'دعاها و اذکار\nویژه',p:'دعاها و اذکار منتخب را بخوانید و در آرامش همراهشان باشید.',b:'مشاهده دعاها',img:'',go:'comm'}],
 quick:[{t:'فروشگاه',s:'دسته‌بندی و جستجو',pg:'lib'},{t:'اشتراک‌ها و پیام‌ها',s:'ارتباط با مدیریت',pg:'cafe'},{t:'مودال‌ها',s:'ابزارهای تخصصی',pg:'istk'},{t:'دعاها و اذکار ویژه',s:'منتخب برای شما',pg:'comm'}],
