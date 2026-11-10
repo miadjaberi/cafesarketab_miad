@@ -60,7 +60,7 @@ header{display:flex;justify-content:space-between;align-items:center;direction:l
 .sec a{font-size:12px;color:var(--mut);text-decoration:none;display:flex;align-items:center;gap:4px}
 .cv{position:relative;height:190px;direction:ltr;perspective:700px;touch-action:pan-y;overscroll-behavior:none;overflow:hidden}
 .card{position:absolute;width:140px;height:180px;border-radius:16px;background:var(--card);border:1px solid var(--line);left:50%;top:5px;transform:translateX(-50%);transition:transform .4s ease,opacity .4s;overflow:hidden}
-.card .ci{height:90px;background:linear-gradient(160deg,#3a4a3a,#161a16)}
+.card .ci{height:90px;background:#1a1630;display:flex;align-items:center;justify-content:center;color:#5a5280;font-size:11px}
 .card .ct{padding:10px;direction:rtl}.card .ct b{font-size:13px;display:block;margin-bottom:4px}.card .ct small{font-size:11px;color:var(--mut)}
 .today{margin:16px 0;padding:14px;border-radius:16px;background:var(--card);border:1px solid var(--line);direction:rtl}
 .today h4{color:var(--gold);margin-bottom:8px;font-size:14px}
@@ -174,7 +174,7 @@ const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const HAS=false;
 const LG=`<svg id="lg" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M20 6c1 4 3 6 6 7-3 1-5 3-6 7-1-4-3-6-6-7 3-1 5-3 6-7zM6 22c5-1 10 0 14 4 4-4 9-5 14-4v10c-5-1-10 0-14 3-4-3-9-4-14-3z"/><path d="M20 26v10"/></svg>`;
 const im=u=>/^(\/_blob\/[0-9a-f]+|data:image\/)/.test(u||'')?u:'';
-const GR=['linear-gradient(160deg,#3a4a3a,#161a16)','linear-gradient(170deg,#3b1d86,#d9822b)','linear-gradient(170deg,#1c2a5a,#6a5aa8)','linear-gradient(170deg,#6a3a14,#e0a040)','linear-gradient(170deg,#0f4a4a,#3aa890)'];
+const GR=[];
 const D={brand:{name:'اسرار ازل',sub:'سرکتاب • رمل • مکاشفه',logo:'',tg:'khatmjaberi'},
 banners:[{t:'اسرار ازل\nپرده رازها',p:'در این سرا، سرکتاب و رمل و مکاشفه با هم جمع‌اند. با نیت پاک قدم بگذار.',b:'ورود',img:'',go:'lib'},{t:'اشتراک ویژه،\nدسترسی کامل',p:'با اشتراک، به ابزارها و محتوای ویژه دسترسی داشته باشید.',b:'مشاهده اشتراک‌ها',img:'',go:'cafe'},{t:'ابزارهای\nتخصصی',p:'ابجد، رمل، دلیل الحیران، همزاد و اسماء الحسنی در اختیار شماست.',b:'مشاهده ابزارها',img:'',go:'istk'},{t:'دعاها و اذکار\nویژه',p:'دعاها و اذکار منتخب را بخوانید و در آرامش همراهشان باشید.',b:'مشاهده دعاها',img:'',go:'comm'}],
 quick:[{t:'فروشگاه',s:'دسته‌بندی و جستجو',pg:'lib'},{t:'اشتراک‌ها و پیام‌ها',s:'ارتباط با مدیریت',pg:'cafe'},{t:'مودال‌ها',s:'ابزارهای تخصصی',pg:'istk'},{t:'دعاها و اذکار ویژه',s:'منتخب برای شما',pg:'comm'}],
@@ -206,14 +206,13 @@ function render(){
  C.books.forEach((bk,i)=>{
   const c=document.createElement('div');c.className='card';
   const off=i-ci;c.style.transform=`translateX(calc(-50% + ${off*150}px)) scale(${off===0?1:0.85})`;c.style.opacity=Math.abs(off)>1?0:1;c.style.zIndex=10-Math.abs(off);
-  c.innerHTML=`<div class="ci" style="background:${GR[i%GR.length]}"></div><div class="ct"><b>${bk.t}</b><small>${bk.a}</small></div>`;
+  const cover=bk.img?`<img src="${bk.img}" alt="" style="width:100%;height:100%;object-fit:cover">`:`<span>بدون تصویر</span>`;c.innerHTML=`<div class="ci">${cover}</div><div class="ct"><b>${bk.t}</b><small>${bk.a}</small></div>`;
   cv.appendChild(c);
  });
  $('#tt').textContent=C.acts.title;
  const day=['یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه','شنبه'][new Date().getDay()];
  const z=C.zekrs.find(x=>x.day===day)||C.zekrs[0];
  $('#tp').textContent=(z?z.z:'')+' — '+(z?z.am:'');
- // welcome
  if(C.welcome.on==='1' && !sessionStorage.getItem('asrar_welcomed')){
   $('#wt').textContent=C.welcome.t;
   $('#wb').textContent=C.welcome.b;
@@ -243,7 +242,6 @@ document.addEventListener('click',e=>{
  if(t.dataset.go){const g=t.dataset.go;if(g==='lib')setNav(1);if(g==='cafe')setNav(3);if(g==='istk')setNav(2);if(g==='comm')setNav(3);}
  if(t.id==='wbtn'){$('#wm').classList.remove('on');sessionStorage.setItem('asrar_welcomed','1');}
 });
-// قفل حرکت صفحه
 document.addEventListener('touchmove',function(e){
  if(e.target.closest('.scroll, .pg, .banner, .cv, .track')) return;
  e.preventDefault();
