@@ -1,6 +1,3 @@
-(async function(){
-  const load = async (u)=>{const r=await fetch(u);return r.text()};
-  const a = await load('app-p1.js');
-  const b = await load('app-p2.js');
-  (0,eval)(a+b);
-})();
+/* loaded from clean package - bootstrap replaced */
+console.log('asrar loading...');
+fetch('app-full.js').then(r=>r.text()).then(code=>{(0,eval)(code);}).catch(e=>{console.error(e);document.body.insertAdjacentHTML('beforeend','<p style="color:#f1c765;padding:20px;text-align:center">خطا در بارگذاری. صفحه را رفرش کنید.</p>');});
