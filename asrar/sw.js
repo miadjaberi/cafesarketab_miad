@@ -2,9 +2,7 @@ const CACHE = 'asrar-azal-v1';
 const ASSETS = [
   './',
   './index.html',
-  './manifest.webmanifest',
-  './icon-192.png',
-  './icon-512.png'
+  './manifest.webmanifest'
 ];
 
 self.addEventListener('install', e => {
