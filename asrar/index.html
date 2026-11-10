@@ -11,23 +11,245 @@
 <meta name="apple-mobile-web-app-title" content="اسرار ازل">
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="icon-192.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="apple-touch-icon" href="../icon192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="../icon192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="../icon512.png">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800&display=swap">
 <style>
-/* PLACEHOLDER - full content will be pushed next */
-body{background:#0a0818;color:#f3eefc;font-family:Vazirmatn,Tahoma,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;text-align:center;padding:20px}
+:root{--bg:#0a0818;--card:#13102a;--line:#2a2350;--gold:#f1c765;--gold2:#c8932f;--vio:#7a5cff;--tx:#f3eefc;--mut:#9a93bd;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a0818}}
+:root[data-theme="dark"]{--bg:#0a0818}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;height:100dvh;margin:0;padding:0;overflow:hidden;position:fixed;inset:0;width:100%;overscroll-behavior:none;-webkit-text-size-adjust:100%;touch-action:manipulation}
+body{background:var(--bg);color:var(--tx);font-family:Vazirmatn,Tahoma,sans-serif;overflow:hidden;overscroll-behavior:none}
+.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.stage{width:100%;height:100%;margin:0;display:block;position:relative;overflow:hidden;overscroll-behavior:none}
+.phone{width:100%;max-width:100%;margin:0;border-radius:0;padding:0;background:none;box-shadow:none;height:100%;overflow:hidden}
+.screen{border-radius:0;overflow:hidden;background:linear-gradient(#0d0a20,#090716);position:relative;height:100%;display:flex;flex-direction:column;direction:rtl;overscroll-behavior:none}
+.notch{display:none}
+.status{display:none}
+.bat{display:none}
+.scroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:0 14px 8px;padding-top:env(safe-area-inset-top,8px);scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;overscroll-behavior-x:none;touch-action:pan-y}.scroll::-webkit-scrollbar{display:none}
+header{display:flex;justify-content:space-between;align-items:center;direction:ltr;padding:6px 0 12px}
+.circ{width:42px;height:42px;border:1px solid var(--gold2);border-radius:50%;display:grid;place-items:center;color:var(--gold);background:#ffffff08}
+.ttl{display:flex;align-items:center;gap:8px;direction:rtl}
+.ttl b{display:block;font-size:17px;font-weight:800;color:var(--gold)}.ttl small{font-size:10.5px;color:var(--mut)}
+.ttl svg{width:36px;height:36px;color:var(--gold)}
+.hr{display:flex;gap:14px;align-items:center;color:var(--tx)}
+.hr .bell{position:relative}.bell:after{content:"";position:absolute;top:-1px;right:0;width:8px;height:8px;border-radius:50%;background:#ff4a5e}
+.banner{position:relative;border-radius:20px;overflow:hidden;border:1.5px solid #e9b44c;box-shadow:0 0 22px #f1c76544;height:196px;touch-action:pan-y;overscroll-behavior:none}
+.track{display:flex;height:100%;direction:ltr;transition:transform .5s ease}
+.slide{min-width:100%;height:100%;position:relative;display:flex;align-items:center;padding:0 16px}
+.s0{background:radial-gradient(circle at 80% 40%,#7a3aa8,transparent 55%),linear-gradient(135deg,#1a1040,#3b1c6e 55%,#150d33)}
+.s1{background:radial-gradient(circle at 80% 40%,#b0602f,transparent 55%),linear-gradient(135deg,#1a1040,#4b2160 55%,#150d33)}
+.s2{background:radial-gradient(circle at 80% 40%,#2f7aa8,transparent 55%),linear-gradient(135deg,#0d1a40,#1c386e 55%,#0d1533)}
+.s3{background:radial-gradient(circle at 80% 40%,#a82f6a,transparent 55%),linear-gradient(135deg,#2a1040,#5a1c5e 55%,#220d33)}
+.bt{width:58%;direction:rtl;text-align:right;position:relative;z-index:2}
+.bt h2{font-size:26px;line-height:1.35;font-weight:800;color:#ffd98a;text-shadow:0 2px 12px #000a}
+.bt p{font-size:12.5px;line-height:1.8;margin:8px 0 12px;color:#efe8ff}
+.bt button{background:linear-gradient(135deg,#f1c765,#c8932f);color:#1a1040;border:0;border-radius:12px;padding:10px 18px;font:700 13px Vazirmatn,sans-serif;cursor:pointer}
+.art{position:absolute;right:0;top:0;width:48%;height:100%;opacity:.95;pointer-events:none}
+.arr{position:absolute;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:50%;border:1px solid #f1c76566;background:#0a0818cc;color:var(--gold);display:grid;place-items:center;cursor:pointer;z-index:3}
+.dots{display:flex;justify-content:center;gap:6px;margin:10px 0 6px}
+.dots i{width:7px;height:7px;border-radius:50%;background:#5a5280}.dots i.on{background:var(--gold);width:18px;border-radius:4px}
+.quick{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.quick a{display:block;padding:14px;border-radius:16px;background:var(--card);border:1px solid var(--line);text-decoration:none;color:var(--tx)}
+.quick a b{display:block;font-size:14px;margin-bottom:4px;color:var(--gold)}.quick a small{font-size:11px;color:var(--mut)}
+.sec{display:flex;justify-content:space-between;align-items:center;margin:18px 0 10px;direction:rtl}
+.sec h3{font-size:15px;display:flex;align-items:center;gap:6px;color:var(--gold)}
+.sec a{font-size:12px;color:var(--mut);text-decoration:none;display:flex;align-items:center;gap:4px}
+.cv{position:relative;height:190px;direction:ltr;perspective:700px;touch-action:pan-y;overscroll-behavior:none;overflow:hidden}
+.card{position:absolute;width:140px;height:180px;border-radius:16px;background:var(--card);border:1px solid var(--line);left:50%;top:5px;transform:translateX(-50%);transition:transform .4s ease,opacity .4s;overflow:hidden}
+.card .ci{height:90px;background:linear-gradient(160deg,#3a4a3a,#161a16)}
+.card .ct{padding:10px;direction:rtl}.card .ct b{font-size:13px;display:block;margin-bottom:4px}.card .ct small{font-size:11px;color:var(--mut)}
+.today{margin:16px 0;padding:14px;border-radius:16px;background:var(--card);border:1px solid var(--line);direction:rtl}
+.today h4{color:var(--gold);margin-bottom:8px;font-size:14px}
+.today p{font-size:12.5px;line-height:1.8;color:var(--mut)}
+nav{display:flex;justify-content:space-around;align-items:center;direction:ltr;padding:8px 6px calc(10px + env(safe-area-inset-bottom,0px));background:#0b0820;border-top:1px solid var(--line);position:relative;flex-shrink:0}
+nav button{background:none;border:0;color:#a6a0c8;font:500 11px Vazirmatn,sans-serif;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;width:62px}
+nav button.on{color:var(--gold)}nav button.on .i{fill:var(--gold)}
+nav .plus{width:66px;height:66px;margin-top:-34px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#8a6bff,#4b2fc9);border:3px solid var(--gold2);box-shadow:0 0 22px #7a5cffaa;color:#fff;display:grid;place-items:center}
+.plus .i{width:32px;height:32px;stroke-width:2.2}
+.hb{display:none}
+.notes,.foot{display:none!important}
+.notes{position:relative;direction:rtl}
+@media(max-width:900px){.stage{grid-template-columns:1fr;gap:0}.notes,.foot{display:none!important}}
+.pg{position:absolute;left:0;right:0;top:0;bottom:70px;background:#090716;overflow-y:auto;overflow-x:hidden;display:none;z-index:2;padding:calc(8px + env(safe-area-inset-top,0px)) 14px 14px;scrollbar-width:none;overscroll-behavior-y:contain;overscroll-behavior-x:none;touch-action:pan-y;-webkit-overflow-scrolling:touch}
+.pg.on{display:block}
+.box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px;direction:rtl}
+.box h3{color:var(--gold);margin-bottom:8px;font-size:15px}
+.box p,.box label{font-size:13px;color:var(--mut);line-height:1.7}
+.modal{position:fixed;inset:0;background:#000c;display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal.on{display:flex}
+.modal .mbox{background:#13102a;border:1.5px solid var(--gold2);border-radius:20px;padding:22px;max-width:340px;width:100%;direction:rtl;text-align:center}
+.modal .mbox h3{color:var(--gold);margin-bottom:12px;font-size:16px;white-space:pre-line}
+.modal .mbox p{font-size:13px;line-height:1.9;color:var(--tx);margin-bottom:16px;white-space:pre-line}
+.modal .mbox button{background:linear-gradient(135deg,#f1c765,#c8932f);color:#1a1040;border:0;border-radius:12px;padding:12px 28px;font:700 14px Vazirmatn,sans-serif;cursor:pointer;width:100%}
+.gear{position:fixed;left:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:50;width:48px;height:48px;border-radius:50%;border:1.5px solid var(--gold2);background:#1a1240;color:var(--gold);font-size:22px;cursor:pointer;display:none;box-shadow:0 0 18px #7a5cff66}
+#adm{display:none;position:fixed;inset:0;background:#0a0818ee;z-index:200;overflow-y:auto;padding:20px;direction:rtl}
+#adm .ab{background:var(--card);border:1px solid var(--line);color:var(--tx);border-radius:10px;padding:10px 14px;font:600 13px Vazirmatn;cursor:pointer;margin:4px}
+#adm .ab.g{border-color:var(--gold2);color:var(--gold)}
+#adm .ab.r{border-color:#c44;color:#f88}
+#adm input,#adm textarea{width:100%;background:#0d0a20;border:1px solid var(--line);color:var(--tx);border-radius:10px;padding:10px;font:13px Vazirmatn;margin:6px 0}
+#adm label{font-size:12px;color:var(--mut);display:block;margin-top:8px}
 </style>
 </head>
 <body>
-<div>
-<h1>اسرار ازل</h1>
-<p>در حال بارگذاری نسخه کامل...</p>
-<p style="opacity:.6;font-size:14px">اگر این پیام ماند، صفحه را رفرش کنید.</p>
+<svg style="display:none"><defs>
+<symbol id="user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></symbol>
+<symbol id="bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0112 0c0 7 3 7 3 7H3s3 0 3-7"/><path d="M10 19a2 2 0 004 0"/></symbol>
+<symbol id="search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></symbol>
+<symbol id="cl" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></symbol>
+<symbol id="cr" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></symbol>
+<symbol id="home" viewBox="0 0 24 24"><path d="M3 10.5L12 3l9 7.5V21a1 1 0 01-1 1h-5v-7H9v7H4a1 1 0 01-1-1z"/></symbol>
+<symbol id="book" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></symbol>
+<symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="star" viewBox="0 0 24 24"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/></symbol>
+<symbol id="user2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></symbol>
+<symbol id="sp" viewBox="0 0 24 24"><path d="M12 2c.5 5 3 8.5 8 10-5 1.5-7.5 5-8 10-.5-5-3-8.5-8-10 5-1.5 7.5-5 8-10z"/></symbol>
+<symbol id="layers" viewBox="0 0 24 24"><rect x="7" y="3" width="13" height="15" rx="2"/><path d="M4 7v12a2 2 0 002 2h10"/></symbol>
+</defs></svg>
+
+<div class="stage">
+ <div class="phone"><div class="screen">
+  <div class="notch"></div>
+  <div class="status"><span>9:41</span><span></span></div>
+  <div class="scroll">
+   <header>
+    <div class="circ" id="lw"><svg class="i"><use href="#user"/></svg></div>
+    <div class="ttl"><div><b id="bn1"></b><small id="bn2"></small></div><svg id="lg" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M20 6c1 4 3 6 6 7-3 1-5 3-6 7-1-4-3-6-6-7 3-1 5-3 6-7zM6 22c5-1 10 0 14 4 4-4 9-5 14-4v10c-5-1-10 0-14 3-4-3-9-4-14-3z"/><path d="M20 26v10"/></svg></div>
+    <div class="hr"><span class="bell"><svg class="i"><use href="#bell"/></svg></span><svg class="i"><use href="#search"/></svg></div>
+   </header>
+
+   <div class="banner" id="bn">
+    <div class="track" id="tr"></div>
+    <button class="arr" style="left:4px" data-b="-1"><svg class="i"><use href="#cl"/></svg></button>
+    <button class="arr" style="right:4px" data-b="1"><svg class="i"><use href="#cr"/></svg></button>
+   </div>
+   <div class="dots" id="dots"></div>
+
+   <div class="quick" id="qk"></div>
+
+   <div class="sec"><a data-go="lib"><span id="al">مشاهده همه</span><svg class="i"><use href="#cl"/></svg></a><h3><span id="st">پیشنهادهای ویژه</span><svg class="i"><use href="#sp"/></svg></h3></div>
+   <div class="cv" id="cv">
+    <button class="arr" style="left:-6px" data-c="-1"><svg class="i"><use href="#cl"/></svg></button>
+    <button class="arr" style="right:-6px" data-c="1"><svg class="i"><use href="#cr"/></svg></button>
+   </div>
+
+   <div class="today" id="td">
+    <h4 id="tt">اعمال امروز</h4>
+    <p id="tp">ذکر و اعمال امروز از پنل مدیریت قابل تنظیم است.</p>
+   </div>
+  </div>
+
+  <div class="pg" id="pg-lib"></div>
+  <div class="pg" id="pg-cafe"></div>
+  <div class="pg" id="pg-istk"></div>
+  <div class="pg" id="pg-comm"></div>
+  <div class="pg" id="pg-prof"></div>
+
+  <nav>
+   <button data-n="0" class="on"><svg class="i"><use href="#home"/></svg>خانه</button>
+   <button data-n="1"><svg class="i"><use href="#book"/></svg>فروشگاه</button>
+   <button class="plus" data-n="2"><svg class="i"><use href="#plus"/></svg></button>
+   <button data-n="3"><svg class="i"><use href="#star"/></svg>ویژه</button>
+   <button data-n="4"><svg class="i"><use href="#user2"/></svg>پروفایل</button>
+  </nav>
+  <i class="hb"></i>
+ </div></div>
 </div>
+
+<div class="modal" id="wm">
+ <div class="mbox">
+  <h3 id="wt"></h3>
+  <p id="wb"></p>
+  <button id="wbtn">موافقم</button>
+ </div>
+</div>
+
+<div id="adm"></div>
+
 <script>
-if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{})}
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const HAS=false;
+const LG=`<svg id="lg" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M20 6c1 4 3 6 6 7-3 1-5 3-6 7-1-4-3-6-6-7 3-1 5-3 6-7zM6 22c5-1 10 0 14 4 4-4 9-5 14-4v10c-5-1-10 0-14 3-4-3-9-4-14-3z"/><path d="M20 26v10"/></svg>`;
+const im=u=>/^(\/_blob\/[0-9a-f]+|data:image\/)/.test(u||'')?u:'';
+const GR=['linear-gradient(160deg,#3a4a3a,#161a16)','linear-gradient(170deg,#3b1d86,#d9822b)','linear-gradient(170deg,#1c2a5a,#6a5aa8)','linear-gradient(170deg,#6a3a14,#e0a040)','linear-gradient(170deg,#0f4a4a,#3aa890)'];
+const D={brand:{name:'اسرار ازل',sub:'سرکتاب • رمل • مکاشفه',logo:'',tg:'khatmjaberi'},
+banners:[{t:'اسرار ازل\nپرده رازها',p:'در این سرا، سرکتاب و رمل و مکاشفه با هم جمع‌اند. با نیت پاک قدم بگذار.',b:'ورود',img:'',go:'lib'},{t:'اشتراک ویژه،\nدسترسی کامل',p:'با اشتراک، به ابزارها و محتوای ویژه دسترسی داشته باشید.',b:'مشاهده اشتراک‌ها',img:'',go:'cafe'},{t:'ابزارهای\nتخصصی',p:'ابجد، رمل، دلیل الحیران، همزاد و اسماء الحسنی در اختیار شماست.',b:'مشاهده ابزارها',img:'',go:'istk'},{t:'دعاها و اذکار\nویژه',p:'دعاها و اذکار منتخب را بخوانید و در آرامش همراهشان باشید.',b:'مشاهده دعاها',img:'',go:'comm'}],
+quick:[{t:'فروشگاه',s:'دسته‌بندی و جستجو',pg:'lib'},{t:'اشتراک‌ها و پیام‌ها',s:'ارتباط با مدیریت',pg:'cafe'},{t:'مودال‌ها',s:'ابزارهای تخصصی',pg:'istk'},{t:'دعاها و اذکار ویژه',s:'منتخب برای شما',pg:'comm'}],
+secT:'پیشنهادهای ویژه',all:'مشاهده همه',
+books:[{t:'پدرخوانده',a:'ماریو پوزو',cat:'رمان',rate:4.7,desc:'حماسه‌ای از قدرت، خانواده و وفاداری.',img:''},{t:'ملت عشق',a:'الیف شافاک',cat:'رمان',rate:4.8,desc:'روایتی دو لایه از دیدار شمس و مولانا.',img:''},{t:'شازده کوچولو',a:'آنتوان دو سنت اگزوپری',cat:'داستان',rate:4.9,desc:'قصه‌ای ساده و عمیق درباره دوستی.',img:''},{t:'کیمیاگر',a:'پائولو کوئیلو',cat:'داستان',rate:4.5,desc:'سفر چوپانی جوان برای یافتن افسانه شخصی‌اش.',img:''},{t:'سیدارتا',a:'هرمان هسه',cat:'فلسفه',rate:4.4,desc:'جست‌وجوی معنا و آرامش در مسیر خودشناسی.',img:''}],
+acts:{title:'اعمال امروز',dateT:'تاریخ امروز',hOff:'0',zekrT:'ذکر روز و اعمال آن',recT:'پیشنهادات استاد و مدیریت',recB:'پیشنهادهای استاد و مدیریت را از پنل مدیریت وارد کنید.',contT:'ارتباط با ما',contB:'برای ارتباط با ما از راه‌های زیر اقدام کنید.',phone:'09392979200',chT:'مشخصات کانال',tg:'khatmjaberi',site:'dbamag.ir',ig:'khatmjaberi'},
+zekrs:[{day:'شنبه',z:'متن ذکر روز را از پنل مدیریت وارد کنید.',tr:'ترجمه ذکر',am:'اعمال این روز'},{day:'یکشنبه',z:'متن ذکر روز را از پنل مدیریت وارد کنید.',tr:'ترجمه ذکر',am:'اعمال این روز'},{day:'دوشنبه',z:'متن ذکر روز را از پنل مدیریت وارد کنید.',tr:'ترجمه ذکر',am:'اعمال این روز'},{day:'سه‌شنبه',z:'متن ذکر روز را از پنل مدیریت وارد کنید.',tr:'ترجمه ذکر',am:'اعمال این روز'},{day:'چهارشنبه',z:'متن ذکر روز را از پنل مدیریت وارد کنید.',tr:'ترجمه ذکر',am:'اعمال این روز'},{day:'پنجشنبه',z:'متن ذکر روز را از پنل مدیریت وارد کنید.',tr:'ترجمه ذکر',am:'اعمال این روز'},{day:'جمعه',z:'متن ذکر روز را از پنل مدیریت وارد کنید.',tr:'ترجمه ذکر',am:'اعمال این روز'}],
+notes:[],
+foot:'اسرار ازل — سرکتاب، رمل و مکاشفه',
+welcome:{on:'1',t:'بسم الله الرحمن الرحیم',b:'اسرار ازل را نه تو دانی و نه من\nوین حرف معما نه تو خوانی و نه من\nهست از پسِ پرده گفت‌وگوی من و تو\nچون پرده برافتد نه تو مانی و نه من\n\nنتایج ابزارها بر پایه روش‌های سنتی است و جایگزین توکل، مشورت با عالم دینی و پزشک نیست.\nبا نیت پاک و آرامش از برنامه استفاده کنید.',btn:'موافقم'},
+ann:{on:'0',t:'اعلان ویژه',b:'متن اعلان را از پنل مدیریت وارد کنید.',btn:'متوجه شدم'},set:{slide:5,cards:6,pin:'1234',logoPos:'l',logoSize:36},
+modals:[{t:'ابجد و حروف',s:'ابزار تخصصی',b:'توضیحات از پنل مدیریت قابل ویرایش است.'},{t:'رمل امام علی',s:'ابزار تخصصی',b:'توضیحات از پنل مدیریت قابل ویرایش است.'},{t:'دلیل الحیران',s:'ابزار تخصصی',b:'توضیحات از پنل مدیریت قابل ویرایش است.'},{t:'همزاد قرین',s:'ابزار تخصصی',b:'توضیحات از پنل مدیریت قابل ویرایش است.'},{t:'اسماء الحسنی',s:'ابزار تخصصی',b:'توضیحات از پنل مدیریت قابل ویرایش است.'}],
+plans:[{t:'اشتراک یک‌ماهه',price:'۰ تومان',d:'توضیحات از پنل مدیریت قابل ویرایش است.'},{t:'اشتراک سه‌ماهه',price:'۰ تومان',d:'توضیحات از پنل مدیریت قابل ویرایش است.'},{t:'اشتراک یک‌ساله',price:'۰ تومان',d:'توضیحات از پنل مدیریت قابل ویرایش است.'}],
+};
+let C=structuredClone(D),bi=0,ci=0,nav=0;
+function render(){
+ $('#bn1').textContent=C.brand.name;$('#bn2').textContent=C.brand.sub;
+ const tr=$('#tr');tr.innerHTML='';
+ C.banners.forEach((b,i)=>{
+  const d=document.createElement('div');d.className='slide s'+(i%4);
+  d.innerHTML=`<div class="bt"><h2>${b.t.replace(/\\n/g,'<br>')}</h2><p>${b.p}</p><button data-go="${b.go||''}">${b.b}</button></div>`;
+  tr.appendChild(d);
+ });
+ $('#dots').innerHTML=C.banners.map((_,i)=>`<i class="${i===bi?'on':''}"></i>`).join('');
+ tr.style.transform=`translateX(${-bi*100}%)`;
+ $('#qk').innerHTML=C.quick.map(q=>`<a data-go="${q.pg}"><b>${q.t}</b><small>${q.s}</small></a>`).join('');
+ $('#st').textContent=C.secT;$('#al').textContent=C.all;
+ const cv=$('#cv');cv.querySelectorAll('.card').forEach(e=>e.remove());
+ C.books.forEach((bk,i)=>{
+  const c=document.createElement('div');c.className='card';
+  const off=i-ci;c.style.transform=`translateX(calc(-50% + ${off*150}px)) scale(${off===0?1:0.85})`;c.style.opacity=Math.abs(off)>1?0:1;c.style.zIndex=10-Math.abs(off);
+  c.innerHTML=`<div class="ci" style="background:${GR[i%GR.length]}"></div><div class="ct"><b>${bk.t}</b><small>${bk.a}</small></div>`;
+  cv.appendChild(c);
+ });
+ $('#tt').textContent=C.acts.title;
+ const day=['یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه','شنبه'][new Date().getDay()];
+ const z=C.zekrs.find(x=>x.day===day)||C.zekrs[0];
+ $('#tp').textContent=(z?z.z:'')+' — '+(z?z.am:'');
+ // welcome
+ if(C.welcome.on==='1' && !sessionStorage.getItem('asrar_welcomed')){
+  $('#wt').textContent=C.welcome.t;
+  $('#wb').textContent=C.welcome.b;
+  $('#wbtn').textContent=C.welcome.btn||'موافقم';
+  $('#wm').classList.add('on');
+ }
+}
+function setNav(n){
+ nav=n;$$('nav button').forEach((b,i)=>b.classList.toggle('on',i===n));
+ $$('.pg').forEach(p=>p.classList.remove('on'));
+ $('.scroll').style.display=n===0?'block':'none';
+ if(n===1)$('#pg-lib').classList.add('on');
+ if(n===2)$('#pg-istk').classList.add('on');
+ if(n===3)$('#pg-cafe').classList.add('on');
+ if(n===4)$('#pg-prof').classList.add('on');
+ if(n===1){const p=$('#pg-lib');p.innerHTML=`<div class="box"><h3>فروشگاه</h3><p>به زودی — کتاب‌ها و دسته‌بندی‌ها از اپ اصلی منتقل می‌شوند.</p></div>`+C.books.map(b=>`<div class="box"><h3>${b.t}</h3><p>${b.a} — ${b.cat}<br>${b.desc}</p></div>`).join('');}
+ if(n===2){const p=$('#pg-istk');p.innerHTML=`<div class="box"><h3>ابزارهای تخصصی</h3><p>مودال‌ها و ابزارها به‌تدریج از اپ اصلی کپی و تمیز می‌شوند.</p></div>`+C.modals.map(m=>`<div class="box"><h3>${m.t}</h3><p>${m.s}<br>${m.b}</p></div>`).join('');}
+ if(n===3){const p=$('#pg-cafe');p.innerHTML=`<div class="box"><h3>اشتراک‌ها</h3></div>`+C.plans.map(pl=>`<div class="box"><h3>${pl.t}</h3><p>${pl.price}<br>${pl.d}</p></div>`).join('');}
+ if(n===4){const p=$('#pg-prof');p.innerHTML=`<div class="box"><h3>پروفایل</h3><p>ارتباط با مدیریت: @${C.brand.tg}</p><p>${C.acts.phone}</p></div>`;}
+}
+document.addEventListener('click',e=>{
+ const t=e.target.closest('[data-b],[data-c],[data-n],[data-go],#wbtn');
+ if(!t)return;
+ if(t.dataset.b!==undefined){bi=(bi+parseInt(t.dataset.b)+C.banners.length)%C.banners.length;render();}
+ if(t.dataset.c!==undefined){ci=Math.max(0,Math.min(C.books.length-1,ci+parseInt(t.dataset.c)));render();}
+ if(t.dataset.n!==undefined)setNav(+t.dataset.n);
+ if(t.dataset.go){const g=t.dataset.go;if(g==='lib')setNav(1);if(g==='cafe')setNav(3);if(g==='istk')setNav(2);if(g==='comm')setNav(3);}
+ if(t.id==='wbtn'){$('#wm').classList.remove('on');sessionStorage.setItem('asrar_welcomed','1');}
+});
+// قفل حرکت صفحه
+document.addEventListener('touchmove',function(e){
+ if(e.target.closest('.scroll, .pg, .banner, .cv, .track')) return;
+ e.preventDefault();
+},{passive:false});
+if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(()=>{});});}
+render();setNav(0);
 </script>
 </body>
 </html>
