@@ -1,5 +1,5 @@
-const CACHE = 'asrar-azal-v2';
-const ASSETS = ['./', './index.html', './app.css', './app.js', './manifest.webmanifest'];
+const CACHE = 'asrar-azal-v3';
+const ASSETS = ['./', './index.html', './manifest.webmanifest'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
 });
