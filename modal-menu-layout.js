@@ -267,7 +267,8 @@
     } catch (e) {}
     renderGroupedGrid();
     try {
-      if (typeof window.scrollToPage === 'function') window.scrollToPage(1);
+      if (typeof window.kafeShowPage === 'function') window.kafeShowPage('pageModals');
+      else if (typeof window.scrollToPage === 'function') window.scrollToPage('pageModals');
       else {
         var p = document.getElementById('pageModals');
         if (p) p.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });

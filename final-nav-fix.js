@@ -93,6 +93,10 @@
   }
 
   function scrollToPageImpl(arg) {
+    if (window.__KAFE_NAV_PAGES_V1__ && typeof window.kafeShowPage === 'function') {
+      window.kafeShowPage(arg);
+      return;
+    }
     if (scrolling) return;
     ensurePageBuy();
     var id = null;
@@ -214,6 +218,7 @@
   }
 
   function run() {
+    if (window.__KAFE_NAV_PAGES_V1__) return;
     injectCSS();
     ensurePageBuy();
     installScrollToPage();

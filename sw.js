@@ -1,5 +1,5 @@
 /* کافه سرکتاب میعاد — Service Worker */
-const CACHE_VERSION = 'kafe-miad-v22.81-offline-20261108a';
+const CACHE_VERSION = 'kafe-miad-v22.82-nav-pages-20261110';
 const SHELL_CACHE = `shell-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = [
@@ -16,6 +16,7 @@ const PRECACHE_URLS = [
   './vip-offline-cache.js?v=20261108a',
   './pwa-register.js',
   './ui-layer-fix.js',
+  './nav-pages.js?v=20261110a',
   './boot-flow-fix.js?v=20261108a',
   './nav-swipe-fix.js?v=20261108a',
   './buy-nav-fix.js?v=20261108a',

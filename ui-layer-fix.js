@@ -100,5 +100,6 @@
     inject('./ui-unify-v1.js?v=20261106e', 'ui-unify');
     inject('./admin-ui-four-fixes.js?v=20261106e', 'admin-four');
     inject('./admin-messages-session-fix.js?v=20261107a', 'msg-session');
+    inject('./nav-pages.js?v=20261110a', 'nav-pages');
   })();
 })();
