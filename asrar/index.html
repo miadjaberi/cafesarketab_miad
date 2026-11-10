@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#0a0818">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="اسرار ازل">
+<meta name="apple-mobile--web-app-title" content="اسرار ازل">
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="../icon192.png">
@@ -53,7 +53,7 @@
 
    <div class="quick" id="qk"></div>
 
-   <div class="sec"><a data-go="lib"><span id="al">مشاهده همه</span><svg class="i"><use href="#cl"/></svg></a><h3><span id="st">پیشنهادهای ویژه</span><svg class="i"><use href="#sp"/></svg></h3></div>
+   <div class="sec"><a data-go="lib" href="#"><span id="al">مشاهده همه</span><svg class="i"><use href="#cl"/></svg></a><h3><span id="st">پیشنهادهای ویژه</span><svg class="i"><use href="#sp"/></svg></h3></div>
    <div class="cv" id="cv">
     <button class="arr" style="left:-6px" data-c="-1"><svg class="i"><use href="#cl"/></svg></button>
     <button class="arr" style="right:-6px" data-c="1"><svg class="i"><use href="#cr"/></svg></button>
@@ -93,7 +93,7 @@
 
 <script src="app.js"></script>
 <script>
-if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}
+if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('./sw.js').catch(function(){});});}
 </script>
 </body>
 </html>
