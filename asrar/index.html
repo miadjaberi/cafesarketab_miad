@@ -18,7 +18,77 @@
 <link rel="stylesheet" href="app.css">
 </head>
 <body>
-<div id="app-root">در حال بارگذاری اسرار ازل…</div>
+<svg style="display:none"><defs>
+<symbol id="user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></symbol>
+<symbol id="bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0112 0c0 7 3 7 3 7H3s3 0 3-7"/><path d="M10 19a2 2 0 004 0"/></symbol>
+<symbol id="search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></symbol>
+<symbol id="cl" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></symbol>
+<symbol id="cr" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></symbol>
+<symbol id="home" viewBox="0 0 24 24"><path d="M3 10.5L12 3l9 7.5V21a1 1 0 01-1 1h-5v-7H9v7H4a1 1 0 01-1-1z"/></symbol>
+<symbol id="book" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></symbol>
+<symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="star" viewBox="0 0 24 24"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/></symbol>
+<symbol id="user2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></symbol>
+<symbol id="sp" viewBox="0 0 24 24"><path d="M12 2c.5 5 3 8.5 8 10-5 1.5-7.5 5-8 10-.5-5-3-8.5-8-10 5-1.5 7.5-5 8-10z"/></symbol>
+<symbol id="layers" viewBox="0 0 24 24"><rect x="7" y="3" width="13" height="15" rx="2"/><path d="M4 7v12a2 2 0 002 2h10"/></symbol>
+</defs></svg>
+
+<div class="stage">
+ <div class="phone"><div class="screen">
+  <div class="scroll">
+   <header>
+    <div class="circ" id="lw"><svg class="i"><use href="#user"/></svg></div>
+    <div class="ttl"><div><b id="bn1"></b><small id="bn2"></small></div><svg id="lg" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M20 6c1 4 3 6 6 7-3 1-5 3-6 7-1-4-3-6-6-7 3-1 5-3 6-7zM6 22c5-1 10 0 14 4 4-4 9-5 14-4v10c-5-1-10 0-14 3-4-3-9-4-14-3z"/><path d="M20 26v10"/></svg></div>
+    <div class="hr"><span class="bell"><svg class="i"><use href="#bell"/></svg></span><svg class="i"><use href="#search"/></svg></div>
+   </header>
+
+   <div class="banner" id="bn">
+    <div class="track" id="tr"></div>
+    <button class="arr" style="left:4px" data-b="-1"><svg class="i"><use href="#cl"/></svg></button>
+    <button class="arr" style="right:4px" data-b="1"><svg class="i"><use href="#cr"/></svg></button>
+   </div>
+   <div class="dots" id="dots"></div>
+
+   <div class="quick" id="qk"></div>
+
+   <div class="sec"><a data-go="lib"><span id="al">مشاهده همه</span><svg class="i"><use href="#cl"/></svg></a><h3><span id="st">پیشنهادهای ویژه</span><svg class="i"><use href="#sp"/></svg></h3></div>
+   <div class="cv" id="cv">
+    <button class="arr" style="left:-6px" data-c="-1"><svg class="i"><use href="#cl"/></svg></button>
+    <button class="arr" style="right:-6px" data-c="1"><svg class="i"><use href="#cr"/></svg></button>
+   </div>
+
+   <div class="today" id="td">
+    <button class="arr" style="left:4px" data-t="-1"><svg class="i"><use href="#cl"/></svg></button>
+    <button class="arr" style="right:0;color:#b9a8ff" data-t="1"><svg class="i"><use href="#cr"/></svg></button>
+    <h4 id="tt">اعمال امروز</h4>
+    <p id="tp">ذکر و اعمال امروز از پنل مدیریت قابل تنظیم است.</p>
+   </div>
+  </div>
+
+  <div class="pg" id="pg-lib"></div>
+  <div class="pg" id="pg-cafe"></div>
+  <div class="pg" id="pg-istk"></div>
+  <div class="pg" id="pg-comm"></div>
+  <div class="pg" id="pg-prof"></div>
+
+  <nav>
+   <button data-n="0" class="on"><svg class="i"><use href="#home"/></svg>خانه</button>
+   <button data-n="1"><svg class="i"><use href="#book"/></svg>فروشگاه</button>
+   <button class="plus" data-n="2"><svg class="i"><use href="#plus"/></svg></button>
+   <button data-n="3"><svg class="i"><use href="#star"/></svg>ویژه</button>
+   <button data-n="4"><svg class="i"><use href="#user2"/></svg>پروفایل</button>
+  </nav>
+ </div></div>
+</div>
+
+<div class="modal" id="wm">
+ <div class="mbox">
+  <h3 id="wt"></h3>
+  <p id="wb"></p>
+  <button id="wbtn">موافقم</button>
+ </div>
+</div>
+
 <script src="app.js"></script>
 <script>
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}
