@@ -1,5 +1,5 @@
 /* کافه سرکتاب میعاد — Service Worker */
-const CACHE_VERSION = 'kafe-miad-v22.82-nav-pages-20261110';
+const CACHE_VERSION = 'kafe-miad-v22.83-supabase-icons-20261111';
 const SHELL_CACHE = `shell-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = [
