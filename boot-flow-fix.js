@@ -1,13 +1,15 @@
-/** boot-flow-fix.js V4.4
+/** boot-flow-fix.js V4.5 — splash removed
  * - تشخیص دسترسی واقعی به Supabase Auth health با GET و timeout
  * - ورود آنلاین فقط با session و پروفایل تأییدشده از سرور
  * - getSession هم‌زمان با probe (بدون صف جعلی)
  * - مسیر آفلاین محدود فقط با انتخاب صریح کاربر
  * - کنترل یگانه شرایط، اسپلش و انتقال به صفحه ورود
+ * - اسپلیش حذف شد: runSplashThen بلافاصله afterSplashRoute را صدا می‌زند
  */
 (function () {
   'use strict';
-  if (window.__KAFE_BOOT_FLOW_V44__) return;
+  if (window.__KAFE_BOOT_FLOW_V45__) return;
+  window.__KAFE_BOOT_FLOW_V45__ = true;
   window.__KAFE_BOOT_FLOW_V44__ = true;
   window.__KAFE_BOOT_FLOW_V42__ = true;
 
@@ -202,18 +204,18 @@
     blockWhenOffline('openSubscriptionPurchase', 'خرید اشتراک در حالت آفلاین بسته است');
   }
   function runSplashThen(done) {
-    setStage('splash'); hideBootLoader(); hide(el('termsScreen')); hide(el('registerScreen')); hide(el('app')); hideOfflineDialog(); hideRetryOnline();
-    var splash = el('splashScreen');
-    if (splash) {
-      try { splash.classList.remove('waiting', 'hidden'); } catch (e) {}
-      splash.style.display = 'flex';
-      var bar = el('splashLoaderBar') || (splash.querySelector && splash.querySelector('.splash-loader-bar'));
-      if (bar) { try { bar.style.animation = 'none'; void bar.offsetWidth; bar.style.animation = 'loadBar 1.8s linear forwards'; } catch (e2) {} }
+    // اسپلیش حذف شد — مستقیم ادامه مسیر (شرایط / ثبت‌نام / ورود)
+    setStage('skip-splash');
+    hideBootLoader();
+    hide(el('splashScreen'));
+    hide(el('termsScreen'));
+    hide(el('registerScreen'));
+    hide(el('app'));
+    hideOfflineDialog();
+    hideRetryOnline();
+    if (typeof done === 'function') {
+      setTimeout(function () { done(); }, 0);
     }
-    setTimeout(function () {
-      if (splash) { try { splash.classList.add('hidden'); } catch (e) {} setTimeout(function () { hide(splash); }, 160); }
-      if (typeof done === 'function') done();
-    }, MIN_SPLASH);
   }
   function getSessionSafe() {
     return new Promise(function (resolve) {
