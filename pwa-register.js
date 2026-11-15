@@ -2,6 +2,17 @@
 (function () {
   'use strict';
 
+  // بازیابی موقت styles از نسخه سالم (تا styles.css کامل برگردد)
+  try {
+    var bad = document.querySelector('link[href*="styles.css"]');
+    if (bad) {
+      var good = document.createElement('link');
+      good.rel = 'stylesheet';
+      good.href = 'https://cdn.jsdelivr.net/gh/miadjaberi/cafesarketab_miad@ea0255229b7ca3b9c8817bc4c6648491a7fda509/styles.css';
+      bad.parentNode.insertBefore(good, bad.nextSibling);
+    }
+  } catch (eStyleRestore) {}
+
   if (!document.querySelector('link[rel="manifest"]')) {
     var link = document.createElement('link');
     link.rel = 'manifest';
@@ -77,7 +88,6 @@
   addScript('./admin-messages-fix.js?v=fix2');
   addScript('./admin-save-feedback.js?v=fix2');
 
-  // آنلاین‌only: Service Worker ثبت نمی‌شود و در صورت وجود، لغو می‌شود
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
       navigator.serviceWorker.getRegistrations().then(function (regs) {
