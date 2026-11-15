@@ -1,4 +1,4 @@
-/* SW + Manifest + field pattern + brand + admin messages + ui-feedback (light) + admin-save */
+/* ONLINE-ONLY: SW disabled + Manifest + field pattern + brand + admin messages + ui-feedback (light) + admin-save */
 (function () {
   'use strict';
 
@@ -77,11 +77,21 @@
   addScript('./admin-messages-fix.js?v=fix2');
   addScript('./admin-save-feedback.js?v=fix2');
 
+  // آنلاین‌only: Service Worker ثبت نمی‌شود و در صورت وجود، لغو می‌شود
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('./sw.js', { scope: './' }).then(function (reg) {
-        // Let an update activate after old clients close; do not force reload active sessions.
+      navigator.serviceWorker.getRegistrations().then(function (regs) {
+        for (var i = 0; i < regs.length; i++) {
+          try { regs[i].unregister(); } catch (e) {}
+        }
       }).catch(function () {});
+      if (typeof caches !== 'undefined' && caches.keys) {
+        caches.keys().then(function (keys) {
+          for (var j = 0; j < keys.length; j++) {
+            try { caches.delete(keys[j]); } catch (e2) {}
+          }
+        }).catch(function () {});
+      }
     });
   }
 })();
