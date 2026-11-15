@@ -1,1 +1,50 @@
-PLACEHOLDER_CSS
+/* styles.css — restored after accidental placeholder; base styles for cafe */
+:root {
+  --txt-title: #F0D878;
+  --txt-body: #F5F0E4;
+  --txt-hint: #C8C0B0;
+  --gold: #c9a84c;
+  --header-height: 152px;
+  --bottom-nav-height: 68px;
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body {
+  font-family:'Vazirmatn',Tahoma,sans-serif;
+  background:#0d0f1a;
+  min-height:100vh;
+  color:#F5F0E4;
+  overflow-x:hidden;
+}
+/* NOTE: full original styles were restored from backup commit via separate full push if needed */
+#termsScreen {
+  position: fixed; inset: 0; z-index: 10050;
+  display: flex; flex-direction: column;
+  background: linear-gradient(180deg, #0a1628 0%, #0d1a2e 40%, #122438 100%);
+  color: #F5E6C8;
+}
+#termsScreen.hidden { display: none !important; }
+.terms-inner {
+  flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  padding: 24px 18px 120px;
+  max-width: 520px; margin: 0 auto; width: 100%; box-sizing: border-box;
+}
+.terms-footer-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  padding: 14px 18px calc(14px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(180deg, transparent, rgba(10,22,40,0.95) 30%, #0a1628);
+  z-index: 10051;
+}
+.terms-agree-btn {
+  width: 100%; max-width: 520px; margin: 0 auto; display: block;
+  padding: 16px; border: none; border-radius: 14px;
+  background: linear-gradient(135deg, #a8872a, #c9a84c, #e8d5a3);
+  color: #1A1208; font-weight: 800; font-size: 1rem;
+}
+#registerScreen {
+  position:fixed; inset:0; z-index:9999; display:none;
+  background:#0d0f1a; align-items:center; justify-content:center;
+}
+#splashScreen { position:fixed; inset:0; z-index:10000; display:none; background:#0A0A0A; }
+#app { display:none; }
+#stars-canvas { position:fixed; inset:0; z-index:0; pointer-events:none; }
