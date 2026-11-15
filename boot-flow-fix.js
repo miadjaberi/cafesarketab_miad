@@ -1,14 +1,16 @@
-/** boot-flow-fix.js V4.5 — splash removed
+/** boot-flow-fix.js V4.6 — no flash before terms
  * - تشخیص دسترسی واقعی به Supabase Auth health با GET و timeout
  * - ورود آنلاین فقط با session و پروفایل تأییدشده از سرور
  * - getSession هم‌زمان با probe (بدون صف جعلی)
  * - مسیر آفلاین محدود فقط با انتخاب صریح کاربر
  * - کنترل یگانه شرایط، اسپلش و انتقال به صفحه ورود
  * - اسپلیش حذف شد: runSplashThen بلافاصله afterSplashRoute را صدا می‌زند
+ * - ستاره‌ها تا ورود به اپ اصلی مخفی می‌مانند تا فلش تیره دیده نشود
  */
 (function () {
   'use strict';
-  if (window.__KAFE_BOOT_FLOW_V45__) return;
+  if (window.__KAFE_BOOT_FLOW_V46__) return;
+  window.__KAFE_BOOT_FLOW_V46__ = true;
   window.__KAFE_BOOT_FLOW_V45__ = true;
   window.__KAFE_BOOT_FLOW_V44__ = true;
   window.__KAFE_BOOT_FLOW_V42__ = true;
@@ -102,18 +104,18 @@
   function showBootLoader() { ensureBootLoader().style.display = 'flex'; }
   function hideBootLoader() { var box = document.getElementById('kafeBootTransitionLoader'); if (box) box.style.display = 'none'; }
   function enterMainApp(profile) {
-    setStage('main'); hideBootLoader(); hide(el('termsScreen')); hide(el('splashScreen')); hide(el('registerScreen')); hideOfflineDialog(); hideRetryOnline(); showBlock(el('app'));
+    setStage('main'); hideBootLoader(); hide(el('termsScreen')); hide(el('splashScreen')); hide(el('registerScreen')); hideOfflineDialog(); hideRetryOnline(); showStars(); showBlock(el('app'));
     try { document.body.classList.toggle('is-offline', !navigatorSaysOnline()); } catch (e0) {}
     try { if (profile && typeof updateUserDisplay === 'function') Promise.resolve(updateUserDisplay(profile)).catch(function () {}); } catch (e) {}
     try { if (typeof window.refreshUserDashboardStats === 'function') window.refreshUserDashboardStats(); } catch (e2) {}
   }
   function showTermsOnly() {
-    setStage('terms'); hideBootLoader(); hide(el('splashScreen')); hide(el('registerScreen')); hide(el('app')); hideOfflineDialog(); hideRetryOnline();
+    setStage('terms'); hideBootLoader(); hideStars(); hide(el('splashScreen')); hide(el('registerScreen')); hide(el('app')); hideOfflineDialog(); hideRetryOnline();
     var terms = el('termsScreen');
     if (terms) { try { terms.classList.remove('hidden'); } catch (e) {} terms.style.display = 'flex'; }
   }
   function showRegisterOnly() {
-    setStage('auth'); hideBootLoader(); hide(el('splashScreen')); hide(el('termsScreen')); hide(el('app')); hideOfflineDialog(); hideRetryOnline(); showFlex(el('registerScreen'));
+    setStage('auth'); hideBootLoader(); hideStars(); hide(el('splashScreen')); hide(el('termsScreen')); hide(el('app')); hideOfflineDialog(); hideRetryOnline(); showFlex(el('registerScreen'));
     probeOnline().then(function (ok) {
       if (!ok) { try { if (typeof showNotification === 'function') showNotification('برای ثبت‌نام باید به اینترنت متصل باشید', 'error'); } catch (e) {} }
     });
@@ -203,16 +205,25 @@
     blockWhenOffline('openSubOrdersPanel', 'سفارش در حالت آفلاین بسته است');
     blockWhenOffline('openSubscriptionPurchase', 'خرید اشتراک در حالت آفلاین بسته است');
   }
+  function hideStars() {
+    var c = el('stars-canvas');
+    if (c) { try { c.style.display = 'none'; c.style.visibility = 'hidden'; } catch (e) {} }
+  }
+  function showStars() {
+    var c = el('stars-canvas');
+    if (c) { try { c.style.display = ''; c.style.visibility = ''; } catch (e) {} }
+  }
   function runSplashThen(done) {
-    // اسپلیش حذف شد — مستقیم ادامه مسیر (شرایط / ثبت‌نام / ورود)
+    // بدون فاصله خالی: ستاره‌ها مخفی، اسپلش مخفی، مستقیم مسیر شرایط/ورود
     setStage('skip-splash');
     hideBootLoader();
+    hideStars();
     hide(el('splashScreen'));
-    hide(el('termsScreen'));
     hide(el('registerScreen'));
     hide(el('app'));
     hideOfflineDialog();
     hideRetryOnline();
+    // termsScreen را عمداً مخفی نمی‌کنیم تا پس‌زمینه تیره ستاره‌دار دیده نشود
     if (typeof done === 'function') {
       setTimeout(function () { done(); }, 0);
     }
