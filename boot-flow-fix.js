@@ -1,4 +1,4 @@
-/** boot-flow-fix.js V4.6 — no flash before terms
+/** boot-flow-fix.js V4.7 — opaque loader, early hide stars
  * - تشخیص دسترسی واقعی به Supabase Auth health با GET و timeout
  * - ورود آنلاین فقط با session و پروفایل تأییدشده از سرور
  * - getSession هم‌زمان با probe (بدون صف جعلی)
@@ -9,7 +9,8 @@
  */
 (function () {
   'use strict';
-  if (window.__KAFE_BOOT_FLOW_V46__) return;
+  if (window.__KAFE_BOOT_FLOW_V47__) return;
+  window.__KAFE_BOOT_FLOW_V47__ = true;
   window.__KAFE_BOOT_FLOW_V46__ = true;
   window.__KAFE_BOOT_FLOW_V45__ = true;
   window.__KAFE_BOOT_FLOW_V44__ = true;
@@ -21,6 +22,11 @@
   var NET_PROBE_TIMEOUT = 3000;
   var TERMS_SESSION_KEY = 'kafeTermsSeenThisSessionV4';
   var STAGE_KEY = 'kafeBootStageV4';
+
+  try {
+    var _sc = document.getElementById('stars-canvas');
+    if (_sc) { _sc.style.display = 'none'; _sc.style.visibility = 'hidden'; }
+  } catch (eEarly) {}
 
   function el(id) { return document.getElementById(id); }
   function hide(node) {
@@ -96,7 +102,7 @@
     if (box) return box;
     box = document.createElement('div');
     box.id = id;
-    box.style.cssText = 'display:none;position:fixed;inset:0;z-index:10088;align-items:center;justify-content:center;background:rgba(7,11,20,0.55);pointer-events:none;';
+    box.style.cssText = 'display:none;position:fixed;inset:0;z-index:10088;align-items:center;justify-content:center;background:#070B14;pointer-events:none;';
     box.innerHTML = '<div style="width:42px;height:42px;border-radius:50%;border:3px solid rgba(240,216,120,0.25);border-top-color:#F0D878;animation:kafeBootSpin 0.8s linear infinite;"></div><style>@keyframes kafeBootSpin{to{transform:rotate(360deg)}}</style>';
     document.body.appendChild(box);
     return box;
@@ -214,7 +220,6 @@
     if (c) { try { c.style.display = ''; c.style.visibility = ''; } catch (e) {} }
   }
   function runSplashThen(done) {
-    // بدون فاصله خالی: ستاره‌ها مخفی، اسپلش مخفی، مستقیم مسیر شرایط/ورود
     setStage('skip-splash');
     hideBootLoader();
     hideStars();
@@ -223,7 +228,6 @@
     hide(el('app'));
     hideOfflineDialog();
     hideRetryOnline();
-    // termsScreen را عمداً مخفی نمی‌کنیم تا پس‌زمینه تیره ستاره‌دار دیده نشود
     if (typeof done === 'function') {
       setTimeout(function () { done(); }, 0);
     }
