@@ -2,17 +2,6 @@
 (function () {
   'use strict';
 
-  // بازیابی موقت styles از نسخه سالم (تا styles.css کامل برگردد)
-  try {
-    var bad = document.querySelector('link[href*="styles.css"]');
-    if (bad) {
-      var good = document.createElement('link');
-      good.rel = 'stylesheet';
-      good.href = 'https://cdn.jsdelivr.net/gh/miadjaberi/cafesarketab_miad@ea0255229b7ca3b9c8817bc4c6648491a7fda509/styles.css';
-      bad.parentNode.insertBefore(good, bad.nextSibling);
-    }
-  } catch (eStyleRestore) {}
-
   if (!document.querySelector('link[rel="manifest"]')) {
     var link = document.createElement('link');
     link.rel = 'manifest';
