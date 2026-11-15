@@ -86,20 +86,46 @@
         (document.body || document.documentElement).appendChild(s);
       } catch (e) {}
     }
-    inject('./boot-flow-fix.js?v=20261108c', 'boot-flow');
-    inject('./nav-swipe-fix.js?v=20261108c', 'nav-swipe');
-    inject('./buy-nav-fix.js?v=20261108c', 'buy-nav');
-    inject('./final-nav-fix.js?v=20261108c', 'final-nav');
-    inject('./kafe-seven-fixes.js?v=20261106e', 'seven');
-    inject('./fix-four-bugs.js?v=20261106e', 'four-bugs');
-    inject('./hamzad-ui-fix.js?v=20261106e', 'hamzad-ui');
-    inject('./modal-menu-layout.js?v=20261106e', 'modal-menu');
-    inject('./modal-ui-theme.js?v=20261106e', 'modal-theme');
-    inject('./modal-guide-size-fix.js?v=20261106e', 'modal-guide-size');
-    inject('./rename-raml.js?v=20261106e', 'rename-raml');
-    inject('./ui-unify-v1.js?v=20261106e', 'ui-unify');
-    inject('./admin-ui-four-fixes.js?v=20261106e', 'admin-four');
-    inject('./admin-messages-session-fix.js?v=20261107a', 'msg-session');
-    inject('./nav-pages.js?v=20261110a', 'nav-pages');
+    // فقط boot برای مسیر شرایط/ورود — بقیه بعد از ورود به اپ
+    inject('./boot-flow-fix.js?v=20261115-step3', 'boot-flow');
+
+    var deferred = [
+      ['./nav-swipe-fix.js?v=20261108c', 'nav-swipe'],
+      ['./buy-nav-fix.js?v=20261108c', 'buy-nav'],
+      ['./final-nav-fix.js?v=20261108c', 'final-nav'],
+      ['./kafe-seven-fixes.js?v=20261106e', 'seven'],
+      ['./fix-four-bugs.js?v=20261106e', 'four-bugs'],
+      ['./hamzad-ui-fix.js?v=20261106e', 'hamzad-ui'],
+      ['./modal-menu-layout.js?v=20261106e', 'modal-menu'],
+      ['./modal-ui-theme.js?v=20261106e', 'modal-theme'],
+      ['./modal-guide-size-fix.js?v=20261106e', 'modal-guide-size'],
+      ['./rename-raml.js?v=20261106e', 'rename-raml'],
+      ['./ui-unify-v1.js?v=20261106e', 'ui-unify'],
+      ['./admin-ui-four-fixes.js?v=20261106e', 'admin-four'],
+      ['./admin-messages-session-fix.js?v=20261107a', 'msg-session'],
+      ['./nav-pages.js?v=20261110a', 'nav-pages']
+    ];
+    var loaded = false;
+    function loadDeferredPatches() {
+      if (loaded) return;
+      loaded = true;
+      for (var i = 0; i < deferred.length; i++) inject(deferred[i][0], deferred[i][1]);
+    }
+    var prevAuth = window.kafeAfterAuthSuccess;
+    window.kafeAfterAuthSuccess = function (profile) {
+      loadDeferredPatches();
+      if (typeof prevAuth === 'function') return prevAuth.apply(this, arguments);
+      return true;
+    };
+    function watchApp() {
+      var app = document.getElementById('app');
+      if (app && app.style.display && app.style.display !== 'none') {
+        loadDeferredPatches();
+        return;
+      }
+      setTimeout(watchApp, 800);
+    }
+    setTimeout(watchApp, 1500);
+    setTimeout(loadDeferredPatches, 12000);
   })();
 })();

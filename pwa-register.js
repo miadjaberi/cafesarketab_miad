@@ -72,10 +72,17 @@
   setTimeout(blockMessageRealtime, 200);
   setTimeout(blockMessageRealtime, 1300);
 
-  addScript('./brand-public-fix.js?v=fix2');
-  addScript('./ui-feedback.js?v=fix2');
-  addScript('./admin-messages-fix.js?v=fix2');
-  addScript('./admin-save-feedback.js?v=fix2');
+  function addDeferredAdmin() {
+    addScript('./brand-public-fix.js?v=fix2');
+    addScript('./ui-feedback.js?v=fix2');
+    addScript('./admin-messages-fix.js?v=fix2');
+    addScript('./admin-save-feedback.js?v=fix2');
+  }
+  if (typeof requestIdleCallback === 'function') {
+    requestIdleCallback(addDeferredAdmin, { timeout: 4000 });
+  } else {
+    setTimeout(addDeferredAdmin, 2500);
+  }
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
