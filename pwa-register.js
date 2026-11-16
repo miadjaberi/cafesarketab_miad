@@ -1,4 +1,4 @@
-/* ONLINE-ONLY: SW disabled + Manifest + field pattern + brand + admin messages + ui-feedback (light) + admin-save */
+/* ONLINE-ONLY: SW kill-switch + Manifest + field pattern */
 (function () {
   'use strict';
 
@@ -39,65 +39,36 @@
   ].join('\n');
   document.head.appendChild(st);
 
-  function addScript(src) {
-    if (document.querySelector('script[src*="' + src.split('?')[0] + '"]')) return;
-    var s = document.createElement('script');
-    s.src = src;
-    s.defer = true;
-    (document.body || document.head).appendChild(s);
-  }
-
-  function blockMessageRealtime() {
-    var c = window.supabaseClient || window.v12Supabase;
-    if (!c || !c.channel || c.__kafeMsgChannelPatched) return;
-    var orig = c.channel.bind(c);
-    c.channel = function (name) {
-      if (name === 'v18-messages-live') {
-        var d = { on: function () { return d; }, subscribe: function () { return d; }, unsubscribe: function () { return d; } };
-        return d;
-      }
-      return orig.apply(c, arguments);
-    };
-    c.__kafeMsgChannelPatched = true;
-    try {
-      var chans = typeof c.getChannels === 'function' ? c.getChannels() : [];
-      for (var i = 0; i < chans.length; i++) {
-        if (String((chans[i] && chans[i].topic) || '').indexOf('v18-messages-live') !== -1) {
-          try { c.removeChannel(chans[i]); } catch (e) {}
-        }
-      }
-    } catch (e2) {}
-  }
-  blockMessageRealtime();
-  setTimeout(blockMessageRealtime, 200);
-  setTimeout(blockMessageRealtime, 1300);
-
-  function addDeferredAdmin() {
-    addScript('./brand-public-fix.js?v=fix2');
-    addScript('./ui-feedback.js?v=fix2');
-    addScript('./admin-messages-fix.js?v=fix2');
-    addScript('./admin-save-feedback.js?v=fix2');
-  }
-  if (typeof requestIdleCallback === 'function') {
-    requestIdleCallback(addDeferredAdmin, { timeout: 4000 });
-  } else {
-    setTimeout(addDeferredAdmin, 2500);
-  }
-
+  /* ریشه: کش v22 را با kill-switch و unregister کامل پاک کن */
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function () {
-      navigator.serviceWorker.getRegistrations().then(function (regs) {
-        for (var i = 0; i < regs.length; i++) {
-          try { regs[i].unregister(); } catch (e) {}
-        }
-      }).catch(function () {});
-      if (typeof caches !== 'undefined' && caches.keys) {
-        caches.keys().then(function (keys) {
-          for (var j = 0; j < keys.length; j++) {
-            try { caches.delete(keys[j]); } catch (e2) {}
-          }
+    (function killLegacySw() {
+      function clearCaches() {
+        if (typeof caches === 'undefined' || !caches.keys) return Promise.resolve();
+        return caches.keys().then(function (keys) {
+          return Promise.all(keys.map(function (k) {
+            try { return caches.delete(k); } catch (e) { return null; }
+          }));
         }).catch(function () {});
       }
-    });
+      function unregisterAll() {
+        return navigator.serviceWorker.getRegistrations().then(function (regs) {
+          return Promise.all((regs || []).map(function (r) {
+            try { return r.unregister(); } catch (e) { return null; }
+          }));
+        }).catch(function () {});
+      }
+      navigator.serviceWorker.register('./sw.js?v=kill1', { scope: './' })
+        .then(function (reg) {
+          try {
+            if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+            if (reg.installing) reg.installing.postMessage({ type: 'SKIP_WAITING' });
+          } catch (e) {}
+          return clearCaches();
+        })
+        .catch(function () { return clearCaches(); })
+        .then(function () { return unregisterAll(); })
+        .then(function () { return clearCaches(); })
+        .catch(function () {});
+    })();
   }
 })();

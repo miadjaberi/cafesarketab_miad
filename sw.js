@@ -1,144 +1,44 @@
-/* کافه سرکتاب میعاد — Service Worker */
-const CACHE_VERSION = 'kafe-miad-v22.83-supabase-icons-20261111';
-const SHELL_CACHE = `shell-${CACHE_VERSION}`;
+/* sw.js — kill-switch: نابودی کش آفلاین v22 و توقف کامل Service Worker
+ * هدف: دیگر هیچ شِل قدیمی از کش سرو نشود؛ فقط شبکه.
+ */
+self.addEventListener('install', function (event) {
+  self.skipWaiting();
+});
 
-const PRECACHE_URLS = [
-  './',
-  './index.html',
-  './styles.css',
-  './data.js',
-  './main.js',
-  './brand-public-fix.js',
-  './tools-extra.js',
-  './dalil-images-fix.js',
-  './pwa-icon-dynamic.js',
-  './app.js',
-  './vip-offline-cache.js?v=20261108a',
-  './pwa-register.js',
-  './ui-layer-fix.js',
-  './nav-pages.js?v=20261110a',
-  './boot-flow-fix.js?v=20261108a',
-  './nav-swipe-fix.js?v=20261108a',
-  './buy-nav-fix.js?v=20261108a',
-  './final-nav-fix.js?v=20261108a',
-  './kafe-seven-fixes.js?v=20261106e',
-  './fix-four-bugs.js?v=20261106e',
-  './hamzad-ui-fix.js?v=20261106e',
-  './modal-menu-layout.js?v=20261106e',
-  './modal-ui-theme.js?v=20261106e',
-  './modal-guide-size-fix.js?v=20261106e',
-  './rename-raml.js?v=20261106e',
-  './ui-unify-v1.js?v=20261106e',
-  './admin-ui-four-fixes.js?v=20261106e',
-  './admin-messages-session-fix.js?v=20261107a',
-  './brand-public-fix.js?v=fix2',
-  './ui-feedback.js?v=fix2',
-  './admin-messages-fix.js?v=fix2',
-  './admin-save-feedback.js?v=fix2',
-  './field-pattern.css?v=22.22-fix',
-  './icon192.png',
-  './icon512.png',
-  './favicon.png',
-  './apple-touch-icon.png',
-  './theme-atelier.css',
-  './assets/splash.jpg',
-  './theme-lock.css',
-  './fonts/vazirmatn.css',
-  './fonts/Vazirmatn-wght.woff2',
-  './manifest.webmanifest',
-  './vendor/supabase-js.min.js'
-];
-
-self.addEventListener('install', (event) => {
+self.addEventListener('activate', function (event) {
   event.waitUntil(
-    caches.open(SHELL_CACHE).then((cache) =>
-      Promise.all(PRECACHE_URLS.map((url) =>
-        cache.add(new Request(url, { cache: 'reload' })).catch((error) => {
-          console.warn('[Kafe SW] precache skipped:', url, error);
-        })
-      ))
-    )
+    caches.keys().then(function (keys) {
+      return Promise.all(keys.map(function (k) { return caches.delete(k); }));
+    }).then(function () {
+      return self.clients.claim();
+    }).then(function () {
+      return self.registration.unregister();
+    }).then(function () {
+      return self.clients.matchAll({ type: 'window' });
+    }).then(function (clients) {
+      clients.forEach(function (c) {
+        try {
+          if (c && c.navigate) c.navigate(c.url);
+        } catch (e) {}
+      });
+    }).catch(function () {})
   );
 });
 
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches
-      .keys()
-      .then((keys) =>
-        Promise.all(
-          keys
-            .filter((k) => k.startsWith('shell-') && k !== SHELL_CACHE)
-            .map((k) => caches.delete(k))
-        )
-      )
-      .then(() => self.clients.claim())
-  );
-});
-
-function isSupabaseOrApi(url) {
-  try {
-    const u = new URL(url);
-    return (
-      u.hostname.includes('supabase.co') ||
-      u.hostname.includes('supabase.in') ||
-      u.hostname.includes('api.quran.com') ||
-      u.pathname.includes('/rest/v1/') ||
-      u.pathname.includes('/auth/v1/') ||
-      u.pathname.includes('/storage/v1/') ||
-      u.pathname.includes('/realtime/v1/')
-    );
-  } catch (e) {
-    return false;
-  }
-}
-
-self.addEventListener('fetch', (event) => {
-  const req = event.request;
-  if (req.method !== 'GET') return;
-  const url = req.url;
-
-  if (isSupabaseOrApi(url)) {
-    event.respondWith(fetch(req));
-    return;
-  }
-
-  if (/\.js$/i.test(new URL(url).pathname)) {
-    event.respondWith(
-      fetch(req, { cache: 'reload' })
-        .then((res) => {
-          if (res && res.ok) {
-            const copy = res.clone();
-            caches.open(SHELL_CACHE).then((c) => c.put(req, copy)).catch(() => {});
-          }
-          return res;
-        })
-        .catch(() => caches.match(req))
-    );
-    return;
-  }
-
+/* هیچ پاسخی از کش نده — فقط شبکه */
+self.addEventListener('fetch', function (event) {
+  if (event.request.method !== 'GET') return;
   event.respondWith(
-    fetch(req)
-      .then((res) => {
-        if (res && res.ok) {
-          const copy = res.clone();
-          caches.open(SHELL_CACHE).then((c) => c.put(req, copy)).catch(() => {});
-        }
-        return res;
-      })
-      .catch(() =>
-        caches.match(req).then((cached) => {
-          if (cached) return cached;
-          if (req.mode === 'navigate') {
-            return caches.match('./index.html').then((shell) => shell || Response.error());
-          }
-          return Response.error();
-        })
-      )
+    fetch(event.request, { cache: 'no-store' }).catch(function () {
+      return new Response('Offline — کش آفلاین غیرفعال است', {
+        status: 503,
+        statusText: 'Service Unavailable',
+        headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+      });
+    })
   );
 });
 
-self.addEventListener('message', (event) => {
+self.addEventListener('message', function (event) {
   if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
 });
