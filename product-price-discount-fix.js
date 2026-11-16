@@ -1,7 +1,8 @@
-/* product-price-discount-fix.js v1 — تخفیف٪ روی قیمت + متن کنار قیمت */
+/* product-price-discount-fix.js v2 — محصولات + اشتراک: قیمت اصلی / تخفیفی */
 (function () {
   'use strict';
-  if (window.__KAFE_PRICE_DISCOUNT_V1__) return;
+  if (window.__KAFE_PRICE_DISCOUNT_V2__) return;
+  window.__KAFE_PRICE_DISCOUNT_V2__ = true;
   window.__KAFE_PRICE_DISCOUNT_V1__ = true;
 
   var META_KEY = 'kafeProductPriceMeta';
@@ -42,6 +43,15 @@
       .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
   }
 
+  function calcFinal(base, pct) {
+    base = Number(base) || 0;
+    pct = Number(pct) || 0;
+    if (pct < 0) pct = 0;
+    if (pct > 95) pct = 95;
+    if (pct <= 0) return base;
+    return Math.round(base * (100 - pct) / 100);
+  }
+
   function formatPriceBlock(price, productId) {
     var base = Number(price) || 0;
     var meta = metaFor(productId);
@@ -53,9 +63,7 @@
     if (pct < 0) pct = 0;
     if (pct > 95) pct = 95;
 
-    var final = base;
-    if (pct > 0) final = Math.round(base * (100 - pct) / 100);
-
+    var final = calcFinal(base, pct);
     var baseTxt = base.toLocaleString('fa-IR') + ' تومان';
     var finalTxt = final.toLocaleString('fa-IR') + ' تومان';
     var noteHtml = note ? (' <span class="kafe-price-note">' + escapeHtml(note) + '</span>') : '';
@@ -71,17 +79,35 @@
     return '<span class="kafe-price-wrap"><span class="kafe-price-new">' + baseTxt + '</span>' + noteHtml + '</span>';
   }
 
+  function formatSubPlanPriceHtml(price) {
+    var base = Number(price) || 0;
+    var pct = getGlobalPercent();
+    if (base <= 0) return '<span class="kafe-price-new">قیمت اعلام‌نشده</span>';
+    var final = calcFinal(base, pct);
+    var baseTxt = base.toLocaleString('fa-IR') + ' تومان';
+    var finalTxt = final.toLocaleString('fa-IR') + ' تومان';
+    if (pct > 0 && final < base) {
+      return '<span class="kafe-price-wrap kafe-sub-plan-price">' +
+        '<span class="kafe-price-old">' + baseTxt + '</span>' +
+        '<span class="kafe-price-new">' + finalTxt + '</span>' +
+        '<span class="kafe-price-pct">' + pct + '٪</span>' +
+        '</span>';
+    }
+    return '<span class="kafe-price-new">' + baseTxt + '</span>';
+  }
+
   try {
     var st = document.createElement('style');
     st.id = 'kafePriceDiscountCss';
     st.textContent = [
       '.kafe-price-wrap{display:flex;flex-direction:column;gap:2px;align-items:flex-start}',
-      '.product-card .kafe-price-wrap{align-items:center}',
+      '.product-card .kafe-price-wrap,.kafe-sub-plan-price{align-items:center}',
       '.kafe-price-old{text-decoration:line-through;opacity:.55;font-size:.78em;color:inherit}',
       '.kafe-price-new{font-weight:800;color:#F0D878}',
       '.ig-product-price .kafe-price-new{font-size:1.05em}',
       '.kafe-price-pct{font-size:.72em;color:#e8c76b;background:rgba(201,168,76,.15);padding:1px 6px;border-radius:8px;margin-top:2px}',
       '.kafe-price-note{font-size:.78em;opacity:.9;font-weight:600;color:#C8C0B0}',
+      '#subscriptionPlanButtons .kafe-sub-plan-price{margin-top:4px}',
       '#kafeDiscountPercentRow label,#kafeProductPriceExtra label{display:block;font-size:.8rem;margin:6px 0 4px;color:var(--txt-body,#F5F0E4)}',
       '#kafeDiscountPercentRow input,#kafeProductPriceExtra input{width:100%;padding:10px 12px;border-radius:10px;border:1px solid #ccc;box-sizing:border-box}'
     ].join('');
@@ -93,7 +119,7 @@
     if (!sub || document.getElementById('discountPercentInput')) return;
     var row = document.createElement('div');
     row.id = 'kafeDiscountPercentRow';
-    row.innerHTML = '<label>درصد تخفیف پیشنهادی (مثلاً ۵۰)</label>' +
+    row.innerHTML = '<label>درصد تخفیف پیشنهادی (محصولات و اشتراک)</label>' +
       '<input type="number" id="discountPercentInput" min="0" max="95" step="1" placeholder="مثلاً 50">';
     sub.parentNode.insertBefore(row, sub.nextSibling);
     var d = getDiscountSettings();
@@ -117,6 +143,7 @@
         }
       } catch (e) {}
       try { refreshPriceDisplays(); } catch (e2) {}
+      try { refreshSubscriptionPlanPrices(); } catch (e3) {}
       return r;
     };
     window.saveDiscountSettings.__kafePct = true;
@@ -199,6 +226,44 @@
     } catch (e) {}
   }
 
+  function refreshSubscriptionPlanPrices() {
+    try {
+      var pb = document.getElementById('subscriptionPlanButtons');
+      if (!pb) return;
+      var plans = (window.getSubscriptionPlans && window.getSubscriptionPlans()) || [];
+      var byDays = {};
+      plans.forEach(function (p) { byDays[String(p.days)] = p; });
+
+      pb.querySelectorAll('button.subscription-plan-btn, button[data-plan-days]').forEach(function (btn) {
+        var days = btn.getAttribute('data-plan-days');
+        var plan = byDays[String(days)];
+        if (!plan) return;
+        var title = plan.title || (plan.days + ' روزه');
+        btn.innerHTML = escapeHtml(title) + '<br>' + formatSubPlanPriceHtml(plan.price);
+      });
+    } catch (e) {}
+  }
+
+  function patchSelectAndSubmitAmount() {
+    try {
+      var prevSel = window.selectSubscriptionPlan;
+      if (typeof prevSel === 'function' && !prevSel.__kafePct) {
+        window.selectSubscriptionPlan = function (days) {
+          var r = prevSel.apply(this, arguments);
+          try {
+            var plan = window.getPlanByDays && window.getPlanByDays(days);
+            if (plan) {
+              var final = calcFinal(plan.price, getGlobalPercent());
+              window._subscriptionSelectedPlanPrice = final;
+            }
+          } catch (e) {}
+          return r;
+        };
+        window.selectSubscriptionPlan.__kafePct = true;
+      }
+    } catch (e2) {}
+  }
+
   function patchRenderProducts() {
     var prev = window.renderProducts;
     if (typeof prev !== 'function' || prev.__kafePct) return;
@@ -227,6 +292,41 @@
     window.openProductDetail.__kafePct = true;
   }
 
+  function patchOpenSubscriptionPurchase() {
+    var tries = 0;
+    function attempt() {
+      var prev = window.openSubscriptionPurchase;
+      if (typeof prev !== 'function') {
+        if (tries++ < 40) setTimeout(attempt, 250);
+        return;
+      }
+      if (prev.__kafePct) return;
+      window.openSubscriptionPurchase = function () {
+        var r = prev.apply(this, arguments);
+        try {
+          if (r && typeof r.then === 'function') {
+            r.then(function () {
+              setTimeout(refreshSubscriptionPlanPrices, 40);
+              setTimeout(refreshSubscriptionPlanPrices, 200);
+              setTimeout(patchSelectAndSubmitAmount, 50);
+            }).catch(function () {
+              setTimeout(refreshSubscriptionPlanPrices, 40);
+            });
+          } else {
+            setTimeout(refreshSubscriptionPlanPrices, 40);
+            setTimeout(refreshSubscriptionPlanPrices, 200);
+            setTimeout(patchSelectAndSubmitAmount, 50);
+          }
+        } catch (e) {
+          setTimeout(refreshSubscriptionPlanPrices, 40);
+        }
+        return r;
+      };
+      window.openSubscriptionPurchase.__kafePct = true;
+    }
+    attempt();
+  }
+
   function boot() {
     enhanceAdminDiscountForm();
     enhanceAdminProductForm();
@@ -234,7 +334,10 @@
     patchAddProduct();
     patchRenderProducts();
     patchOpenProductDetail();
+    patchOpenSubscriptionPurchase();
+    patchSelectAndSubmitAmount();
     refreshPriceDisplays();
+    refreshSubscriptionPlanPrices();
   }
 
   if (document.readyState === 'loading') {
@@ -243,4 +346,11 @@
   setTimeout(boot, 1500);
   setTimeout(boot, 4000);
   setTimeout(refreshPriceDisplays, 2500);
+
+  try {
+    var obs = new MutationObserver(function () {
+      if (document.getElementById('subscriptionPlanButtons')) refreshSubscriptionPlanPrices();
+    });
+    obs.observe(document.documentElement, { childList: true, subtree: true });
+  } catch (eObs) {}
 })();
