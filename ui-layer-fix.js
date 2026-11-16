@@ -87,7 +87,7 @@
       } catch (e) {}
     }
     inject('./boot-flow-fix.js?v=20261115-step3', 'boot-flow');
-    inject('./product-modal-safe-fix.js?v=1', 'product-modal-safe');
+    inject('./product-modal-safe-fix.js?v=2', 'product-modal-safe');
 
     var deferred = [
       ['./nav-swipe-fix.js?v=20261108c', 'nav-swipe'],

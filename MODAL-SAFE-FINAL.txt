@@ -1,0 +1,16 @@
+کافه سرکتاب میعاد — ثبت فیکس مودال خرید
+تاریخ: 2026-11-16
+
+۱) مودال کارت محصول (productDetailModal)
+- مشکل: دکمه‌های انصراف/ثبت و بستن زیر نوار سیستم گوشی پنهان می‌شدند
+- حل: padding امن safe-area، دکمه‌های sticky، دکمه ✕ شناور بالا
+- فایل: product-modal-safe-fix.js
+- ادغام: main (ui-layer-fix.js لود فوری)
+
+۲) مودال خرید اشتراک (subscriptionModalBox)
+- همان الگو: فضای پایین + ✕ شناور + sticky روی ردیف ثبت
+- فایل همان product-modal-safe-fix.js نسخه v2
+- هوک روی openSubscriptionPurchase
+
+بکاپ کلی پروژه از قبل روی برنچ‌های backup موجود است.
+وضعیت: ثبت و ادغام روی main.

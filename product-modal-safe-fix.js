@@ -1,21 +1,32 @@
-/* product-modal-safe-fix.js — دکمه‌های خرید از زیر نوار گوشی خارج شوند */
+/* product-modal-safe-fix.js v2 — محصولات + خرید اشتراک: دکمه‌ها از زیر نوار گوشی خارج */
 (function () {
   'use strict';
-  if (window.__KAFE_PRODUCT_MODAL_SAFE__) return;
+  if (window.__KAFE_PRODUCT_MODAL_SAFE_V2__) return;
+  window.__KAFE_PRODUCT_MODAL_SAFE_V2__ = true;
   window.__KAFE_PRODUCT_MODAL_SAFE__ = true;
 
-  var css = '\n#productDetailModal.modal-glass{align-items:flex-end!important;padding:0!important;z-index:4000!important}\n#productDetailModal .modal-glass-content{max-height:min(90dvh,90vh)!important;padding-bottom:calc(28px + env(safe-area-inset-bottom,0px) + 72px)!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;overscroll-behavior:contain;box-sizing:border-box!important}\n#productDetailModal .modal-glass-close{position:absolute!important;top:12px!important;left:12px!important;z-index:10!important;width:40px!important;height:40px!important;border-radius:50%!important;background:rgba(0,0,0,.65)!important;color:#fff!important;font-size:18px!important}\n#productDetailModal .ig-buy-actions{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}\n#productDetailModal .kafe-product-close-fab{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));left:12px;z-index:4010;width:42px;height:42px;border-radius:50%;border:1px solid rgba(201,168,76,.45);background:rgba(10,22,40,.92);color:#F0D878;font-size:18px;font-weight:800;display:none;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.45)}\n#productDetailModal.active .kafe-product-close-fab{display:flex}\n';
+  var css = [
+    '#productDetailModal.modal-glass{align-items:flex-end!important;padding:0!important;z-index:4000!important}',
+    '#productDetailModal .modal-glass-content{max-height:min(90dvh,90vh)!important;padding-bottom:calc(28px + env(safe-area-inset-bottom,0px) + 72px)!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;overscroll-behavior:contain;box-sizing:border-box!important}',
+    '#productDetailModal .modal-glass-close{position:absolute!important;top:12px!important;left:12px!important;z-index:10!important;width:40px!important;height:40px!important;border-radius:50%!important;background:rgba(0,0,0,.65)!important;color:#fff!important;font-size:18px!important}',
+    '#productDetailModal .ig-buy-actions{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}',
+    '#productDetailModal .kafe-product-close-fab{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));left:12px;z-index:4010;width:42px;height:42px;border-radius:50%;border:1px solid rgba(201,168,76,.45);background:rgba(10,22,40,.92);color:#F0D878;font-size:18px;font-weight:800;display:none;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.45)}',
+    '#productDetailModal.active .kafe-product-close-fab{display:flex}',
+    '#subscriptionModalBox{z-index:6000!important;align-items:flex-end!important}',
+    '#subscriptionModalBox > div{max-height:min(90dvh,90vh)!important;padding-bottom:calc(28px + env(safe-area-inset-bottom,0px) + 72px)!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;overscroll-behavior:contain;box-sizing:border-box!important}',
+    '#subscriptionModalBox .kafe-sub-close-fab{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));left:12px;z-index:6010;width:42px;height:42px;border-radius:50%;border:1px solid rgba(201,168,76,.45);background:rgba(10,22,40,.92);color:#F0D878;font-size:18px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.45)}'
+  ].join('');
 
   try {
-    if (!document.getElementById('kafeProductModalSafeCss')) {
-      var st = document.createElement('style');
-      st.id = 'kafeProductModalSafeCss';
-      st.textContent = css;
-      (document.head || document.documentElement).appendChild(st);
-    }
+    var old = document.getElementById('kafeProductModalSafeCss');
+    if (old) old.remove();
+    var st = document.createElement('style');
+    st.id = 'kafeProductModalSafeCss';
+    st.textContent = css;
+    (document.head || document.documentElement).appendChild(st);
   } catch (e0) {}
 
-  function ensureFab() {
+  function ensureProductFab() {
     var modal = document.getElementById('productDetailModal');
     if (!modal) return;
     var fab = document.getElementById('kafeProductCloseFab');
@@ -39,7 +50,7 @@
     }
   }
 
-  function markActionRows() {
+  function markProductActionRows() {
     ['igOrderForm', 'igCallInfo'].forEach(function (id) {
       var form = document.getElementById(id);
       if (!form) return;
@@ -57,23 +68,100 @@
     });
   }
 
-  function boot() { ensureFab(); markActionRows(); }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
-  else boot();
-  setTimeout(boot, 600);
-  setTimeout(boot, 2000);
+  function ensureSubFab() {
+    var box = document.getElementById('subscriptionModalBox');
+    if (!box) return;
+    var fab = document.getElementById('kafeSubCloseFab');
+    if (!fab) {
+      fab = document.createElement('button');
+      fab.type = 'button';
+      fab.id = 'kafeSubCloseFab';
+      fab.className = 'kafe-sub-close-fab';
+      fab.setAttribute('aria-label', 'بستن');
+      fab.textContent = '\u2715';
+      fab.onclick = function (ev) {
+        try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+        try {
+          var b = document.getElementById('subscriptionModalBox');
+          if (b) b.remove();
+        } catch (e2) {}
+      };
+      box.appendChild(fab);
+    }
+    var inner = box.firstElementChild;
+    if (inner) {
+      inner.style.maxHeight = 'min(90dvh, 90vh)';
+      inner.style.paddingBottom = 'calc(28px + env(safe-area-inset-bottom, 0px) + 72px)';
+      inner.style.overflowY = 'auto';
+      inner.style.webkitOverflowScrolling = 'touch';
+      var buttons = inner.querySelectorAll('button');
+      for (var j = 0; j < buttons.length; j++) {
+        var btn = buttons[j];
+        var txt = (btn.textContent || '');
+        if (txt.indexOf('ثبت') >= 0 || txt.indexOf('ارسال درخواست') >= 0 || txt.indexOf('تأیید') >= 0) {
+          var parent = btn.parentElement;
+          if (parent && parent !== inner) {
+            parent.style.position = 'sticky';
+            parent.style.bottom = '0';
+            parent.style.zIndex = '8';
+            parent.style.paddingBottom = 'calc(12px + env(safe-area-inset-bottom, 0px))';
+            parent.style.background = 'linear-gradient(180deg, rgba(12,20,36,0), rgba(12,20,36,0.98) 30%)';
+          }
+        }
+      }
+    }
+  }
 
-  function patch(name) {
+  function bootProduct() {
+    ensureProductFab();
+    markProductActionRows();
+  }
+  function bootSub() {
+    ensureSubFab();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { bootProduct(); });
+  } else {
+    bootProduct();
+  }
+  setTimeout(bootProduct, 600);
+  setTimeout(bootProduct, 2000);
+
+  function patch(name, after) {
     var prev = window[name];
     if (typeof prev !== 'function' || prev.__kafeSafePatched) return;
     window[name] = function () {
       var r = prev.apply(this, arguments);
-      setTimeout(function () { ensureFab(); markActionRows(); }, 30);
+      try {
+        if (r && typeof r.then === 'function') {
+          r.then(function () { setTimeout(after, 40); }).catch(function () { setTimeout(after, 40); });
+        } else {
+          setTimeout(after, 40);
+        }
+      } catch (e) { setTimeout(after, 40); }
       return r;
     };
     window[name].__kafeSafePatched = true;
   }
-  patch('showOnlineOrderForm');
-  patch('showCallPurchaseInfo');
-  setTimeout(function () { patch('showOnlineOrderForm'); patch('showCallPurchaseInfo'); }, 1500);
+
+  patch('showOnlineOrderForm', function () { bootProduct(); });
+  patch('showCallPurchaseInfo', function () { bootProduct(); });
+  patch('openSubscriptionPurchase', function () { bootSub(); });
+
+  setTimeout(function () {
+    patch('showOnlineOrderForm', function () { bootProduct(); });
+    patch('showCallPurchaseInfo', function () { bootProduct(); });
+    patch('openSubscriptionPurchase', function () { bootSub(); });
+  }, 1500);
+  setTimeout(function () {
+    patch('openSubscriptionPurchase', function () { bootSub(); });
+  }, 4000);
+
+  try {
+    var obs = new MutationObserver(function () {
+      if (document.getElementById('subscriptionModalBox')) bootSub();
+    });
+    obs.observe(document.documentElement, { childList: true, subtree: true });
+  } catch (eObs) {}
 })();
