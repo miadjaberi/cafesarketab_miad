@@ -1,7 +1,8 @@
-/* doago-modal-fix.js v1 — مودال دعاگو: دعا + طلسم (لیست عنوان‌دار و ادامه‌دار) */
+/* doago-modal-fix.js v2 — دعاگو + ادغام کنترل‌پنل مودال‌ها */
 (function () {
   'use strict';
-  if (window.__KAFE_DOAGO_V1__) return;
+  if (window.__KAFE_DOAGO_V2__) return;
+  window.__KAFE_DOAGO_V2__ = true;
   window.__KAFE_DOAGO_V1__ = true;
 
   var MODAL_ID = 'developingModal';
@@ -10,12 +11,8 @@
   var STORE_KEY = 'kafeDoagoContent';
 
   var DEFAULT = {
-    duas: [
-      { title: 'دعای شروع', text: 'متن دعا را از پنل مدیریت یا همین‌جا ویرایش کنید.' }
-    ],
-    talsams: [
-      { title: 'طلسم نمونه', text: 'متن طلسم را اینجا قرار دهید.' }
-    ]
+    duas: [{ title: 'دعای شروع', text: 'متن دعا را از پنل مدیریت ویرایش کنید.' }],
+    talsams: [{ title: 'طلسم نمونه', text: 'متن طلسم را اینجا قرار دهید.' }]
   };
 
   function getContent() {
@@ -52,6 +49,7 @@
       var cur = map[MODAL_ID] || {};
       cur.title = TITLE;
       cur.icon = ICON;
+      cur.guide = cur.guide || 'بخش دعا و طلسم — عنوان‌ها ردیف می‌شوند.';
       cur.doago = c;
       map[MODAL_ID] = cur;
       localStorage.setItem('cafeModalMeta', JSON.stringify(map));
@@ -99,8 +97,7 @@
       '<button type="button" class="doago-tab" data-tab="talsams" style="flex:1;padding:10px;border-radius:12px;border:1px solid rgba(201,168,76,.35);background:rgba(255,255,255,.06);color:#F5F0E4;font-weight:700;">🧿 طلسم</button>' +
       '</div>' +
       '<div id="doagoSectionDuas" class="doago-section"></div>' +
-      '<div id="doagoSectionTalsams" class="doago-section" style="display:none;"></div>' +
-      '<div id="doagoAdminBox" style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,215,0,.12);"></div>';
+      '<div id="doagoSectionTalsams" class="doago-section" style="display:none;"></div>';
 
     body.querySelectorAll('.doago-tab').forEach(function (btn) {
       btn.addEventListener('click', function () {
@@ -121,7 +118,6 @@
     });
 
     renderLists();
-    renderAdminEditor();
   }
 
   function renderLists() {
@@ -165,101 +161,155 @@
     });
   }
 
-  function renderAdminEditor() {
-    var box = document.getElementById('doagoAdminBox');
-    if (!box) return;
-    var c = getContent();
-    box.innerHTML =
-      '<details style="direction:rtl;">' +
-      '<summary style="cursor:pointer;color:#F0D878;font-weight:700;padding:6px 0;">⚙️ مدیریت محتوا (افزودن / ویرایش دعا و طلسم)</summary>' +
-      '<div style="margin-top:10px;font-size:.8rem;opacity:.85;line-height:1.6;">برای هر مورد عنوان و متن بگذارید. با «افزودن» ردیف جدید ساخته می‌شود.</div>' +
-      sectionEditorHtml('duas', 'دعاها', c.duas) +
-      sectionEditorHtml('talsams', 'طلسم‌ها', c.talsams) +
-      '<button type="button" id="doagoSaveBtn" class="btn" style="width:100%;margin-top:12px;">💾 ذخیره محتوا</button>' +
-      '</details>';
-
-    var saveBtn = document.getElementById('doagoSaveBtn');
-    if (saveBtn) {
-      saveBtn.onclick = function () {
-        var next = { duas: readEditor('duas'), talsams: readEditor('talsams') };
-        saveContent(next);
-        renderLists();
-        if (typeof showNotification === 'function') showNotification('✅ محتوای دعاگو ذخیره شد');
-        try {
-          if (typeof window.renderModalsHomeGrid === 'function') window.renderModalsHomeGrid();
-          if (typeof window.renderAdminModals === 'function') window.renderAdminModals();
-        } catch (e) {}
-      };
+  function injectAdminEditorPanel() {
+    var list = document.getElementById('adminModalsList');
+    if (list) {
+      list.querySelectorAll('.modal-admin-item').forEach(function (item) {
+        var name = item.querySelector('.modal-admin-name');
+        if (!name) return;
+        var txt = name.textContent || '';
+        if (txt.indexOf('شرح حال') >= 0 || txt.indexOf('دعاگو') >= 0) {
+          var c = getContent();
+          var structure = name.querySelector('.admin-structure');
+          if (structure) structure.textContent = (c.duas.length) + ' دعا / ' + (c.talsams.length) + ' طلسم';
+          var b = name.querySelector('b');
+          if (b && b.textContent.indexOf('شرح حال') >= 0) b.textContent = TITLE;
+        }
+      });
     }
-    box.querySelectorAll('[data-add]').forEach(function (btn) {
-      btn.onclick = function () {
-        var kind = btn.getAttribute('data-add');
-        var wrap = document.getElementById('doagoEditList_' + kind);
-        if (!wrap) return;
-        wrap.appendChild(makeEditorRow(kind, { title: '', text: '' }, wrap.children.length));
-      };
-    });
-    bindDeleteButtons();
+    var editId = document.getElementById('modalEditId');
+    if (editId && String(editId.value) === MODAL_ID) ensureAdminDoagoFields();
   }
 
-  function sectionEditorHtml(kind, label, items) {
-    var html = '<div style="margin-top:14px;"><div style="font-weight:800;color:#e8c76b;margin-bottom:8px;">' + label +
-      ' <button type="button" data-add="' + kind + '" style="margin-right:8px;padding:4px 10px;border-radius:8px;border:1px solid rgba(201,168,76,.4);background:rgba(255,255,255,.06);color:#F5F0E4;font-size:.75rem;">+ افزودن</button></div>' +
-      '<div id="doagoEditList_' + kind + '">';
-    (items || []).forEach(function (it, i) {
-      html += editorRowHtml(kind, it, i);
+  function ensureAdminDoagoFields() {
+    if (document.getElementById('kafeDoagoAdminEditor')) return;
+    var anchor = document.getElementById('modalEditAnswers') ||
+      document.getElementById('modalEditGuide') ||
+      document.getElementById('modalEditTitle') ||
+      document.getElementById('adminModals');
+    if (!anchor) return;
+    var parent = anchor.parentNode || anchor;
+    var box = document.createElement('div');
+    box.id = 'kafeDoagoAdminEditor';
+    box.style.cssText = 'margin:14px 0;padding:12px;border-radius:14px;border:1px solid rgba(201,168,76,.35);background:rgba(0,0,0,.2);';
+    var c = getContent();
+    box.innerHTML =
+      '<div style="font-weight:800;color:#F0D878;margin-bottom:8px;">🙏 محتوای دعاگو (دعا / طلسم)</div>' +
+      '<div style="font-size:.78rem;opacity:.85;margin-bottom:10px;line-height:1.6;">عنوان‌ها ردیف می‌شوند و متن زیر هر عنوان ذخیره می‌شود.</div>' +
+      adminSectionHtml('duas', 'دعاها', c.duas) +
+      adminSectionHtml('talsams', 'طلسم‌ها', c.talsams) +
+      '<button type="button" id="kafeDoagoAdminSave" class="btn" style="width:100%;margin-top:10px;">💾 ذخیره دعا و طلسم</button>';
+    if (anchor.id === 'adminModals') parent.appendChild(box);
+    else parent.insertBefore(box, anchor.nextSibling);
+
+    box.querySelectorAll('[data-doago-add]').forEach(function (btn) {
+      btn.onclick = function () {
+        var kind = btn.getAttribute('data-doago-add');
+        var wrap = document.getElementById('kafeDoagoList_' + kind);
+        if (wrap) wrap.appendChild(makeAdminRow({ title: '', text: '' }));
+      };
     });
+    bindAdminDeletes(box);
+    var save = document.getElementById('kafeDoagoAdminSave');
+    if (save) {
+      save.onclick = function () {
+        var next = { duas: readAdminList('duas'), talsams: readAdminList('talsams') };
+        saveContent(next);
+        renderLists();
+        if (typeof showNotification === 'function') showNotification('✅ دعاگو در پنل مدیریت ذخیره شد');
+        try {
+          if (typeof window.renderAdminModals === 'function') window.renderAdminModals();
+          if (typeof window.renderModalsHomeGrid === 'function') window.renderModalsHomeGrid();
+        } catch (e) {}
+        var old = document.getElementById('kafeDoagoAdminEditor');
+        if (old) old.remove();
+        ensureAdminDoagoFields();
+      };
+    }
+  }
+
+  function adminSectionHtml(kind, label, items) {
+    var html = '<div style="margin-top:12px;"><div style="font-weight:700;color:#e8c76b;margin-bottom:6px;">' + label +
+      ' <button type="button" data-doago-add="' + kind + '" style="margin-right:8px;padding:3px 8px;border-radius:8px;border:1px solid rgba(201,168,76,.4);background:rgba(255,255,255,.06);color:#F5F0E4;font-size:.72rem;">+ افزودن</button></div>' +
+      '<div id="kafeDoagoList_' + kind + '">';
+    (items || []).forEach(function (it) { html += adminRowHtml(it); });
     html += '</div></div>';
     return html;
   }
 
-  function editorRowHtml(kind, it, i) {
-    return '<div class="doago-edit-row" data-kind="' + kind + '" style="margin-bottom:10px;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.2);">' +
-      '<input type="text" class="doago-edit-title" placeholder="عنوان / سرفصل" value="' + escapeHtml(it.title || '') + '" style="width:100%;margin-bottom:6px;padding:8px;border-radius:8px;border:1px solid rgba(255,215,0,.2);background:rgba(255,255,255,.06);color:#F5F0E4;box-sizing:border-box;">' +
-      '<textarea class="doago-edit-text" rows="3" placeholder="متن دعا یا طلسم" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,215,0,.2);background:rgba(255,255,255,.06);color:#F5F0E4;box-sizing:border-box;font-family:inherit;">' + escapeHtml(it.text || '') + '</textarea>' +
-      '<button type="button" class="doago-del" style="margin-top:6px;padding:4px 10px;border-radius:8px;border:1px solid rgba(255,100,100,.35);background:rgba(255,80,80,.12);color:#ffb4b4;font-size:.75rem;">حذف</button>' +
-      '</div>';
+  function adminRowHtml(it) {
+    return '<div class="kafe-doago-row" style="margin-bottom:8px;padding:8px;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.18);">' +
+      '<input type="text" class="kafe-doago-title" placeholder="عنوان / سرفصل" value="' + escapeHtml(it.title || '') + '" style="width:100%;margin-bottom:5px;padding:8px;border-radius:8px;border:1px solid rgba(255,215,0,.2);background:rgba(255,255,255,.06);color:#F5F0E4;box-sizing:border-box;">' +
+      '<textarea class="kafe-doago-text" rows="3" placeholder="متن" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,215,0,.2);background:rgba(255,255,255,.06);color:#F5F0E4;box-sizing:border-box;font-family:inherit;">' + escapeHtml(it.text || '') + '</textarea>' +
+      '<button type="button" class="kafe-doago-del" style="margin-top:5px;padding:3px 8px;border-radius:8px;border:1px solid rgba(255,100,100,.35);background:rgba(255,80,80,.12);color:#ffb4b4;font-size:.72rem;">حذف</button></div>';
   }
 
-  function makeEditorRow(kind, it, i) {
-    var div = document.createElement('div');
-    div.innerHTML = editorRowHtml(kind, it, i);
-    var row = div.firstChild;
-    var del = row.querySelector('.doago-del');
+  function makeAdminRow(it) {
+    var d = document.createElement('div');
+    d.innerHTML = adminRowHtml(it);
+    var row = d.firstChild;
+    var del = row.querySelector('.kafe-doago-del');
     if (del) del.onclick = function () { row.remove(); };
     return row;
   }
 
-  function readEditor(kind) {
-    var wrap = document.getElementById('doagoEditList_' + kind);
+  function bindAdminDeletes(root) {
+    (root || document).querySelectorAll('.kafe-doago-del').forEach(function (btn) {
+      btn.onclick = function () {
+        var row = btn.closest('.kafe-doago-row');
+        if (row) row.remove();
+      };
+    });
+  }
+
+  function readAdminList(kind) {
+    var wrap = document.getElementById('kafeDoagoList_' + kind);
     var out = [];
     if (!wrap) return out;
-    wrap.querySelectorAll('.doago-edit-row').forEach(function (row) {
-      var t = (row.querySelector('.doago-edit-title') || {}).value || '';
-      var x = (row.querySelector('.doago-edit-text') || {}).value || '';
-      if (String(t).trim() || String(x).trim()) {
-        out.push({ title: String(t).trim(), text: String(x).trim() });
-      }
+    wrap.querySelectorAll('.kafe-doago-row').forEach(function (row) {
+      var t = (row.querySelector('.kafe-doago-title') || {}).value || '';
+      var x = (row.querySelector('.kafe-doago-text') || {}).value || '';
+      if (String(t).trim() || String(x).trim()) out.push({ title: String(t).trim(), text: String(x).trim() });
     });
     return out;
   }
 
-  function bindDeleteButtons() {
-    setTimeout(function () {
-      var box = document.getElementById('doagoAdminBox');
-      if (!box) return;
-      box.querySelectorAll('.doago-del').forEach(function (btn) {
-        btn.onclick = function () {
-          var row = btn.closest('.doago-edit-row');
-          if (row) row.remove();
-        };
-      });
-    }, 50);
+  function patchAdminHooks() {
+    var prevRender = window.renderAdminModals;
+    if (typeof prevRender === 'function' && !prevRender.__kafeDoago) {
+      window.renderAdminModals = function () {
+        var r = prevRender.apply(this, arguments);
+        setTimeout(injectAdminEditorPanel, 40);
+        setTimeout(injectAdminEditorPanel, 200);
+        return r;
+      };
+      window.renderAdminModals.__kafeDoago = true;
+    }
+    var prevEdit = window.editModalMetaAdmin;
+    if (typeof prevEdit === 'function' && !prevEdit.__kafeDoago) {
+      window.editModalMetaAdmin = function (modalId) {
+        var r = prevEdit.apply(this, arguments);
+        try {
+          if (r && typeof r.then === 'function') {
+            r.then(function () {
+              if (String(modalId) === MODAL_ID) setTimeout(ensureAdminDoagoFields, 80);
+            });
+          } else if (String(modalId) === MODAL_ID) {
+            setTimeout(ensureAdminDoagoFields, 80);
+            setTimeout(ensureAdminDoagoFields, 250);
+          }
+        } catch (e) {}
+        return r;
+      };
+      window.editModalMetaAdmin.__kafeDoago = true;
+    }
   }
 
   function boot() {
     ensureMetaTitle();
     rebuildModal();
+    patchAdminHooks();
+    injectAdminEditorPanel();
     try {
       if (typeof window.applyModalMetaToUI === 'function') window.applyModalMetaToUI(MODAL_ID);
       if (typeof window.renderModalsHomeGrid === 'function') window.renderModalsHomeGrid();
@@ -278,14 +328,19 @@
   if (typeof prevOpen === 'function' && !prevOpen.__kafeDoago) {
     window.openModalGlass = function (id) {
       var r = prevOpen.apply(this, arguments);
-      if (id === MODAL_ID) {
-        setTimeout(function () {
-          rebuildModal();
-          bindDeleteButtons();
-        }, 40);
-      }
+      if (id === MODAL_ID) setTimeout(rebuildModal, 40);
       return r;
     };
     window.openModalGlass.__kafeDoago = true;
   }
+
+  try {
+    var obs = new MutationObserver(function () {
+      if (document.getElementById('modalEditId') && String(document.getElementById('modalEditId').value) === MODAL_ID) {
+        ensureAdminDoagoFields();
+      }
+      injectAdminEditorPanel();
+    });
+    obs.observe(document.documentElement, { childList: true, subtree: true });
+  } catch (eObs) {}
 })();
