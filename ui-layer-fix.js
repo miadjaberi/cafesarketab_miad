@@ -66,6 +66,7 @@
         (document.body || document.documentElement).appendChild(s);
       } catch (e) {}
     }
+    inject('./online-only-root.js?v=1', 'online-only-root');
     inject('./font-stability-fix.js?v=1', 'font-stability');
     inject('./boot-flow-fix.js?v=20261116-v49', 'boot-flow');
     inject('./product-modal-safe-fix.js?v=6', 'product-modal-safe');
