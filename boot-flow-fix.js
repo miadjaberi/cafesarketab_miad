@@ -1,9 +1,10 @@
-/** boot-flow-fix.js V4.8 — auth scroll lock + stable fonts
+/** boot-flow-fix.js V4.9 — online-only hard, no offline choice, splash stay skipped
  * restored after accidental placeholder
  */
 (function () {
   'use strict';
-  if (window.__KAFE_BOOT_FLOW_V48__) return;
+  if (window.__KAFE_BOOT_FLOW_V49__) return;
+  window.__KAFE_BOOT_FLOW_V49__ = true;
   window.__KAFE_BOOT_FLOW_V48__ = true;
   window.__KAFE_BOOT_FLOW_V47__ = true;
   window.__KAFE_BOOT_FLOW_V46__ = true;
@@ -151,13 +152,13 @@
     box.innerHTML = '<div style="max-width:360px;width:100%;background:#0b1120;border:1px solid rgba(201,168,76,0.45);border-radius:16px;padding:20px 18px;text-align:center;direction:rtl;color:#F5F0E4;"><p style="margin:0 0 18px;line-height:1.75;font-size:0.95rem;font-weight:600;">شما در حال حاضر به شبکه متصل نیستید. در صورت تمایل می‌توانید از برنامه به‌صورت آفلاین استفاده کنید.</p><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;"><button type="button" id="kafeOfflineYes" style="min-width:100px;padding:10px 16px;border-radius:12px;border:none;background:linear-gradient(180deg,#e8c76b,#c9a84c);color:#1A1208;font-weight:800;cursor:pointer;">بله</button><button type="button" id="kafeOfflineNo" style="min-width:100px;padding:10px 16px;border-radius:12px;border:1px solid rgba(201,168,76,0.5);background:#111827;color:#F0D878;font-weight:700;cursor:pointer;">خیر</button></div></div>';
     document.body.appendChild(box);
     var yes = box.querySelector('#kafeOfflineYes'); var no = box.querySelector('#kafeOfflineNo');
-    if (yes) yes.onclick = function () { hideOfflineDialog(); goOfflineLimited(); };
+    if (yes) yes.onclick = function () { hideOfflineDialog(); showRetryOnline(); };
     if (no) no.onclick = function () { hideOfflineDialog(); showRetryOnline(); };
     return box;
   }
   function showOfflineDialog() {
-    setStage('offline-choice'); hideBootLoader(); hide(el('splashScreen')); hide(el('termsScreen')); hide(el('registerScreen')); hide(el('app')); hideRetryOnline();
-    ensureOfflineDialog().style.display = 'flex';
+    // آنلاین‌only: دیالوگ آفلاین نشان داده نمی‌شود
+    showRetryOnline();
   }
   function hideOfflineDialog() { var box = document.getElementById('kafeOfflineChoiceDialog'); if (box) box.style.display = 'none'; }
   function ensureRetryOnline() {
@@ -191,28 +192,12 @@
     });
   }
   function goOfflineLimited() {
-    setStage('main-offline'); hideBootLoader();
-    try { document.body.classList.add('is-offline'); window.__kafeOfflineLimited = true; } catch (e) {}
-    if (typeof window.enterAppForLocalModals === 'function') window.enterAppForLocalModals('نسخه آفلاین');
-    else enterMainApp(getLocalCafeUser());
-    installOfflineLocks();
+    // آنلاین‌only: به جای ورود آفلاین، صفحه انتظار آنلاین
+    showRetryOnline();
   }
   function installOfflineLocks() {
     if (window.__kafeOfflineLocksV4) return;
     window.__kafeOfflineLocksV4 = true;
-    document.addEventListener('click', function (ev) {
-      if (!window.__kafeOfflineLimited && navigatorSaysOnline()) return;
-      var t = ev.target && ev.target.closest ? ev.target.closest('button, a') : null;
-      if (!t) return;
-      var oc = t.getAttribute('onclick') || '';
-      var label = (t.textContent || '').replace(/\s+/g, ' ').trim();
-      var isAdmin = oc.indexOf('toggleAdmin') >= 0 || oc.indexOf('openAdmin') >= 0 || (t.closest && t.closest('#adminPanel'));
-      var isOrder = oc.indexOf('openSubOrders') >= 0 || oc.indexOf('openSubscription') >= 0 || label.indexOf('خرید') >= 0 || label.indexOf('سفارش') >= 0;
-      if ((isAdmin || isOrder) && (window.__kafeOfflineLimited || !navigatorSaysOnline())) {
-        ev.preventDefault(); ev.stopPropagation();
-        try { if (typeof showNotification === 'function') showNotification(isAdmin ? 'پنل مدیریت در حالت آفلاین در دسترس نیست' : 'خرید و سفارش در حالت آفلاین بسته است', 'error'); } catch (e) {}
-      }
-    }, true);
   }
   function runSplashThen(done) {
     setStage('skip-splash');
@@ -259,9 +244,7 @@
       if (finished) return;
       finished = true;
       hideBootLoader();
-      var local = getLocalCafeUser();
-      if (onlineState === false && local) showOfflineDialog();
-      else showRegisterOnly();
+      showRegisterOnly();
     }, Math.max(NET_PROBE_TIMEOUT, MAX_SESSION_WAIT) + PROFILE_TIMEOUT + 800);
     var probeP = probeOnline().then(function (online) { onlineState = online; return online; });
     var sessionP = getSessionSafe();
@@ -277,17 +260,13 @@
           finished = true;
           hideBootLoader();
           if (profile && profile.id) { enterMainApp(profile); return; }
-          var local = getLocalCafeUser();
-          if (!online && local) showOfflineDialog();
-          else showRegisterOnly();
+          showRegisterOnly();
         });
       }
       clearTimeout(safety);
       finished = true;
       hideBootLoader();
-      var local2 = getLocalCafeUser();
-      if (!online && local2) showOfflineDialog();
-      else showRegisterOnly();
+      showRegisterOnly();
     }).catch(function () {
       if (finished) return;
       finished = true;
