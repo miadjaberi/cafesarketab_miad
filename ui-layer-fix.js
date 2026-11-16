@@ -69,6 +69,7 @@
     inject('./boot-flow-fix.js?v=20261116-v49', 'boot-flow');
     inject('./product-modal-safe-fix.js?v=6', 'product-modal-safe');
     inject('./product-price-discount-fix.js?v=2', 'price-discount');
+    inject('./ezdevaj-mashoog-fix.js?v=1', 'ezdevaj-mashoog');
 
     var deferred = [
       ['./nav-swipe-fix.js?v=20261108c', 'nav-swipe'],
