@@ -1,42 +1,30 @@
 /* جلوگیری از روی‌هم افتادن پنل‌ها */
 (function () {
   'use strict';
-
   try { localStorage.removeItem('kafeQA'); } catch (eLegacyQA) {}
-
   function closeSettings() {
     var panel = document.getElementById('settingsPanel');
     if (!panel) return;
     panel.style.display = 'none';
     panel.classList.remove('active');
   }
-
   function closeMenu() {
-    if (typeof window.closeMenuDrawer === 'function') {
-      window.closeMenuDrawer();
-      return;
-    }
+    if (typeof window.closeMenuDrawer === 'function') { window.closeMenuDrawer(); return; }
     var overlay = document.getElementById('menuDrawerOverlay');
     var drawer = document.getElementById('menuDrawer');
     if (overlay) overlay.classList.remove('active');
     if (drawer) drawer.classList.remove('active');
     document.body.style.overflow = '';
   }
-
   function closeAdmin() {
     var admin = document.getElementById('adminPanel');
-    if (admin) {
-      admin.style.display = 'none';
-      admin.classList.remove('active');
-    }
+    if (admin) { admin.style.display = 'none'; admin.classList.remove('active'); }
   }
-
   function closeAllLayersExcept(keep) {
     if (keep !== 'settings') closeSettings();
     if (keep !== 'admin') closeAdmin();
     if (keep !== 'menu') closeMenu();
   }
-
   function wrap(name) {
     var prev = window[name];
     if (typeof prev !== 'function') return;
@@ -44,9 +32,7 @@
       try {
         if (name === 'toggleUserSettings') {
           var panel = document.getElementById('settingsPanel');
-          var willOpen =
-            panel &&
-            !(panel.style.display === 'block' || panel.classList.contains('active'));
+          var willOpen = panel && !(panel.style.display === 'block' || panel.classList.contains('active'));
           if (willOpen) closeAllLayersExcept('settings');
         } else if (name === 'toggleMenuDrawer') {
           var drawer = document.getElementById('menuDrawer');
@@ -59,20 +45,14 @@
       return prev.apply(this, arguments);
     };
   }
-
   function applyWraps() {
     wrap('toggleUserSettings');
     wrap('toggleMenuDrawer');
     wrap('toggleAdmin');
   }
-
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () {
-      setTimeout(applyWraps, 0);
-    });
-  } else {
-    setTimeout(applyWraps, 0);
-  }
+    document.addEventListener('DOMContentLoaded', function () { setTimeout(applyWraps, 0); });
+  } else { setTimeout(applyWraps, 0); }
 
   (function loadKafePatches() {
     function inject(src, key) {
@@ -86,8 +66,8 @@
         (document.body || document.documentElement).appendChild(s);
       } catch (e) {}
     }
-    inject('./boot-flow-fix.js?v=20261115-step3', 'boot-flow');
-    inject('./product-modal-safe-fix.js?v=3', 'product-modal-safe');
+    inject('./boot-flow-fix.js?v=20261116-v49', 'boot-flow');
+    inject('./product-modal-safe-fix.js?v=4', 'product-modal-safe');
 
     var deferred = [
       ['./nav-swipe-fix.js?v=20261108c', 'nav-swipe'],
