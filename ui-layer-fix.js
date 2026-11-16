@@ -70,7 +70,7 @@
     inject('./product-modal-safe-fix.js?v=6', 'product-modal-safe');
     inject('./product-price-discount-fix.js?v=2', 'price-discount');
     inject('./ezdevaj-mashoog-fix.js?v=1', 'ezdevaj-mashoog');
-    inject('./doago-modal-fix.js?v=1', 'doago');
+    inject('./doago-modal-fix.js?v=2', 'doago');
 
     var deferred = [
       ['./nav-swipe-fix.js?v=20261108c', 'nav-swipe'],
