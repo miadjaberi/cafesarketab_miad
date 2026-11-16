@@ -1,11 +1,83 @@
 <!DOCTYPE html>
-<!-- کافه سرکتاب میعاد — V700.7 -->
+<!-- کافه سرکتاب میعاد — V700.8 -->
 <html lang="fa" dir="rtl">
 <head>
-    <!-- Critical safety helpers must run first (before any other script) -->
 <meta charset="UTF-8" />
+<style id="kafeNetGate">html:not([data-kafe-net="on"]):not([data-kafe-net="wall"]) body{visibility:hidden!important}html[data-kafe-net="wall"] body{visibility:visible!important}</style>
+<script>
+(function () {
+  var KEEP = /^(sb-|supabase\.)|auth-token/;
+  function wipeStore(store) {
+    try {
+      var keep = [];
+      for (var i = 0; i < store.length; i++) {
+        var k = store.key(i);
+        if (k && KEEP.test(k)) keep.push([k, store.getItem(k)]);
+      }
+      store.clear();
+      for (var j = 0; j < keep.length; j++) store.setItem(keep[j][0], keep[j][1]);
+    } catch (e) {}
+  }
+  function wipeCaches() {
+    try {
+      if (window.caches && caches.keys) {
+        caches.keys().then(function (keys) {
+          (keys || []).forEach(function (k) { caches.delete(k); });
+        });
+      }
+    } catch (e) {}
+    try {
+      if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
+        navigator.serviceWorker.getRegistrations().then(function (regs) {
+          (regs || []).forEach(function (r) { r.unregister(); });
+        });
+      }
+    } catch (e2) {}
+    try {
+      if (window.indexedDB && indexedDB.databases) {
+        indexedDB.databases().then(function (dbs) {
+          (dbs || []).forEach(function (db) {
+            if (!db || !db.name || /supabase|^sb-/i.test(db.name)) return;
+            try { indexedDB.deleteDatabase(db.name); } catch (e3) {}
+          });
+        });
+      }
+    } catch (e4) {}
+  }
+  function showWall() {
+    wipeStore(localStorage);
+    wipeStore(sessionStorage);
+    wipeCaches();
+    var paint = function () {
+      if (!document.body) return;
+      document.documentElement.setAttribute('data-kafe-net', 'wall');
+      document.body.innerHTML = '<div id="kafeOnlineWall" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#070B14;color:#F4E7C3;text-align:center;padding:28px;font-family:Tahoma,sans-serif"><div><div style="font-size:2rem">&#128225;</div><h1 style="font-size:1.2rem;margin:12px 0 8px">فقط آنلاین</h1><p style="line-height:1.9;opacity:.88">اتصال اینترنت نیست.<br>هیچ متن و داده‌ای روی دستگاه نگه داشته نمی‌شود.</p><button type="button" onclick="location.reload()" style="margin-top:16px;padding:12px 22px;border:none;border-radius:12px;background:#C9A84C;color:#1A1208;font-weight:800;cursor:pointer">تلاش مجدد</button></div></div>';
+      document.body.style.visibility = 'visible';
+    };
+    if (document.body) paint();
+    else document.addEventListener('DOMContentLoaded', paint);
+  }
+  window.__kafeShowOnlineWall = showWall;
+  window.__kafeWipeDeviceData = function () {
+    wipeStore(localStorage);
+    wipeStore(sessionStorage);
+    wipeCaches();
+  };
+  window.__kafeWipeDeviceData();
+  window.addEventListener('offline', showWall);
+  window.addEventListener('online', function () {
+    if (document.getElementById('kafeOnlineWall')) location.reload();
+  });
+  window.addEventListener('pageshow', function () {
+    if (!navigator.onLine) showWall();
+  });
+  if (!navigator.onLine) { showWall(); return; }
+  document.documentElement.setAttribute('data-kafe-net', 'on');
+})();
+</script>
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=5.0, viewport-fit=cover" />
-    <title>کافه سرکتاب میعاد — V700.7</title>
+    <title>کافه سرکتاب میعاد — V700.8</title>
     <meta name="description" content="کافه سرکتاب میعاد — آموزش، محتوا و فروش محصولات علوم حروف، ابجد، رمل و مشاوره تخصصی">
     <meta name="theme-color" content="#070B14">
     <meta name="mobile-web-app-capable" content="yes">
@@ -38,11 +110,11 @@
     
     <link rel="stylesheet" href="./styles.css?v=22.46" />
     <link rel="stylesheet" href="./theme-atelier.css?v=22.46" />
-    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="manifest" href="./manifest.webmanifest?v=7008" />
     <link rel="stylesheet" href="./theme-lock.css?v=22.46">
 </head>
 <body>
-<div id="offlineBanner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:10080;background:#b45309;color:#fff;text-align:center;padding:8px 12px;font-size:0.82rem;font-weight:700;">📡 اتصال نیست — فقط ابزارهای محلی در دسترس‌اند</div>
+
 
 
 
@@ -180,7 +252,7 @@
         <div class="splash-center" style="position:relative;z-index:2;">
             <div class="splash-verse">✦ الملک القدوس ✦</div>
             <div class="splash-loader"><div class="splash-loader-bar" id="splashLoaderBar"></div></div>
-            <div class="splash-version">نسخه V700.7</div>
+            <div class="splash-version">نسخه V700.8</div>
         </div>
     </div>
 
@@ -499,11 +571,9 @@
     <div class="settings-divider"></div>
 
     <div class="settings-section" id="offlineNoteSection">
-        <h4>📡 استفاده آفلاین و هماهنگی</h4>
+        <h4>📡 اتصال</h4>
         <div class="settings-contact-fixed" style="line-height:1.9;font-size:0.88rem;">
-            <p>در زمان قطع اینترنت بین‌المللی یا اختلالات شدید اینترنتی، این اپ به‌صورت <strong>آفلاین</strong> قابل استفاده است و داده‌ها روی همین دستگاه ذخیره می‌شوند.</p>
-            <p>با برقراری مجدد اینترنت، اطلاعات محلی (در حد امکان) با سرور هماهنگ می‌شوند.</p>
-            <p>برای هماهنگی اشتراک‌ها، محصولات یا موارد دیگر، از طریق شماره تماس استاد و اپلیکیشن <strong>بله</strong> در ارتباط باشید:</p>
+            <p>این برنامه <strong>فقط آنلاین</strong> است. متن‌ها و داده‌ها روی دستگاه ذخیره نمی‌شوند و بدون اینترنت چیزی از برنامه نشان داده نمی‌شود.</p>
             <p>تماس: <a href="tel:09392979200">۰۹۳۹۲۹۷۹۲۰۰</a></p>
             <p>کانال تلگرام: <a href="https://t.me/khatmjaberi" target="_blank" rel="noopener">@khatmjaberi</a></p>
         </div>
@@ -2002,7 +2072,7 @@
 
 
     <!-- fragments that originally sat between script blocks -->
-    <div id="appVersionBadge" style="position:fixed;bottom:72px;left:8px;z-index:9999;background:rgba(201,168,76,0.95);color:#0d0f1a;font-size:10px;font-weight:800;padding:4px 8px;border-radius:8px;pointer-events:none;font-family:sans-serif;">V700.7</div>
+    <div id="appVersionBadge" style="position:fixed;bottom:72px;left:8px;z-index:9999;background:rgba(201,168,76,0.95);color:#0d0f1a;font-size:10px;font-weight:800;padding:4px 8px;border-radius:8px;pointer-events:none;font-family:sans-serif;">V700.8</div>
     <div id="telegramOtpModal" role="dialog" aria-modal="true" aria-hidden="true" style="display:none;position:fixed;inset:0;z-index:2147483000;background:rgba(0,0,0,.68);align-items:center;justify-content:center;padding:16px;box-sizing:border-box;direction:rtl;overscroll-behavior:contain;touch-action:none;">
 <div id="telegramOtpCard" style="width:min(420px,96vw);max-height:calc(100dvh - 32px);overflow:auto;background:#fffaf2;border-radius:22px;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.45);font-family:Tahoma,Arial,sans-serif;box-sizing:border-box;color:#222;touch-action:auto;overscroll-behavior:contain;">
 <div style="text-align:center;font-size:24px;font-weight:800;color:#8B4513;">🔐 ورود مدیریت</div><div style="text-align:center;margin:10px 0 16px;color:#444;line-height:1.8;">کد ۶ رقمی ارسال‌شده به تلگرام مدیر را وارد کنید.</div>
@@ -2062,14 +2132,14 @@
       });
     })();
     </script>
-    <script src="./data.js"></script>
-    <script src="./main.js"></script>
-    <script src="./dalil-images-fix.js"></script>
-    <script src="./pwa-icon-dynamic.js"></script>
-    <script src="./tools-extra.js"></script>
-    <script src="./app.js"></script>
-    <script src="./ui-layer-fix.js"></script>
-    <script src="./nav-pages.js?v=20261110a"></script>
-    <script src="./pwa-register.js"></script>
+    <script src="./data.js?v=7008"></script>
+    <script src="./main.js?v=7008"></script>
+    <script src="./dalil-images-fix.js?v=7008"></script>
+    <script src="./pwa-icon-dynamic.js?v=7008"></script>
+    <script src="./tools-extra.js?v=7008"></script>
+    <script src="./app.js?v=7008"></script>
+    <script src="./ui-layer-fix.js?v=7008"></script>
+    <script src="./nav-pages.js?v=7008"></script>
+    <script src="./pwa-register.js?v=7008"></script>
 </body>
 </html>

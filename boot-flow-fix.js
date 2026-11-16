@@ -149,7 +149,7 @@
     var id = 'kafeOfflineChoiceDialog'; var box = document.getElementById(id); if (box) return box;
     box = document.createElement('div'); box.id = id; box.setAttribute('role', 'dialog');
     box.style.cssText = 'display:none;position:fixed;inset:0;z-index:10090;align-items:center;justify-content:center;background:rgba(0,0,0,0.72);padding:20px;box-sizing:border-box;';
-    box.innerHTML = '<div style="max-width:360px;width:100%;background:#0b1120;border:1px solid rgba(201,168,76,0.45);border-radius:16px;padding:20px 18px;text-align:center;direction:rtl;color:#F5F0E4;"><p style="margin:0 0 18px;line-height:1.75;font-size:0.95rem;font-weight:600;">شما در حال حاضر به شبکه متصل نیستید. در صورت تمایل می‌توانید از برنامه به‌صورت آفلاین استفاده کنید.</p><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;"><button type="button" id="kafeOfflineYes" style="min-width:100px;padding:10px 16px;border-radius:12px;border:none;background:linear-gradient(180deg,#e8c76b,#c9a84c);color:#1A1208;font-weight:800;cursor:pointer;">بله</button><button type="button" id="kafeOfflineNo" style="min-width:100px;padding:10px 16px;border-radius:12px;border:1px solid rgba(201,168,76,0.5);background:#111827;color:#F0D878;font-weight:700;cursor:pointer;">خیر</button></div></div>';
+    box.innerHTML = '<div style="max-width:360px;width:100%;background:#0b1120;border:1px solid rgba(201,168,76,0.45);border-radius:16px;padding:20px 18px;text-align:center;direction:rtl;color:#F5F0E4;"><p style="margin:0 0 18px;line-height:1.75;font-size:0.95rem;font-weight:600;">اتصال اینترنت نیست. برنامه فقط آنلاین است و متنی روی دستگاه نمی‌ماند.</p><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;"><button type="button" id="kafeOfflineYes" style="min-width:100px;padding:10px 16px;border-radius:12px;border:none;background:linear-gradient(180deg,#e8c76b,#c9a84c);color:#1A1208;font-weight:800;cursor:pointer;">بله</button><button type="button" id="kafeOfflineNo" style="min-width:100px;padding:10px 16px;border-radius:12px;border:1px solid rgba(201,168,76,0.5);background:#111827;color:#F0D878;font-weight:700;cursor:pointer;">خیر</button></div></div>';
     document.body.appendChild(box);
     var yes = box.querySelector('#kafeOfflineYes'); var no = box.querySelector('#kafeOfflineNo');
     if (yes) yes.onclick = function () { hideOfflineDialog(); showRetryOnline(); };
@@ -324,10 +324,15 @@
     if (retry && retry.style.display === 'flex') tryRetryOnline();
   });
   window.addEventListener('offline', function () {
-    try { document.body.classList.add('is-offline'); } catch (e) {}
+    try { document.body.classList.remove('is-offline'); } catch (e) {}
+    if (typeof window.__kafeShowOnlineWall === 'function') window.__kafeShowOnlineWall();
   });
   var booted = false;
   function boot() {
+    if (!navigatorSaysOnline()) {
+      if (typeof window.__kafeShowOnlineWall === 'function') window.__kafeShowOnlineWall();
+      return;
+    }
     pollRegisterUser(); installOfflineLocks();
     if (booted) return;
     booted = true;

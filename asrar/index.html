@@ -82,7 +82,17 @@
 <div id="adm"><div class="ap" id="ap"></div></div>
 <script src="app.js"></script>
 <script>
-if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('./sw.js').catch(function(){});});}
+(function(){
+  try {
+    if (window.caches && caches.keys) caches.keys().then(function(keys){keys.forEach(function(k){caches.delete(k);});});
+    if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
+      navigator.serviceWorker.getRegistrations().then(function(regs){(regs||[]).forEach(function(r){r.unregister();});});
+    }
+  } catch (e) {}
+  if (!navigator.onLine) {
+    document.body.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0818;color:#f4e7c3;text-align:center;padding:24px;font-family:Tahoma,sans-serif"><div><h1 style="font-size:1.15rem">فقط آنلاین</h1><p>اتصال اینترنت نیست. متن و داده‌ای روی دستگاه نمی‌ماند.</p></div></div>';
+  }
+})();
 </script>
 </body>
 </html>
