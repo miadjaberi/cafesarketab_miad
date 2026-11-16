@@ -66,7 +66,8 @@
         (document.body || document.documentElement).appendChild(s);
       } catch (e) {}
     }
-    inject('./boot-flow-fix.js?v=20261116-v50', 'boot-flow');
+    inject('./font-stability-fix.js?v=1', 'font-stability');
+    inject('./boot-flow-fix.js?v=20261116-v49', 'boot-flow');
     inject('./product-modal-safe-fix.js?v=6', 'product-modal-safe');
     inject('./product-price-discount-fix.js?v=2', 'price-discount');
     inject('./ezdevaj-mashoog-fix.js?v=1', 'ezdevaj-mashoog');
