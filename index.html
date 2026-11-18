@@ -3,8 +3,8 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8" />
-<style id="kafeNetGate">html:not([data-kafe-net="on"]):not([data-kafe-net="wall"]) body{visibility:hidden!important}html[data-kafe-net="wall"] body{visibility:visible!important}</style>
 <script>
+document.documentElement.setAttribute('data-kafe-net','on');
 (function () {
   try {
     if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
@@ -13,11 +13,6 @@
       });
     }
   } catch (e) {}
-  try {
-    if (window.caches && caches.keys) {
-      caches.keys().then(function (keys) { keys.forEach(function (k) { caches.delete(k); }); });
-    }
-  } catch (e2) {}
 })();
 </script>
 
