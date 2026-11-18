@@ -2,7 +2,7 @@
 (function () {
   'use strict';
 
-  var KEYS = ['headerLogo', 'registerLogo', 'splashBg', 'appBg', 'appIcon'];
+  var KEYS = ['headerLogo', 'registerLogo', 'appBg', 'appIcon'];
   var lastApplied = '';
   var cloudDone = false;
 
@@ -52,20 +52,6 @@
       if (s.registerLogo && isUsableImageUrl(s.registerLogo)) {
         var r = document.getElementById('registerLogoImg') || document.querySelector('#registerScreen img');
         if (r) r.src = s.registerLogo;
-      }
-      if (s.splashBg && isUsableImageUrl(s.splashBg)) {
-        var spImg = document.getElementById('splashBgImg');
-        if (spImg) {
-          spImg.src = s.splashBg;
-          spImg.style.display = 'block';
-          spImg.style.opacity = '1';
-        }
-        var sp = document.getElementById('splashScreen');
-        if (sp) {
-          sp.style.backgroundImage = 'url("' + s.splashBg + '")';
-          sp.style.backgroundSize = 'cover';
-          sp.style.backgroundPosition = 'center';
-        }
       }
       if (s.appBg && isUsableImageUrl(s.appBg)) {
         try {
