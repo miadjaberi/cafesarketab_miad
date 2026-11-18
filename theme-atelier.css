@@ -231,27 +231,7 @@ header{
 }
 .bottom-nav .nav-item-bottom.center-btn .nav-icon-bottom{ color:#16120A !important; }
 
-/* ---------- Splash / Register / Terms ---------- */
-#splashScreen{
-  background:
-    radial-gradient(circle at 50% 30%, rgba(201,162,74,.16), transparent 42%),
-    linear-gradient(180deg, #0A0F1A 0%, #070B14 100%) !important;
-}
-.splash-title{
-  color:var(--gold-bright) !important;
-  -webkit-text-fill-color:var(--gold-bright) !important;
-  font-weight:900 !important;
-  letter-spacing:.04em !important;
-}
-.splash-verse{ color:var(--text-soft) !important; }
-.splash-loader-bar{
-  background:linear-gradient(90deg, var(--gold-deep), var(--gold-bright), var(--gold)) !important;
-}
-.splash-logo-img{
-  border:1px solid var(--line) !important;
-  box-shadow:0 0 40px rgba(201,162,74,.25) !important;
-}
-
+/* ---------- Register / Terms ---------- */
 #registerScreen{ background:var(--ink-0) !important; }
 .register-box{
   background:linear-gradient(165deg, rgba(24,32,50,.95), rgba(12,18,30,.98)) !important;
