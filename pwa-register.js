@@ -86,11 +86,11 @@
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
-      var appScopePath = new URL('./', window.location.href).pathname.replace(/\\/+$/, '');
+      var appScopePath = new URL('./', window.location.href).pathname.replace(/\/+$/, '');
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         for (var i = 0; i < regs.length; i++) {
           try {
-            var scopePath = new URL(regs[i].scope).pathname.replace(/\\/+$/, '');
+            var scopePath = new URL(regs[i].scope).pathname.replace(/\/+$/, '');
             if (scopePath === appScopePath) regs[i].unregister();
           } catch (e) {}
         }
