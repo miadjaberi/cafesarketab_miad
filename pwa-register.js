@@ -86,15 +86,21 @@
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
+      var appScopePath = new URL('./', window.location.href).pathname.replace(/\\/+$/, '');
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         for (var i = 0; i < regs.length; i++) {
-          try { regs[i].unregister(); } catch (e) {}
+          try {
+            var scopePath = new URL(regs[i].scope).pathname.replace(/\\/+$/, '');
+            if (scopePath === appScopePath) regs[i].unregister();
+          } catch (e) {}
         }
       }).catch(function () {});
       if (typeof caches !== 'undefined' && caches.keys) {
         caches.keys().then(function (keys) {
           for (var j = 0; j < keys.length; j++) {
-            try { caches.delete(keys[j]); } catch (e2) {}
+            if (keys[j].indexOf('shell-kafe-miad-') === 0) {
+              try { caches.delete(keys[j]); } catch (e2) {}
+            }
           }
         }).catch(function () {});
       }
