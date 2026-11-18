@@ -1,4 +1,4 @@
-/** boot-flow-fix.js V4.9 — online-only hard, no offline choice, splash stay skipped
+/** boot-flow-fix.js — online authentication and first-entry terms
  * restored after accidental placeholder
  */
 (function () {
@@ -83,21 +83,11 @@
       });
     });
   }
-  function isOnline() { return navigatorSaysOnline(); }
   function termsSeenThisSession() {
     try { return sessionStorage.getItem(TERMS_SESSION_KEY) === '1'; } catch (e) { return false; }
   }
   function markTermsSeenThisSession() {
     try { sessionStorage.setItem(TERMS_SESSION_KEY, '1'); } catch (e) {}
-  }
-  function getLocalCafeUser() {
-    try {
-      var raw = localStorage.getItem('cafeUser');
-      if (!raw) return null;
-      var u = JSON.parse(raw);
-      if (u && (u.id || u.phone || u.name)) return u;
-    } catch (e) {}
-    return null;
   }
   function setStage(s) { try { sessionStorage.setItem(STAGE_KEY, s); } catch (e) {} }
   function ensureBootLoader() {
