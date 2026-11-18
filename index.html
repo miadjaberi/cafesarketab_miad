@@ -42,11 +42,10 @@
     <link rel="stylesheet" href="./theme-lock.css?v=22.46">
 </head>
 <body>
-<div id="offlineBanner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:10080;background:#b45309;color:#fff;text-align:center;padding:8px 12px;font-size:0.82rem;font-weight:700;">📡 اتصال نیست — فقط ابزارهای محلی در دسترس‌اند</div>
 
 
 
-    <!-- ===== قبول شرایط (قبل از اسپلش — هر بار) ===== -->
+    <!-- ===== قبول شرایط و ورود اولیه ===== -->
     <div id="termsScreen">
         <div class="terms-inner">
             <div class="terms-header">
@@ -169,18 +168,6 @@
         </div>
         <div class="terms-footer-bar">
             <button type="button" class="terms-agree-btn" onclick="acceptTermsAndContinue()">✓ موافقم — ورود به برنامه</button>
-        </div>
-    </div>
-
-    <!-- ===== SPLASH ===== -->
-    <div id="splashScreen" class="waiting" style="display:none;">
-        <img class="splash-bg-img" id="splashBgImg" alt="" src="./assets/splash.jpg" onerror="this.onerror=null;this.src='./icon512.png'" />
-        <div class="splash-dim"></div>
-        <div class="splash-bg-glow"></div>
-        <div class="splash-center" style="position:relative;z-index:2;">
-            <div class="splash-verse">✦ الملک القدوس ✦</div>
-            <div class="splash-loader"><div class="splash-loader-bar" id="splashLoaderBar"></div></div>
-            <div class="splash-version">نسخه V700.7</div>
         </div>
     </div>
 
@@ -498,19 +485,6 @@
 
     <div class="settings-divider"></div>
 
-    <div class="settings-section" id="offlineNoteSection">
-        <h4>📡 استفاده آفلاین و هماهنگی</h4>
-        <div class="settings-contact-fixed" style="line-height:1.9;font-size:0.88rem;">
-            <p>در زمان قطع اینترنت بین‌المللی یا اختلالات شدید اینترنتی، این اپ به‌صورت <strong>آفلاین</strong> قابل استفاده است و داده‌ها روی همین دستگاه ذخیره می‌شوند.</p>
-            <p>با برقراری مجدد اینترنت، اطلاعات محلی (در حد امکان) با سرور هماهنگ می‌شوند.</p>
-            <p>برای هماهنگی اشتراک‌ها، محصولات یا موارد دیگر، از طریق شماره تماس استاد و اپلیکیشن <strong>بله</strong> در ارتباط باشید:</p>
-            <p>تماس: <a href="tel:09392979200">۰۹۳۹۲۹۷۹۲۰۰</a></p>
-            <p>کانال تلگرام: <a href="https://t.me/khatmjaberi" target="_blank" rel="noopener">@khatmjaberi</a></p>
-        </div>
-    </div>
-
-    <div class="settings-divider"></div>
-
     <div class="settings-section" id="logoutSection">
         <h4>🚪 حساب کاربری</h4>
         <button type="button" class="settings-logout-btn" onclick="logoutUser()">🚪 خروج از حساب کاربری</button>
@@ -774,11 +748,6 @@
                 <img id="previewRegisterLogo" alt="" style="display:none;max-height:100px;max-width:100%;border-radius:10px;object-fit:contain;">
             </div>
             <div style="margin-bottom:14px;padding:12px;background:#fff;border-radius:12px;border:1px solid #c9a84c;">
-                <label style="display:block;font-weight:700;color:var(--txt-title,#F0D878);margin-bottom:6px;">📷 تصویر اسپلش</label>
-                <input type="file" id="gallerySplash" accept="image/*" style="width:100%;padding:10px;margin-bottom:8px;">
-                <img id="previewSplash" alt="" style="display:none;max-height:140px;max-width:100%;border-radius:10px;object-fit:cover;">
-            </div>
-            <div style="margin-bottom:14px;padding:12px;background:#fff;border-radius:12px;border:1px solid #c9a84c;">
                 <label style="display:block;font-weight:700;color:var(--txt-title,#F0D878);margin-bottom:6px;">📷 پس‌زمینه اصلی اپ</label>
                 <input type="file" id="galleryAppBg" accept="image/*" style="width:100%;padding:10px;margin-bottom:8px;">
                 <img id="previewAppBg" alt="" style="display:none;max-height:140px;max-width:100%;border-radius:10px;object-fit:cover;">
@@ -807,10 +776,9 @@
             </div>
             <input type="hidden" id="mediaHeaderLogo" value="">
             <input type="hidden" id="mediaRegisterLogo" value="">
-            <input type="hidden" id="mediaSplashBg" value="">
             <button type="button" id="saveAllMediaImagesBtn" onclick="saveAndApplyAllMediaImages()" style="width:100%;margin-top:10px;padding:13px;border:none;border-radius:12px;background:#8B4513;color:#fff;font-family:inherit;font-weight:800;cursor:pointer;">💾 ذخیره و اعمال همه تصاویر</button>
             <div id="mediaUploadStatus" style="font-size:.75rem;line-height:1.6;margin-top:8px;padding:8px 10px;border-radius:10px;background:rgba(0,0,0,.15);color:var(--txt-hint,#C8C0B0);">وضعیت آپلود اینجا نمایش داده می‌شود. تصاویر روی باکت public-assets ذخیره می‌شوند تا برای همه کاربران لود شوند.</div>
-            <div style="font-size:.72rem;color:var(--txt-hint,#C8C0B0);text-align:center;margin-top:5px;">لوگو، ثبت‌نام، اسپلش و پس‌زمینه از سرور برای همه می‌آید. آیکون میانبر هم از همین پنل به Storage می‌رود؛ میانبرهای قبلی تا نصب دوباره عوض نمی‌شوند.</div>
+            <div style="font-size:.72rem;color:var(--txt-hint,#C8C0B0);text-align:center;margin-top:5px;">لوگو، ثبت‌نام و پس‌زمینه از سرور برای همه می‌آید. آیکون میانبر هم از همین پنل به Storage می‌رود؛ میانبرهای قبلی تا نصب دوباره عوض نمی‌شوند.</div>
         </div>
     </div>
 
