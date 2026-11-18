@@ -161,25 +161,25 @@
     box.style.display='flex';
     var hint=document.getElementById('kafeConnectionWaitHint');
     if(hint) hint.textContent='در حال بررسی اتصال...';
-    probeOnline().then(function(ok){
-      if(ok) {
-        hideConnectionWait();
-        continueAfterTermsOrSession();
-      } else if(hint) {
-        hint.textContent='هنوز اتصال برقرار نشده است.';
-      }
-    });
+    retryConnectionWait();
   }
+  var connectionRetryBusy=false;
   function retryConnectionWait() {
+    if(connectionRetryBusy) return;
+    connectionRetryBusy=true;
     var hint=document.getElementById('kafeConnectionWaitHint');
     if(hint) hint.textContent='در حال تلاش مجدد...';
     probeOnline().then(function(ok){
+      connectionRetryBusy=false;
       if(!ok) {
         if(hint) hint.textContent='اتصال برقرار نشد؛ کمی بعد دوباره تلاش کنید.';
         return;
       }
       hideConnectionWait();
       continueAfterTermsOrSession();
+    }).catch(function(){
+      connectionRetryBusy=false;
+      if(hint) hint.textContent='اتصال برقرار نشد؛ کمی بعد دوباره تلاش کنید.';
     });
   }
   function getSessionSafe() {
