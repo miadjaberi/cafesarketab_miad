@@ -1,9 +1,8 @@
-/** boot-flow-fix.js V4.9 — online-only hard, no offline choice, splash stay skipped
- * restored after accidental placeholder
- */
+/** boot-flow-fix.js V5.1 — بعد از موافقم مستقیم ثبت‌نام؛ اسپینر قفل نمی‌کند */
 (function () {
   'use strict';
-  if (window.__KAFE_BOOT_FLOW_V49__) return;
+  if (window.__KAFE_BOOT_FLOW_V51__) return;
+  window.__KAFE_BOOT_FLOW_V51__ = true;
   window.__KAFE_BOOT_FLOW_V49__ = true;
   window.__KAFE_BOOT_FLOW_V48__ = true;
   window.__KAFE_BOOT_FLOW_V47__ = true;
@@ -157,8 +156,7 @@
     return box;
   }
   function showOfflineDialog() {
-    // آنلاین‌only: دیالوگ آفلاین نشان داده نمی‌شود
-    showRetryOnline();
+    showRegisterOnly();
   }
   function hideOfflineDialog() { var box = document.getElementById('kafeOfflineChoiceDialog'); if (box) box.style.display = 'none'; }
   function ensureRetryOnline() {
@@ -172,24 +170,17 @@
     return box;
   }
   function showRetryOnline() {
-    setStage('wait-online'); hideBootLoader(); hide(el('app')); hide(el('registerScreen')); hide(el('splashScreen')); hide(el('termsScreen')); hideOfflineDialog();
-    var box = ensureRetryOnline(); box.style.display = 'flex';
-    var hint = document.getElementById('kafeRetryOnlineHint');
-    if (hint) hint.textContent = 'در حال بررسی اتصال…';
-    probeOnline().then(function (ok) {
-      if (hint) hint.textContent = ok ? 'متصل شدید — ادامه…' : 'هنوز آفلاین هستید';
-      if (ok) tryRetryOnline();
-    });
+    hideBootLoader();
+    hideRetryOnline();
+    showRegisterOnly();
   }
   function hideRetryOnline() { var box = document.getElementById('kafeRetryOnlineScreen'); if (box) box.style.display = 'none'; }
   function tryRetryOnline() {
     var hint = document.getElementById('kafeRetryOnlineHint');
-    showBootLoader();
-    probeOnline().then(function (ok) {
-      if (!ok) { hideBootLoader(); if (hint) hint.textContent = 'هنوز متصل نیستید. صبر کنید یا دوباره تلاش کنید.'; return; }
-      if (hint) hint.textContent = 'متصل شدید — ادامه…';
-      hideRetryOnline(); continueAfterTermsOrSession();
-    });
+    hideBootLoader();
+    hideRetryOnline();
+    showRegisterOnly();
+    if (hint) hint.textContent = '';
   }
   function goOfflineLimited() {
     // آنلاین‌only: به جای ورود آفلاین، صفحه انتظار آنلاین
@@ -237,43 +228,17 @@
     });
   }
   function continueAfterTermsOrSession() {
-    showBootLoader();
-    var finished = false;
-    var onlineState = null;
-    var safety = setTimeout(function () {
-      if (finished) return;
-      finished = true;
-      hideBootLoader();
-      showRegisterOnly();
-    }, Math.max(NET_PROBE_TIMEOUT, MAX_SESSION_WAIT) + PROFILE_TIMEOUT + 800);
-    var probeP = probeOnline().then(function (online) { onlineState = online; return online; });
-    var sessionP = getSessionSafe();
-    Promise.all([probeP, sessionP]).then(function (pair) {
-      if (finished) return;
-      var online = pair[0];
-      var session = pair[1];
-      onlineState = online;
-      if (session && session.user && session.user.id) {
-        return loadProfile(session.user.id).then(function (profile) {
-          if (finished) return;
-          clearTimeout(safety);
-          finished = true;
-          hideBootLoader();
-          if (profile && profile.id) { enterMainApp(profile); return; }
-          showRegisterOnly();
-        });
-      }
-      clearTimeout(safety);
-      finished = true;
-      hideBootLoader();
-      showRegisterOnly();
-    }).catch(function () {
-      if (finished) return;
-      finished = true;
-      clearTimeout(safety);
-      hideBootLoader();
-      showRegisterOnly();
-    });
+    // هیچ اسپینری. صفحه ثبت‌نام فوراً. نشست را در پس‌زمینه چک می‌کنیم.
+    hideBootLoader();
+    hideRetryOnline();
+    hideOfflineDialog();
+    showRegisterOnly();
+    getSessionSafe().then(function (session) {
+      if (!(session && session.user && session.user.id)) return;
+      return loadProfile(session.user.id).then(function (profile) {
+        if (profile && profile.id) enterMainApp(profile);
+      });
+    }).catch(function () {});
   }
   function afterSplashRoute() {
     if (!termsSeenThisSession()) { showTermsOnly(); return; }
@@ -294,7 +259,10 @@
   window.acceptTermsAndContinue = function () {
     markTermsSeenThisSession();
     try { localStorage.setItem('kafeTermsAccepted', '1'); } catch (e) {}
-    hide(el('termsScreen')); showBootLoader(); continueAfterTermsOrSession();
+    hide(el('termsScreen'));
+    hide(el('splashScreen'));
+    hideBootLoader();
+    showRegisterOnly();
   };
   function patchRegisterUser() {
     var prev = window.registerUser;
@@ -325,18 +293,21 @@
   });
   window.addEventListener('offline', function () {
     try { document.body.classList.remove('is-offline'); } catch (e) {}
-    if (typeof window.__kafeShowOnlineWall === 'function') window.__kafeShowOnlineWall();
   });
   var booted = false;
   function boot() {
-    if (!navigatorSaysOnline()) {
-      if (typeof window.__kafeShowOnlineWall === 'function') window.__kafeShowOnlineWall();
-      return;
-    }
     pollRegisterUser(); installOfflineLocks();
     if (booted) return;
     booted = true;
     runSplashThen(afterSplashRoute);
+    // اگر هر لودری جا ماند، حداکثر ۱.۲ ثانیه بعد صفحه ثبت‌نام را نشان بده
+    setTimeout(function () {
+      var loader = document.getElementById('kafeBootTransitionLoader');
+      var terms = el('termsScreen');
+      var termsOpen = terms && terms.style.display !== 'none' && !terms.classList.contains('hidden');
+      if (loader && loader.style.display === 'flex' && !termsOpen) showRegisterOnly();
+      hideBootLoader();
+    }, 1200);
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () { setTimeout(boot, 0); }, true);
