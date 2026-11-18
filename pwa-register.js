@@ -73,7 +73,7 @@
   setTimeout(blockMessageRealtime, 1300);
 
   function addDeferredAdmin() {
-    addScript('./brand-public-fix.js?v=fix2');
+    addScript('./brand-public-fix.js?v=20261118-online-only');
     addScript('./ui-feedback.js?v=fix2');
     addScript('./admin-messages-fix.js?v=fix2');
     addScript('./admin-save-feedback.js?v=fix2');
