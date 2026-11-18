@@ -1,3 +1,4 @@
-fix/user-offline-modals-only
-Center Menu computational modals offline
-Admin OTP untouched
+کافه سرکتاب میعاد — حالت فقط آنلاین
+مسیر ورود: تأیید قوانین در اولین ورود، سپس ثبت‌نام یا ورود؛ نشست معتبر حفظ می‌شود.
+ذخیره آفلاین محتوا و اجرای محلی ابزارها فعال نیست.
+PWA manifest و آیکون نصب برای قابلیت نصب سایت حفظ شده‌اند.
