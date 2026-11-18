@@ -1,19 +1,103 @@
-/* pwa-register.js — فقط حذف Service Worker و کش. هیچ wipe و هیچ register. */
+/* ONLINE-ONLY: SW disabled + Manifest + field pattern + brand + admin messages + ui-feedback (light) + admin-save */
 (function () {
   'use strict';
-  if (window.__KAFE_PWA_UNREGISTER_ONLY__) return;
-  window.__KAFE_PWA_UNREGISTER_ONLY__ = true;
-  function clearCaches() {
-    if (!window.caches || !caches.keys) return Promise.resolve();
-    return caches.keys().then(function (keys) {
-      return Promise.all(keys.map(function (k) { return caches.delete(k); }));
-    }).catch(function () {});
+
+  if (!document.querySelector('link[rel="manifest"]')) {
+    var link = document.createElement('link');
+    link.rel = 'manifest';
+    link.href = './manifest.webmanifest';
+    document.head.appendChild(link);
   }
-  function unregisterAll() {
-    if (!navigator.serviceWorker || !navigator.serviceWorker.getRegistrations) return Promise.resolve();
-    return navigator.serviceWorker.getRegistrations().then(function (regs) {
-      return Promise.all((regs || []).map(function (r) { return r.unregister(); }));
-    }).catch(function () {});
+
+  var oldFp = document.querySelector('link[href*="field-pattern.css"]');
+  if (oldFp) oldFp.remove();
+  var fp = document.createElement('link');
+  fp.rel = 'stylesheet';
+  fp.href = './field-pattern.css?v=22.22-fix';
+  document.head.appendChild(fp);
+
+  var oldSt = document.getElementById('kafeFieldPatternInline');
+  if (oldSt) oldSt.remove();
+  var st = document.createElement('style');
+  st.id = 'kafeFieldPatternInline';
+  st.textContent = [
+    'html body input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):not([type=hidden]):not([type=button]):not([type=submit]):not([type=reset]),',
+    'html body textarea, html body select,',
+    'html body .modal-glass-content input, html body .register-box input, html body #settingsPanel input,',
+    'html body #adminPanel input, html body #adminPanel textarea, html body #registerScreen input,',
+    'html body .input-group input, html body .hub-input, html body .register-input, html body .settings-field input {',
+    '  background:linear-gradient(165deg,rgba(245,236,250,.97),rgba(232,244,242,.95)) !important;',
+    '  background-color:#F0EAF4 !important; color:#1A1220 !important; -webkit-text-fill-color:#1A1220 !important;',
+    '  border:1.5px solid rgba(110,70,130,.55) !important; border-radius:12px !important;',
+    '  box-shadow:inset 0 1px 0 rgba(255,255,255,.65) !important;',
+    '}',
+    'html body input::placeholder, html body textarea::placeholder { color:#7A5F8A !important; -webkit-text-fill-color:#7A5F8A !important; }',
+    'html body input:focus, html body textarea:focus, html body select:focus {',
+    '  border-color:rgba(32,160,150,.85) !important; outline:none !important;',
+    '  box-shadow:0 0 0 3px rgba(32,160,150,.22) !important;',
+    '}'
+  ].join('\n');
+  document.head.appendChild(st);
+
+  function addScript(src) {
+    if (document.querySelector('script[src*="' + src.split('?')[0] + '"]')) return;
+    var s = document.createElement('script');
+    s.src = src;
+    s.defer = true;
+    (document.body || document.head).appendChild(s);
   }
-  unregisterAll().then(clearCaches);
+
+  function blockMessageRealtime() {
+    var c = window.supabaseClient || window.v12Supabase;
+    if (!c || !c.channel || c.__kafeMsgChannelPatched) return;
+    var orig = c.channel.bind(c);
+    c.channel = function (name) {
+      if (name === 'v18-messages-live') {
+        var d = { on: function () { return d; }, subscribe: function () { return d; }, unsubscribe: function () { return d; } };
+        return d;
+      }
+      return orig.apply(c, arguments);
+    };
+    c.__kafeMsgChannelPatched = true;
+    try {
+      var chans = typeof c.getChannels === 'function' ? c.getChannels() : [];
+      for (var i = 0; i < chans.length; i++) {
+        if (String((chans[i] && chans[i].topic) || '').indexOf('v18-messages-live') !== -1) {
+          try { c.removeChannel(chans[i]); } catch (e) {}
+        }
+      }
+    } catch (e2) {}
+  }
+  blockMessageRealtime();
+  setTimeout(blockMessageRealtime, 200);
+  setTimeout(blockMessageRealtime, 1300);
+
+  function addDeferredAdmin() {
+    addScript('./brand-public-fix.js?v=fix2');
+    addScript('./ui-feedback.js?v=fix2');
+    addScript('./admin-messages-fix.js?v=fix2');
+    addScript('./admin-save-feedback.js?v=fix2');
+  }
+  if (typeof requestIdleCallback === 'function') {
+    requestIdleCallback(addDeferredAdmin, { timeout: 4000 });
+  } else {
+    setTimeout(addDeferredAdmin, 2500);
+  }
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.getRegistrations().then(function (regs) {
+        for (var i = 0; i < regs.length; i++) {
+          try { regs[i].unregister(); } catch (e) {}
+        }
+      }).catch(function () {});
+      if (typeof caches !== 'undefined' && caches.keys) {
+        caches.keys().then(function (keys) {
+          for (var j = 0; j < keys.length; j++) {
+            try { caches.delete(keys[j]); } catch (e2) {}
+          }
+        }).catch(function () {});
+      }
+    });
+  }
 })();
