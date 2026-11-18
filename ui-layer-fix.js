@@ -66,7 +66,7 @@
         (document.body || document.documentElement).appendChild(s);
       } catch (e) {}
     }
-    inject('./boot-flow-fix.js?v=20261116-v49', 'boot-flow');
+    inject('./boot-flow-fix.js?v=20261118-online-only', 'boot-flow');
     inject('./product-modal-safe-fix.js?v=5', 'product-modal-safe');
 
     var deferred = [
