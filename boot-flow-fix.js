@@ -133,6 +133,55 @@
       if (!ok) { try { if (typeof showNotification === 'function') showNotification('برای ثبت‌نام باید به اینترنت متصل باشید', 'error'); } catch (e) {} }
     });
   }
+  function ensureConnectionWait() {
+    var id='kafeConnectionWaitScreen';
+    var box=document.getElementById(id);
+    if(box) return box;
+    box=document.createElement('div');
+    box.id=id;
+    box.style.cssText='display:none;position:fixed;inset:0;z-index:10085;align-items:center;justify-content:center;background:#070B14;padding:24px;box-sizing:border-box;direction:rtl;';
+    box.innerHTML='<div style="max-width:380px;text-align:center;color:#F5F0E4;"><p style="font-size:1.05rem;font-weight:800;color:#F0D878;margin:0 0 12px;">اتصال اینترنت برقرار نیست</p><p style="line-height:1.8;margin:0 0 20px;font-size:.9rem;">برای حفظ ورود امن و بررسی حساب، اتصال به سرور لازم است. پس از اتصال، برنامه خودکار ادامه می‌دهد.</p><button type="button" id="kafeConnectionRetryBtn" style="padding:12px 20px;border-radius:12px;border:none;background:linear-gradient(180deg,#e8c76b,#c9a84c);color:#1A1208;font-weight:800;cursor:pointer;">تلاش مجدد</button><p id="kafeConnectionWaitHint" style="margin-top:14px;font-size:.8rem;color:#C8C0B0;"></p></div>';
+    document.body.appendChild(box);
+    var btn=box.querySelector('#kafeConnectionRetryBtn');
+    if(btn) btn.onclick=retryConnectionWait;
+    return box;
+  }
+  function hideConnectionWait() {
+    var box=document.getElementById('kafeConnectionWaitScreen');
+    if(box) box.style.display='none';
+  }
+  function showConnectionWait() {
+    setStage('wait-online');
+    hideBootLoader();
+    hideStars();
+    hide(el('app'));
+    hide(el('registerScreen'));
+    hide(el('termsScreen'));
+    var box=ensureConnectionWait();
+    box.style.display='flex';
+    var hint=document.getElementById('kafeConnectionWaitHint');
+    if(hint) hint.textContent='در حال بررسی اتصال...';
+    probeOnline().then(function(ok){
+      if(ok) {
+        hideConnectionWait();
+        continueAfterTermsOrSession();
+      } else if(hint) {
+        hint.textContent='هنوز اتصال برقرار نشده است.';
+      }
+    });
+  }
+  function retryConnectionWait() {
+    var hint=document.getElementById('kafeConnectionWaitHint');
+    if(hint) hint.textContent='در حال تلاش مجدد...';
+    probeOnline().then(function(ok){
+      if(!ok) {
+        if(hint) hint.textContent='اتصال برقرار نشد؛ کمی بعد دوباره تلاش کنید.';
+        return;
+      }
+      hideConnectionWait();
+      continueAfterTermsOrSession();
+    });
+  }
   function getSessionSafe() {
     return new Promise(function (resolve) {
       var done = false;
@@ -167,7 +216,7 @@
       if (finished) return;
       finished = true;
       hideBootLoader();
-      showRegisterOnly();
+      showConnectionWait();
     }, Math.max(NET_PROBE_TIMEOUT, MAX_SESSION_WAIT) + PROFILE_TIMEOUT + 800);
     var probeP = probeOnline().then(function (online) { onlineState = online; return online; });
     var sessionP = getSessionSafe();
@@ -176,6 +225,13 @@
       var online = pair[0];
       var session = pair[1];
       onlineState = online;
+      if (!online) {
+        clearTimeout(safety);
+        finished = true;
+        hideBootLoader();
+        showConnectionWait();
+        return;
+      }
       if (session && session.user && session.user.id) {
         return loadProfile(session.user.id).then(function (profile) {
           if (finished) return;
@@ -210,7 +266,7 @@
       return false;
     }
     markTermsSeenThisSession();
-    hide(el('registerScreen')); hide(el('termsScreen')); hideBootLoader();
+    hide(el('registerScreen')); hide(el('termsScreen')); hideConnectionWait(); hideBootLoader();
     enterMainApp(profile);
     return true;
   };
@@ -241,6 +297,10 @@
     setTimeout(patchRegisterUser, 400);
     setTimeout(patchRegisterUser, 1500);
   }
+  window.addEventListener('online', function () {
+    var wait=document.getElementById('kafeConnectionWaitScreen');
+    if(wait && wait.style.display==='flex') retryConnectionWait();
+  });
   var booted = false;
   function boot() {
     pollRegisterUser();
