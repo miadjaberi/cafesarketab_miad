@@ -12,7 +12,6 @@
   window.__KAFE_BOOT_FLOW_V44__ = true;
   window.__KAFE_BOOT_FLOW_V42__ = true;
 
-  var MIN_SPLASH = 1600;
   var MAX_SESSION_WAIT = 3500;
   var PROFILE_TIMEOUT = 4000;
   var NET_PROBE_TIMEOUT = 3000;
@@ -129,38 +128,21 @@
     try { document.documentElement.classList.remove('kafe-auth-lock'); document.body.classList.remove('kafe-auth-lock'); } catch (e) {}
   }
   function enterMainApp(profile) {
-    setStage('main'); unlockAuth(); hideBootLoader(); hide(el('termsScreen')); hide(el('splashScreen')); hide(el('registerScreen')); hideOfflineDialog(); hideRetryOnline(); showStars(); showBlock(el('app'));
-    try { document.body.classList.toggle('is-offline', !navigatorSaysOnline()); } catch (e0) {}
+    setStage('main'); unlockAuth(); hideBootLoader(); hide(el('termsScreen')); hide(el('registerScreen')); hideRetryOnline(); showStars(); showBlock(el('app'));
     try { if (profile && typeof updateUserDisplay === 'function') Promise.resolve(updateUserDisplay(profile)).catch(function () {}); } catch (e) {}
     try { if (typeof window.refreshUserDashboardStats === 'function') window.refreshUserDashboardStats(); } catch (e2) {}
   }
   function showTermsOnly() {
-    setStage('terms'); lockAuth(); hideBootLoader(); hideStars(); hide(el('splashScreen')); hide(el('registerScreen')); hide(el('app')); hideOfflineDialog(); hideRetryOnline();
+    setStage('terms'); lockAuth(); hideBootLoader(); hideStars(); hide(el('registerScreen')); hide(el('app')); hideRetryOnline();
     var terms = el('termsScreen');
     if (terms) { try { terms.classList.remove('hidden'); } catch (e) {} terms.style.display = 'flex'; }
   }
   function showRegisterOnly() {
-    setStage('auth'); lockAuth(); hideBootLoader(); hideStars(); hide(el('splashScreen')); hide(el('termsScreen')); hide(el('app')); hideOfflineDialog(); hideRetryOnline(); showFlex(el('registerScreen'));
+    setStage('auth'); lockAuth(); hideBootLoader(); hideStars(); hide(el('termsScreen')); hide(el('app')); hideRetryOnline(); showFlex(el('registerScreen'));
     probeOnline().then(function (ok) {
       if (!ok) { try { if (typeof showNotification === 'function') showNotification('برای ثبت‌نام باید به اینترنت متصل باشید', 'error'); } catch (e) {} }
     });
   }
-  function ensureOfflineDialog() {
-    var id = 'kafeOfflineChoiceDialog'; var box = document.getElementById(id); if (box) return box;
-    box = document.createElement('div'); box.id = id; box.setAttribute('role', 'dialog');
-    box.style.cssText = 'display:none;position:fixed;inset:0;z-index:10090;align-items:center;justify-content:center;background:rgba(0,0,0,0.72);padding:20px;box-sizing:border-box;';
-    box.innerHTML = '<div style="max-width:360px;width:100%;background:#0b1120;border:1px solid rgba(201,168,76,0.45);border-radius:16px;padding:20px 18px;text-align:center;direction:rtl;color:#F5F0E4;"><p style="margin:0 0 18px;line-height:1.75;font-size:0.95rem;font-weight:600;">شما در حال حاضر به شبکه متصل نیستید. در صورت تمایل می‌توانید از برنامه به‌صورت آفلاین استفاده کنید.</p><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;"><button type="button" id="kafeOfflineYes" style="min-width:100px;padding:10px 16px;border-radius:12px;border:none;background:linear-gradient(180deg,#e8c76b,#c9a84c);color:#1A1208;font-weight:800;cursor:pointer;">بله</button><button type="button" id="kafeOfflineNo" style="min-width:100px;padding:10px 16px;border-radius:12px;border:1px solid rgba(201,168,76,0.5);background:#111827;color:#F0D878;font-weight:700;cursor:pointer;">خیر</button></div></div>';
-    document.body.appendChild(box);
-    var yes = box.querySelector('#kafeOfflineYes'); var no = box.querySelector('#kafeOfflineNo');
-    if (yes) yes.onclick = function () { hideOfflineDialog(); showRetryOnline(); };
-    if (no) no.onclick = function () { hideOfflineDialog(); showRetryOnline(); };
-    return box;
-  }
-  function showOfflineDialog() {
-    // آنلاین‌only: دیالوگ آفلاین نشان داده نمی‌شود
-    showRetryOnline();
-  }
-  function hideOfflineDialog() { var box = document.getElementById('kafeOfflineChoiceDialog'); if (box) box.style.display = 'none'; }
   function ensureRetryOnline() {
     var id = 'kafeRetryOnlineScreen'; var box = document.getElementById(id); if (box) return box;
     box = document.createElement('div'); box.id = id;
@@ -172,7 +154,7 @@
     return box;
   }
   function showRetryOnline() {
-    setStage('wait-online'); hideBootLoader(); hide(el('app')); hide(el('registerScreen')); hide(el('splashScreen')); hide(el('termsScreen')); hideOfflineDialog();
+    setStage('wait-online'); hideBootLoader(); hide(el('app')); hide(el('registerScreen')); hide(el('termsScreen'));
     var box = ensureRetryOnline(); box.style.display = 'flex';
     var hint = document.getElementById('kafeRetryOnlineHint');
     if (hint) hint.textContent = 'در حال بررسی اتصال…';
@@ -190,25 +172,6 @@
       if (hint) hint.textContent = 'متصل شدید — ادامه…';
       hideRetryOnline(); continueAfterTermsOrSession();
     });
-  }
-  function goOfflineLimited() {
-    // آنلاین‌only: به جای ورود آفلاین، صفحه انتظار آنلاین
-    showRetryOnline();
-  }
-  function installOfflineLocks() {
-    if (window.__kafeOfflineLocksV4) return;
-    window.__kafeOfflineLocksV4 = true;
-  }
-  function runSplashThen(done) {
-    setStage('skip-splash');
-    hideBootLoader();
-    hideStars();
-    hide(el('splashScreen'));
-    hide(el('registerScreen'));
-    hide(el('app'));
-    hideOfflineDialog();
-    hideRetryOnline();
-    if (typeof done === 'function') setTimeout(function () { done(); }, 0);
   }
   function getSessionSafe() {
     return new Promise(function (resolve) {
@@ -275,7 +238,7 @@
       showRegisterOnly();
     });
   }
-  function afterSplashRoute() {
+  function routeAfterTermsCheck() {
     if (!termsSeenThisSession()) { showTermsOnly(); return; }
     continueAfterTermsOrSession();
   }
@@ -285,9 +248,7 @@
       return false;
     }
     markTermsSeenThisSession();
-    hide(el('registerScreen')); hide(el('termsScreen')); hide(el('splashScreen')); hideRetryOnline(); hideOfflineDialog(); hideBootLoader();
-    window.__kafeOfflineLimited = false;
-    try { document.body.classList.remove('is-offline'); } catch (e) {}
+    hide(el('registerScreen')); hide(el('termsScreen')); hideRetryOnline(); hideBootLoader();
     enterMainApp(profile);
     return true;
   };
@@ -319,19 +280,16 @@
     setTimeout(patchRegisterUser, 1500);
   }
   window.addEventListener('online', function () {
-    try { document.body.classList.remove('is-offline'); } catch (e) {}
     var retry = document.getElementById('kafeRetryOnlineScreen');
     if (retry && retry.style.display === 'flex') tryRetryOnline();
   });
-  window.addEventListener('offline', function () {
-    try { document.body.classList.add('is-offline'); } catch (e) {}
-  });
   var booted = false;
   function boot() {
-    pollRegisterUser(); installOfflineLocks();
+    pollRegisterUser();
     if (booted) return;
     booted = true;
-    runSplashThen(afterSplashRoute);
+    hideStars();
+    routeAfterTermsCheck();
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () { setTimeout(boot, 0); }, true);
