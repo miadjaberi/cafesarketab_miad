@@ -3335,6 +3335,7 @@ async function submitProductOrder() {
             {id:'bahtModal', title:'بخت و اقبال', icon:'🍀'},
             {id:'setareModal', title:'ستاره طالع', icon:'⭐'},
             {id:'aghatModal', title:'عاقبت ازدواج', icon:'💍'},
+            {id:'marriageSeparationModal', title:'ازدواج با جدایی', icon:'💔'},
             {id:'calculatorModal', title:'ماشین حساب + ابجد', icon:'🧮'},
             {id:'dalilModal', title:'دلیل الحیران', icon:'❓'},
             {id:'ramlModal', title:'رمل امام علی', icon:'🎲'},
@@ -3347,6 +3348,41 @@ async function submitProductOrder() {
             {id:'marriageAgeModal', title:'سن ازدواج', icon:'💍'},
             {id:'developingModal', title:'شرح حال', icon:'📋'}
         ];
+
+
+        // مودال ازدواج با جدایی — منطق و جدول ۲۸ نتیجه منتقل‌شده از اسرار ازل
+        var marriageSeparationDefaultResults = {"1":"ازدواج بین آن‌ها اتفاق نمی‌افتد.","2":"ازدواج بین آن‌ها حاصل نمی‌شود.","3":"ازدواج انجام می‌شود و خیر زیادی دارد.","4":"ازدواج انجام می‌شود اما دور است؛ بعید است.","5":"ازدواج رخ نمی‌دهد.","6":"ازدواج اتفاق می‌افتد اما مسئله‌ای باعث طلاق می‌شود.","7":"ازدواج رخ نمی‌دهد چون یکی از دو طرف خیانت‌کار است.","8":"ازدواج همراه با خیر، سرور و شادی است و به‌زودی اتفاق می‌افتد.","9":"به کسی که طلب ازدواج کرده بگو خواسته‌اش برآورده می‌شود.","10":"ازدواج بین آن‌ها اتفاق می‌افتد، اما با تأخیر.","11":"ازدواج بین آن‌ها رخ می‌دهد اما در آینده‌ای دور.","12":"بله، ازدواج انجام می‌شود اما در آینده‌ی دور.","13":"ازدواج اتفاق نمی‌افتد چون یکی خیانت‌کار است.","14":"ازدواج حاصل نمی‌شود چون یکی از دو طرف اهل نیرنگ و خیانت است.","15":"ازدواجی مبارک که همراه با خیر، شادی و توفیق است و به‌زودی اتفاق می‌افتد.","16":"ازدواج بین آن‌ها حاصل نمی‌شود.","17":"ازدواج بین آن‌ها حاصل نمی‌شود.","18":"به کسی که طلب ازدواج کرده بشارت بده: بله، ازدواج به زودی، به اذن خدا.","19":"ازدواج اتفاق نمی‌افتد چون یکی از آن‌ها اهل نیرنگ و دروغ است.","20":"ازدواج همراه با خیر و روزی است و به زودی اتفاق می‌افتد.","21":"بله، ازدواج اتفاق می‌افتد اما در آینده‌ی دور.","22":"ازدواج بین آن‌ها رخ نمی‌دهد.","23":"ازدواج مبارک است و در آن تفاهم و سازش وجود دارد و به‌زودی اتفاق می‌افتد.","24":"به کسی که طلب ازدواج کرده بشارت بده؛ خواسته‌اش به زودی، به اذن خدا برآورده می‌شود.","25":"ازدواج همراه با خیر، شادی و سرور است و به‌زودی اتفاق می‌افتد.","26":"ازدواج بین آن‌ها انجام نمی‌شود چون یکی از طرفین اهل نیرنگ و خیانت است.","27":"به کسی که طلب ازدواج کرده بشارت بده؛ خواسته‌اش به اذن خدا برآورده خواهد شد.","28":"ازدواج بین آن‌ها اتفاق نمی‌افتد."};
+        var marriageSeparationOrderedValues = {'ا':1,'ب':2,'ج':3,'د':4,'ه':5,'و':6,'ز':7,'ح':8,'ط':9,'ی':10,'ک':11,'ل':12,'م':13,'ن':14,'س':15,'ع':16,'ف':17,'ص':18,'ق':19,'ر':20,'ش':21,'ت':22,'ث':23,'خ':24,'ذ':25,'ض':26,'ظ':27,'غ':28};
+        function normalizeMarriageSeparationName(value){
+            var s=String(value||'').trim().replace(/ي|ى|ئ/g,'ی').replace(/ك/g,'ک').replace(/[أإآٱ]/g,'ا').replace(/ة/g,'ه');
+            s=s.replace(/موسی/g,'موسا').replace(/مصطفی/g,'مصطفا').replace(/ژ/g,'ز').replace(/گ/g,'ک').replace(/چ/g,'ج').replace(/پ/g,'ب');
+            s=s.replace(/(^|\\s)سماء(?=\\s|$)/g,' ');
+            return Array.from(s).filter(function(ch){return Object.prototype.hasOwnProperty.call(marriageSeparationOrderedValues,ch);}).join('');
+        }
+        function calculateMarriageSeparationNameValue(value){
+            var normalized=normalizeMarriageSeparationName(value),total=0;
+            Array.from(normalized).forEach(function(ch){total+=marriageSeparationOrderedValues[ch]||0;});
+            return {normalized:normalized,total:total};
+        }
+        window.calculateMarriageSeparation=function(){
+            var ids=['marSepMan','marSepManMother','marSepWoman','marSepWomanMother'];
+            var raw=ids.map(function(id){var el=document.getElementById(id);return el?(el.value||'').trim():'';});
+            if(raw.some(function(v){return !v;})){if(typeof showNotification==='function')showNotification('لطفاً هر چهار نام را وارد کنید','error');return;}
+            var total=raw.reduce(function(sum,name){return sum+calculateMarriageSeparationNameValue(name).total;},0);
+            var resultNumber=(total+184)%28||28;
+            var cloud=(window.__modalCloudData&&window.__modalCloudData.marriageSeparationModal)||{};
+            var results=Object.assign({},marriageSeparationDefaultResults,cloud.results||{});
+            var resultText=String(results[String(resultNumber)]||marriageSeparationDefaultResults[String(resultNumber)]||'نتیجه‌ای برای این شماره ثبت نشده است.');
+            var box=document.getElementById('marSepResult');if(!box)return;
+            box.textContent='';
+            var heading=document.createElement('h3');heading.textContent='💍 نتیجه ازدواج با جدایی';
+            var paragraph=document.createElement('p');paragraph.textContent=resultText;
+            var note=document.createElement('small');note.textContent='این نتیجه بر پایه یک روش سنتی است و پیش‌بینی قطعی آینده یا مبنای تصمیم مهم زندگی نیست.';
+            note.style.cssText='display:block;margin-top:9px;color:var(--txt-hint,#C8C0B0);line-height:1.8';
+            box.appendChild(heading);box.appendChild(paragraph);box.appendChild(note);
+            box.style.display='block';
+            if(typeof showNotification==='function')showNotification('نتیجه آماده شد');
+        };
 
         // ============================================================
         // مدیریت مودال‌ها — نسخه پایدار V22.6.1
@@ -3408,6 +3444,14 @@ async function submitProductOrder() {
         function getModalEditorModel(modalId){
             var model={modalId:modalId,type:'generic',label:'داده‌های مودال',question:'',items:[],data:null,note:''};
             var cloud=(window.__modalCloudData&&window.__modalCloudData[modalId])||{};
+
+            // --- مودال اختصاصی ازدواج با جدایی: ۲۸ نتیجه قابل ویرایش از پنل مدیریت ---
+            if(modalId==='marriageSeparationModal'){
+                model.type='resultMap'; model.label='نتایج ازدواج با جدایی (۲۸ نتیجه)';
+                var ms=Object.assign({},marriageSeparationDefaultResults,cloud.results||{});
+                for(var mi=1;mi<=28;mi++) model.items.push({key:String(mi),text:String(ms[String(mi)]||''),label:'نتیجه '+mi});
+                return model;
+            }
 
             // --- مودال‌های ساختاری ویژه ---
             if(modalId==='hamzadModal'){
