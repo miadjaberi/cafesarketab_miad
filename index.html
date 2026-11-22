@@ -1483,6 +1483,26 @@
             </div>
         </div>
 
+        <!-- ===== MODAL: ازدواج با جدایی ===== -->
+        <div class="modal-glass" id="marriageSeparationModal">
+            <div class="modal-glass-content">
+                <div class="modal-glass-header">
+                    <div class="modal-glass-logo">💔</div>
+                    <div class="modal-glass-title">💍 ازدواج با جدایی</div>
+                    <button class="modal-glass-close" onclick="closeModalGlass('marriageSeparationModal')">✕</button>
+                </div>
+                <div class="modal-glass-body">
+                    <div class="modal-guide">نام آقا، نام مادر آقا، نام خانم و نام مادر خانم را وارد کنید. محاسبه با ابجد ترتیبی ۲۸ حرفی انجام می‌شود.</div>
+                    <div class="input-group"><label>♂️ نام آقا:</label><input type="text" id="marSepMan" placeholder="مثال: حسان" autocomplete="off"></div>
+                    <div class="input-group"><label>👩 نام مادر آقا:</label><input type="text" id="marSepManMother" placeholder="مثال: مریم" autocomplete="off"></div>
+                    <div class="input-group"><label>♀️ نام خانم:</label><input type="text" id="marSepWoman" placeholder="مثال: میسا" autocomplete="off"></div>
+                    <div class="input-group"><label>👩 نام مادر خانم:</label><input type="text" id="marSepWomanMother" placeholder="مثال: نور" autocomplete="off"></div>
+                    <button class="btn" type="button" onclick="calculateMarriageSeparation()">💍 محاسبه ازدواج با جدایی</button>
+                    <div class="result-box" id="marSepResult" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+
         <!-- ===== MODAL: دلیل الحیران ===== -->
         <div class="modal-glass" id="dalilModal">
             <div class="modal-glass-content">
@@ -2035,7 +2055,7 @@
     })();
     </script>
     <script src="./data.js"></script>
-    <script src="./main.js"></script>
+    <script src="./main.js?v=20261122-marriage-separation-v1"></script>
     <script src="./boot-flow-fix.js?v=20261118-direct-load-v49"></script>
     <script src="./dalil-images-fix.js"></script>
     <script src="./pwa-icon-dynamic.js"></script>
