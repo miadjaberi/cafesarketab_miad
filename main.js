@@ -3356,7 +3356,7 @@ async function submitProductOrder() {
         function normalizeMarriageSeparationName(value){
             var s=String(value||'').trim().replace(/ي|ى|ئ/g,'ی').replace(/ك/g,'ک').replace(/[أإآٱ]/g,'ا').replace(/ة/g,'ه');
             s=s.replace(/موسی/g,'موسا').replace(/مصطفی/g,'مصطفا').replace(/ژ/g,'ز').replace(/گ/g,'ک').replace(/چ/g,'ج').replace(/پ/g,'ب');
-            s=s.replace(/(^|\\s)سماء(?=\\s|$)/g,' ');
+            s=s.replace(/(^| )سماء(?= |$)/g,' ');
             return Array.from(s).filter(function(ch){return Object.prototype.hasOwnProperty.call(marriageSeparationOrderedValues,ch);}).join('');
         }
         function calculateMarriageSeparationNameValue(value){
