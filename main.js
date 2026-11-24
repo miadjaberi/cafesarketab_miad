@@ -7152,7 +7152,7 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){lo
   };
 
   // Admin purchase management: server truth, full details, receipt, decision and deletion.
-  function showAdminPurchaseDetail(kind,row){
+  function __showAdminPurchaseDetailOriginal(kind,row){
     if(!row){ if(typeof showNotification==='function') showNotification('جزئیات پیدا نشد','error'); return; }
     var old=document.getElementById('kafeAdminPurchaseDetail');if(old)old.remove();
     var d={};try{d=typeof row.details==='string'?JSON.parse(row.details||'{}'):(row.details||{});}catch(e){d={};}
@@ -7193,6 +7193,41 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){lo
     w.innerHTML='<div style="width:min(760px,96vw);max-height:94vh;overflow:auto;background:#fff;color:#111;border:2px solid #c9a84c;border-radius:16px;padding:16px"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><h3 style="margin:0">'+(isSub?'⭐ جزئیات کامل درخواست اشتراک':'🛒 جزئیات کامل سفارش محصول')+'</h3><button type="button" onclick="this.closest(\'#kafeAdminPurchaseDetail\').remove()">✕</button></div><div style="margin-top:12px">'+body+'</div><div class="admin-item-actions" style="display:flex;flex-wrap:wrap;gap:7px;margin-top:14px">'+actions+'</div></div>';
     document.body.appendChild(w);
   }
+  // TEMP DIAGNOSTICS: remove this wrapper after the browser test.
+  function showAdminPurchaseDetail(kind,row){
+    console.groupCollapsed('[ADMIN DETAIL DEBUG] showAdminPurchaseDetail');
+    console.log('1. entered', {
+      kind: kind,
+      rowExists: !!row,
+      rowType: typeof row,
+      rowId: row && row.id != null ? String(row.id) : null,
+      detailsExists: !!(row && row.details)
+    });
+    try {
+      var result = __showAdminPurchaseDetailOriginal(kind,row);
+      var modal = document.getElementById('kafeAdminPurchaseDetail');
+      var style = modal ? window.getComputedStyle(modal) : null;
+      console.log('2. original returned', result);
+      console.log('3. modal after call', {
+        exists: !!modal,
+        parentTag: modal && modal.parentElement ? modal.parentElement.tagName : null,
+        parentIsBody: !!modal && modal.parentElement === document.body,
+        display: style ? style.display : null,
+        visibility: style ? style.visibility : null,
+        zIndex: style ? style.zIndex : null,
+        rect: modal ? modal.getBoundingClientRect().toJSON() : null
+      });
+      if (!modal) console.warn('[ADMIN DETAIL DEBUG] No modal found after original function returned.');
+      return result;
+    } catch (error) {
+      console.error('[ADMIN DETAIL DEBUG] Runtime error:', error);
+      console.error('[ADMIN DETAIL DEBUG] Stack:', error && error.stack);
+      throw error;
+    } finally {
+      console.groupEnd();
+    }
+  }
+
   window.showAdminPurchaseDetail = showAdminPurchaseDetail;
 
   window.renderAdminOrders = async function(){
