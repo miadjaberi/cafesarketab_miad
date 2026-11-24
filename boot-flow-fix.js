@@ -79,6 +79,7 @@
           options.signal = controller.signal;
         }
       } catch (e) {}
+      options.headers = { apikey: (window.supabaseClient && window.supabaseClient.supabaseKey) || 'sb_publishable_yqampnRU4wIzRn-3ENi81g_ojYSM4le' };
       fetch('https://evxxvnlwtbaqpjbjaxdk.supabase.co/auth/v1/health?_probe=' + Date.now(), options)
         .then(function (response) { finish(!!(response && response.ok)); })
         .catch(function () { finish(false); });
@@ -219,32 +220,6 @@
     continueAfterTermsOrSession();
   };
 
-  function patchRegisterUser() {
-    var original = window.registerUser;
-    if (typeof original !== 'function') return false;
-    if (original.__kafeOnlineOnlyPatched) return true;
-    var wrapped = async function () {
-      var online = await probeOnline();
-      if (!online) {
-        notify('برای ورود یا ثبت‌نام باید به اینترنت و سرور متصل باشید.', 'error');
-        return;
-      }
-      return await original.apply(this, arguments);
-    };
-    wrapped.__kafeOnlineOnlyPatched = true;
-    window.registerUser = wrapped;
-    return true;
-  }
-
-  function pollRegisterUser() {
-    if (patchRegisterUser()) return;
-    var tries = 0;
-    var timer = setInterval(function () {
-      tries += 1;
-      if (patchRegisterUser() || tries >= 40) clearInterval(timer);
-    }, 250);
-  }
-
   window.addEventListener('online', function () {
     if (el('registerScreen') && el('registerScreen').style.display !== 'none') {
       notify('اتصال اینترنت برقرار شد؛ اکنون می‌توانید دوباره وارد شوید.', 'success');
@@ -258,7 +233,6 @@
 
   var booted = false;
   function boot() {
-    pollRegisterUser();
     if (booted) return;
     booted = true;
     hide(el('splashScreen'));
@@ -269,5 +243,4 @@
   } else {
     boot();
   }
-  window.addEventListener('load', function () { setTimeout(pollRegisterUser, 300); });
 })();
