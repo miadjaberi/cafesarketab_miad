@@ -1,5 +1,5 @@
 /**
- * pwa-icon-dynamic.js V4 — online only; no Service Worker messaging
+ * pwa-icon-dynamic.js V4 — online only; no Service Worker messaging — online only; no Service Worker messaging
  * آپلود آیکون از پنل → Supabase
  * manifest استاتیک به همان URLهای Supabase اشاره می‌کند (بدون blob:).
  * فقط apple-touch و favicon در runtime به‌روز می‌شوند.
@@ -73,20 +73,6 @@
     return localStorage.getItem('cafeAppIcon') || '';
   }
 
-  function tellServiceWorker(version) {
-    if (!('serviceWorker' in navigator)) return;
-    var msg = { type: 'PWA_ICON_UPDATED', v: version };
-    try {
-      if (navigator.serviceWorker.controller) navigator.serviceWorker.controller.postMessage(msg);
-    } catch (e) {}
-    navigator.serviceWorker.ready
-      .then(function (reg) {
-        if (reg.active) reg.active.postMessage(msg);
-        if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-      })
-      .catch(function () {});
-  }
-
   function pointHeadIcons(version) {
     var q = '?v=' + encodeURIComponent(version || Date.now());
     document.querySelectorAll('link[rel="icon"]').forEach(function (link) {
@@ -116,7 +102,6 @@
         });
       } catch (e) {}
     }
-    tellServiceWorker(version);
     pointHeadIcons(version);
   }
 
