@@ -1,0 +1,35 @@
+name: Merge fix QA to main
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - fix/qa-harness-2026-11-07
+    paths:
+      - '.github/workflows/merge-fix-to-main.yml'
+permissions:
+  contents: write
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Merge fix into main and push
+        env:
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main fix/qa-harness-2026-11-07
+          git checkout -B main origin/main
+          git merge --no-ff origin/fix/qa-harness-2026-11-07 -m "merge: fix/qa-harness-2026-11-07 into main (live QA deploy)"
+          git push origin main
+          echo "MAIN_SHA=$(git rev-parse HEAD)"
+          git log -1 --oneline
