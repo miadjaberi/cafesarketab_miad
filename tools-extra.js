@@ -136,198 +136,60 @@
     }
   };
 
-  /* قرآن — چند منبع + ذخیره IndexedDB */
-  var QDB='kafeQuranDB', QSTORE='surahs';
-  function openQDB(){
-    return new Promise(function(resolve,reject){
-      try {
-        var r=indexedDB.open(QDB,1);
-        r.onupgradeneeded=function(e){ var db=e.target.result; if(!db.objectStoreNames.contains(QSTORE)) db.createObjectStore(QSTORE,{keyPath:'number'}); };
-        r.onsuccess=function(){ resolve(r.result); };
-        r.onerror=function(){ reject(r.error||new Error('idb')); };
-      } catch(e){ reject(e); }
-    });
-  }
-  function qPut(surah){
-    return openQDB().then(function(db){
-      return new Promise(function(res,rej){
-        var tx=db.transaction(QSTORE,'readwrite');
-        tx.objectStore(QSTORE).put(surah);
-        tx.oncomplete=function(){ res(true); };
-        tx.onerror=function(){ rej(tx.error); };
-      });
-    });
-  }
-  function qGet(num){
-    return openQDB().then(function(db){
-      return new Promise(function(res,rej){
-        var req=db.transaction(QSTORE,'readonly').objectStore(QSTORE).get(num);
-        req.onsuccess=function(){ res(req.result||null); };
-        req.onerror=function(){ rej(req.error); };
-      });
-    });
-  }
-  function qCount(){
-    return openQDB().then(function(db){
-      return new Promise(function(res){
-        var req=db.transaction(QSTORE,'readonly').objectStore(QSTORE).count();
-        req.onsuccess=function(){ res(req.result||0); };
-        req.onerror=function(){ res(0); };
-      });
-    }).catch(function(){ return 0; });
-  }
-
+  /* قرآن — نمایش آنلاین؛ بدون IndexedDB و ذخیره محلی */
   window.quranUpdateStatus = function(){
-    qCount().then(function(c){
-      var el=$('quranStatus');
-      if(el) el.textContent = c>=114 ? '✅ تمام ۱۱۴ سوره ذخیره آفلاین است' : (c ? ('📦 '+c+' سوره ذخیره شده') : 'هنوز دانلودی نشده — اینترنت لازم است');
-    });
+    var status=$('quranStatus');
+    if(status) status.textContent='نمایش آنلاین سوره‌ها — برای دریافت متن، اتصال اینترنت لازم است.';
   };
 
-  async function fetchJson(url, timeoutMs){
+  async function fetchQuranJson(url, timeoutMs){
     var ctrl = typeof AbortController!=='undefined' ? new AbortController() : null;
-    var t = ctrl ? setTimeout(function(){ try{ctrl.abort();}catch(e){} }, timeoutMs||25000) : null;
+    var timer = ctrl ? setTimeout(function(){ try{ctrl.abort();}catch(e){} }, timeoutMs||20000) : null;
     try {
-      var res = await fetch(url, { signal: ctrl && ctrl.signal, mode:'cors', cache:'default' });
+      var res = await fetch(url, { signal: ctrl && ctrl.signal, mode:'cors', cache:'no-store' });
       if (!res.ok) throw new Error('HTTP '+res.status);
       return await res.json();
     } finally {
-      if (t) clearTimeout(t);
+      if (timer) clearTimeout(timer);
     }
   }
-
-  /** چند منبع برای قرآن */
-  async function downloadQuranFromSources(onProgress){
-    var errors = [];
-    // 1) alquran.cloud full
-    try {
-      if (onProgress) onProgress('اتصال به منبع ۱...');
-      var data = await fetchJson('https://api.alquran.cloud/v1/quran/quran-uthmani', 60000);
-      var surahs = data && data.data && data.data.surahs;
-      if (surahs && surahs.length) {
-        for (var i=0;i<surahs.length;i++){
-          var s=surahs[i];
-          await qPut({ number:s.number, name:s.name, englishName:s.englishName, ayahs:(s.ayahs||[]).map(function(a){return a.text;}) });
-          if (onProgress && (i%10===0 || i===surahs.length-1)) onProgress('ذخیره '+(i+1)+'/114');
-        }
-        return { ok:true, count:surahs.length, source:'alquran.cloud' };
-      }
-      errors.push('منبع ۱ خالی بود');
-    } catch(e){ errors.push('منبع ۱: '+(e.message||e)); }
-
-    // 2) download surah by surah (cdn.jsdelivr mirror of quran json sometimes blocked — use alquran per surah)
-    try {
-      if (onProgress) onProgress('تلاش منبع ۲ (سوره‌به‌سوره)...');
-      var okCount=0;
-      for (var n=1;n<=114;n++){
-        try {
-          var d2 = await fetchJson('https://api.alquran.cloud/v1/surah/'+n+'/quran-uthmani', 20000);
-          var d = d2 && d2.data;
-          if (d) {
-            await qPut({ number:d.number, name:d.name, englishName:d.englishName, ayahs:(d.ayahs||[]).map(function(a){return a.text;}) });
-            okCount++;
-          }
-        } catch(e1){ /* skip one */ }
-        if (onProgress && n%5===0) onProgress('سوره '+n+'/114');
-      }
-      if (okCount>=50) return { ok:true, count:okCount, source:'alquran-surah' };
-      errors.push('منبع ۲ فقط '+okCount+' سوره');
-    } catch(e){ errors.push('منبع ۲: '+(e.message||e)); }
-
-    // 3) api.quran.com - chapters + verses
-    try {
-      if (onProgress) onProgress('تلاش منبع ۳...');
-      var ch = await fetchJson('https://api.quran.com/api/v4/chapters?language=ar', 20000);
-      var chapters = ch && ch.chapters;
-      if (chapters && chapters.length) {
-        var got=0;
-        for (var ci=0;ci<chapters.length;ci++){
-          var c=chapters[ci];
-          try {
-            var vs = await fetchJson('https://api.quran.com/api/v4/quran/verses/uthmani?chapter_number='+c.id, 20000);
-            var verses = (vs && vs.verses) || [];
-            var ayahs = verses.map(function(v){ return v.text_uthmani || v.text_uthmani_simple || ''; });
-            if (ayahs.length) {
-              await qPut({ number:c.id, name:c.name_arabic||c.name_simple, englishName:c.name_simple, ayahs:ayahs });
-              got++;
-            }
-          } catch(e2){}
-          if (onProgress && ci%5===0) onProgress('منبع۳ '+(ci+1)+'/114');
-        }
-        if (got>=50) return { ok:true, count:got, source:'quran.com' };
-        errors.push('منبع ۳ فقط '+got+' سوره');
-      }
-    } catch(e){ errors.push('منبع ۳: '+(e.message||e)); }
-
-    throw new Error(errors.join(' | ') || 'همه منابع ناموفق');
-  }
-
-  window.quranDownloadAll = async function(){
-    var status=$('quranStatus'), btn=$('quranDownloadBtn');
-    if (btn) btn.disabled=true;
-    try {
-      if (status) status.textContent='شروع دانلود... اینترنت لازم است';
-      var r = await downloadQuranFromSources(function(msg){ if(status) status.textContent=msg; });
-      if (status) status.textContent='✅ ذخیره شد ('+r.count+' سوره) از '+r.source;
-      if (typeof showNotification==='function') showNotification('قرآن ذخیره شد');
-      window.quranFillSurahList && window.quranFillSurahList();
-      window.quranUpdateStatus && window.quranUpdateStatus();
-    } catch (e) {
-      console.warn('quran download', e);
-      var msg = 'دانلود ناموفق. اینترنت را چک کنید یا بعداً دوباره تلاش کنید.';
-      if (status) status.textContent = msg + (e && e.message ? (' — '+e.message) : '');
-      if (typeof showNotification==='function') showNotification('دانلود قرآن ناموفق بود','error');
-    }
-    if (btn) btn.disabled=false;
-  };
 
   window.quranFillSurahList = function(){
     var sel=$('quranSurahSelect');
     if(!sel) return;
     sel.innerHTML='<option value="">انتخاب سوره...</option>';
-    for(var i=1;i<=114;i++){ var o=document.createElement('option'); o.value=String(i); o.textContent='سوره '+i; sel.appendChild(o); }
-    qCount().then(function(c){
-      if(c<=0) return;
-      openQDB().then(function(db){
-        var req=db.transaction(QSTORE,'readonly').objectStore(QSTORE).openCursor();
-        req.onsuccess=function(e){
-          var cur=e.target.result;
-          if(cur){ var v=cur.value; var opt=sel.querySelector('option[value="'+v.number+'"]'); if(opt) opt.textContent=v.number+'. '+(v.name||''); cur.continue(); }
-        };
-      }).catch(function(){});
-    });
+    for(var i=1;i<=114;i++){
+      var opt=document.createElement('option');
+      opt.value=String(i);
+      opt.textContent='سوره '+i;
+      sel.appendChild(opt);
+    }
+    window.quranUpdateStatus();
   };
 
   window.quranShowSurah = async function(){
     var num=parseInt((($('quranSurahSelect')||{}).value)||'',10);
-    if(!num){ if(typeof showNotification==='function') showNotification('سوره را انتخاب کنید','error'); return; }
+    if(!num || num<1 || num>114){
+      if(typeof showNotification==='function') showNotification('سوره را انتخاب کنید','error');
+      return;
+    }
     var status=$('quranStatus');
+    if(status) status.textContent='در حال دریافت آنلاین سوره '+num+'...';
     try {
-      var s = await qGet(num);
-      if(!s){
-        if(status) status.textContent='دانلود سوره '+num+' از اینترنت...';
-        try {
-          var data = await fetchJson('https://api.alquran.cloud/v1/surah/'+num+'/quran-uthmani', 20000);
-          var d=data.data;
-          s={ number:d.number, name:d.name, englishName:d.englishName, ayahs:(d.ayahs||[]).map(function(a){return a.text;}) };
-          await qPut(s);
-        } catch(e1) {
-          try {
-            var vs=await fetchJson('https://api.quran.com/api/v4/quran/verses/uthmani?chapter_number='+num,20000);
-            var verses=(vs&&vs.verses)||[];
-            s={ number:num, name:'سوره '+num, englishName:'', ayahs:verses.map(function(v){return v.text_uthmani||'';}) };
-            await qPut(s);
-          } catch(e2) {
-            throw e2;
-          }
-        }
-      }
-      var body=(s.ayahs||[]).map(function(t,i){ return '<div style="margin:10px 0;line-height:2.2"><span style="color:#F0D878;font-size:.75rem">﴿'+(i+1)+'﴾</span> '+esc(t)+'</div>'; }).join('');
-      showBox('quranResult','<div class="modal-result-text"><div style="color:#F0D878;font-weight:800;margin-bottom:12px;font-size:1.1rem">'+esc(s.name||('سوره '+num))+'</div>'+body+'</div>');
-      if(status) status.textContent='نمایش سوره '+num;
+      var data=await fetchQuranJson('https://api.alquran.cloud/v1/surah/'+num+'/quran-uthmani',20000);
+      var d=data && data.data;
+      if(!d || !Array.isArray(d.ayahs)) throw new Error('متن سوره از منبع اول دریافت نشد');
+      var name=d.name||('سوره '+num);
+      var ayahs=d.ayahs.map(function(a){return a.text||'';});
+      var body=ayahs.map(function(t,i){
+        return '<div style="margin:10px 0;line-height:2.2"><span style="color:#F0D878;font-size:.75rem">﴿'+(i+1)+'﴾</span> '+esc(t)+'</div>';
+      }).join('');
+      showBox('quranResult','<div class="modal-result-text"><div style="color:#F0D878;font-weight:800;margin-bottom:12px;font-size:1.1rem">'+esc(name)+'</div>'+body+'</div>');
+      if(status) status.textContent='سوره '+num+' به‌صورت آنلاین نمایش داده شد؛ متن روی دستگاه ذخیره نمی‌شود.';
     } catch(e){
-      if(status) status.textContent='بارگذاری ناموفق — ابتدا «دانلود تمام قرآن» را با اینترنت بزنید';
-      if(typeof showNotification==='function') showNotification('سوره در دسترس نیست','error');
+      console.warn('online Quran display',e);
+      if(status) status.textContent='دریافت آنلاین ناموفق بود؛ اتصال اینترنت را بررسی کنید و دوباره تلاش کنید.';
+      if(typeof showNotification==='function') showNotification('دریافت آنلاین سوره ناموفق بود','error');
     }
   };
 
