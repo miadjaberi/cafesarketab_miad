@@ -137,6 +137,13 @@
   };
 
   /* قرآن — نمایش آنلاین؛ بدون IndexedDB و ذخیره محلی */
+  // پاک‌سازی کش قدیمیِ مخصوص مطالعه آفلاین قرآن؛ سایر داده‌های کاربر دست‌نخورده می‌مانند.
+  try {
+    if (window.indexedDB && typeof window.indexedDB.deleteDatabase === 'function') {
+      window.indexedDB.deleteDatabase('kafeQuranDB');
+    }
+  } catch(e) {}
+
   window.quranUpdateStatus = function(){
     var status=$('quranStatus');
     if(status) status.textContent='نمایش آنلاین سوره‌ها — برای دریافت متن، اتصال اینترنت لازم است.';
