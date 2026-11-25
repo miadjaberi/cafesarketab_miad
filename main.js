@@ -6104,37 +6104,7 @@ async function submitProductOrder() {
   refreshOnlineData().catch(function(e){ console.warn('online sync', e); });
   console.log('✅ Kafe Miad Stage 2 online connection loaded');
 
-/* Soft offline banner */
-(function(){
-  function syncOfflineUi(){
-    var online = typeof navigator !== 'undefined' ? navigator.onLine : true;
-    var ban = document.getElementById('offlineBanner');
-    if (ban) ban.style.display = online ? 'none' : 'block';
-    try { document.body.classList.toggle('is-offline', !online); } catch (e) {}
-  }
-  window.addEventListener('online', syncOfflineUi);
-  window.addEventListener('offline', syncOfflineUi);
 
-  window.addEventListener('offline', function(){
-    try {
-      var termsOk = false;
-      try { termsOk = localStorage.getItem('kafeTermsAccepted') === '1'; } catch (e) {}
-      var app = document.getElementById('app');
-      var appVisible = app && app.style.display !== 'none' && !app.classList.contains('hidden');
-      if (termsOk && !appVisible && typeof window.enterAppForLocalModals === 'function') {
-        window.enterAppForLocalModals('اتصال قطع شد — از دکمه وسط منو مودال‌ها را باز کنید');
-      }
-      var ban = document.getElementById('offlineBanner');
-      if (ban) {
-        ban.style.display = 'block';
-        ban.textContent = '📡 حالت آفلاین — از دکمه وسط «منو» مودال‌های محاسباتی را باز کنید';
-      }
-    } catch (eOff) {}
-  });
-
-  document.addEventListener('DOMContentLoaded', syncOfflineUi);
-  setTimeout(syncOfflineUi, 500);
-})();
 
   try { if (typeof window.refreshNotifBadge === 'function') window.refreshNotifBadge(); } catch (eBadge) {}
   try { if (typeof window.refreshUserDashboardStats === 'function') window.refreshUserDashboardStats(); } catch (eDash) {}
