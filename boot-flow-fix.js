@@ -195,7 +195,7 @@
   }
 
   function afterSplashRoute() {
-    if (!termsSeenThisSession()) { showTermsOnly(); return; }
+    // مسیر شروع واحد: بررسی نشست آنلاین؛ کاربر جدید مستقیماً به ثبت‌نام/ورود می‌رود.
     continueAfterTermsOrSession();
   }
 
@@ -236,6 +236,7 @@
     if (booted) return;
     booted = true;
     hide(el('splashScreen'));
+    hide(el('termsScreen'));
     afterSplashRoute();
   }
   if (document.readyState === 'loading') {
