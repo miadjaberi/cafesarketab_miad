@@ -5427,6 +5427,8 @@ async function submitProductOrder() {
                     '<span class="mh-label">' + (meta.title || item.title || item.id) + '</span></div>';
             }).join('');
         }
+        // اتصال تابع به مسیر ناوبری صفحه مودال‌ها؛ بدون تغییر در ظاهر یا منطق کارت‌ها
+        window.renderModalsHomeGrid = renderModalsHomeGrid;
 
         
         
